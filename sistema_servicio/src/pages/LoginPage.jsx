@@ -29,10 +29,8 @@ function LoginPage() {
       });
 
       const data = await response.json();
-      if (data.success) {
+      if (response.ok) {
         navigate('/tables'); // Redirige a la página de tablas
-        alert("Login exitoso");
-        // Aquí puedes redirigir, guardar token, etc.
       } else {
         alert(data.message);
       }
