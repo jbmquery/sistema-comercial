@@ -7,6 +7,6 @@ Find the corresponding instructions under:
 
 # Para subir nuevo cambio
 
-git add .
-git commit -m "mensaje"
-git push
+- git add .
+- git commit -m "mensaje"
+- git push
