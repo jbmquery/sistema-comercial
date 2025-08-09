@@ -12,9 +12,6 @@ def login_user(correo, password):
         cursor = conn.cursor()
         cursor.execute(query, (correo, password))
         result = cursor.fetchone()
-        cursor.close()
-        conn.close()
-
         if result:
             return {"id_usuario": result[0], "correo": result[1]}
         else:
@@ -22,3 +19,8 @@ def login_user(correo, password):
     except Exception as e:
         print(f"Error en login_user: {e}")
         return None
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

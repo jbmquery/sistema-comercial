@@ -1,7 +1,11 @@
 import HeaderCom from "../components/header_com"
 import CardsMenu from "../components/cardsmenu";
+import { useLocation } from 'react-router-dom';
 
 function Menues() {
+  const location = useLocation();
+  const { nombreMesa } = location.state || {};
+  
   return (
     <div className="flex flex-col justify-center">
       {/*Header*/}
@@ -22,7 +26,7 @@ function Menues() {
           </div>
           {/*Seccion busqueda*/}
           <div className="bg-yellow-200 flex flex-row justify-between py-2 px-4 items-center">
-            <p>Mesa seleccionada: <b>Mesa 1</b></p>
+            <p>Mesa seleccionada: <b>{nombreMesa}</b></p>
             <input type="text" className="input w-35 md:w-60 lg:w-80" placeholder="Buscar" />
           </div>
           {/*Seccion productos*/}
