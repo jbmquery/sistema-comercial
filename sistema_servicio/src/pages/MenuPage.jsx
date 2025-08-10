@@ -21,7 +21,7 @@ function Menues() {
           <div className="flex flex-wrap bg-red-500 justify-center items-center gap-2 py-2">
             <button className="btn md:btn-md btn-outline w-30 md:w-40 bg-secondary text-white">Bebidas</button>
             <button className="btn md:btn-md btn-outline w-30 md:w-40 bg-secondary text-white">Postres</button>
-            <button className="btn md:btn-md btn-outline w-30 md:w-40 bg-secondary text-white">Topings</button>
+            <button className="btn md:btn-md btn-outline w-30 md:w-40 bg-secondary text-white">Toppings</button>
             <button className="btn md:btn-md btn-outline w-30 md:w-40 bg-secondary text-white">Promos</button>
           </div>
           {/*Seccion busqueda*/}
@@ -31,29 +31,29 @@ function Menues() {
           </div>
           {/*Seccion productos*/}
           <div className="bg-green-300 flex w-full flex-col py-2 px-4">
-            <div className="divider divider-start"><b>Café sin Leche</b></div>
+            <div className="divider divider-start"><b>subcategoria 1</b></div>
             <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
               <CardsMenu/>
               <CardsMenu/>
               <CardsMenu/>
               <CardsMenu/>
             </div>
-            <div className="divider divider-start"><b>Café con Leche</b></div>
+            <div className="divider divider-start"><b>subcategoria 2</b></div>
             <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
               <CardsMenu/>
               <CardsMenu/>
             </div>
-            <div className="divider divider-start"><b>Bebidas sin Café</b></div>
+            <div className="divider divider-start"><b>subcategoria 3</b></div>
             <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
               <CardsMenu/>
               <CardsMenu/>
             </div>
-            <div className="divider divider-start"><b>Bebidas con café</b></div>
+            <div className="divider divider-start"><b>subcategoria 4</b></div>
             <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
               <CardsMenu/>
               <CardsMenu/>
             </div>
-            <div className="divider divider-start"><b>Otros</b></div>
+            <div className="divider divider-start"><b>subcategoria 5</b></div>
 
           </div>
         </div>
