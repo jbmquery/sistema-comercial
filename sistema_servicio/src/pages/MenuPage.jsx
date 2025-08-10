@@ -35,6 +35,8 @@ function Menues() {
             <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
               <CardsMenu/>
               <CardsMenu/>
+              <CardsMenu/>
+              <CardsMenu/>
             </div>
             <div className="divider divider-start"><b>Café con Leche</b></div>
             <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
