@@ -71,7 +71,7 @@ function Menues() {
           </div>
 
           {/* Productos */}
-          <div className="bg-green-300 flex w-full flex-col py-2 px-4">
+          <div className="bg-gray-100 flex w-full flex-col py-2 px-4">
             {Object.keys(porSubcategoria).length > 0 ? (
               Object.entries(porSubcategoria).map(([subcat, prods]) => (
                 <div key={subcat} className="mb-6">
@@ -89,11 +89,41 @@ function Menues() {
           </div>
         </div>
 
-        {/* Totales */}
-        <div className="md:w-100 bg-gray-400 py-2 px-4">
-          PEDIDO:
-          <div></div>
-          <div></div>
+        {/* Resumen pedidos */}
+        <div className="md:w-100 bg-gray-300 pt-2 pb-10 px-4">
+          <div>
+            <div className="pb-5 pt-3">
+              <b>RESUMEN DEL PEDIDO:</b>
+            </div>
+            {/* Producto 1 */}
+            <div className="flex flex-row justify-between mb-4">
+                <div className="flex flex-col">
+                  <p>- Espresso</p>
+                  <p className="italic">S/ 3.50 - x2 - S/ 7.00</p>
+                </div>
+                <button className="w-10 h-10 bg-red-800 rounded-full"><img src="src/img/eliminar.png" alt="Borrar"/></button>
+            </div>
+            {/* Producto 2 */}
+            <div className="flex flex-row justify-between mb-4">
+                <div className="flex flex-col">
+                  <p>- Frappe de Menta (16 Oz)</p>
+                  <p className="italic">S/ 13.00 - x1 - S/ 13.00</p>
+                </div>
+                <button className="w-10 h-10 bg-red-800 rounded-full"><img src="src/img/eliminar.png" alt="Borrar"/></button>
+            </div>
+            {/* Producto 3 */}
+            <div className="flex flex-row justify-between mb-4">
+                <div className="flex flex-col">
+                  <p>- waffle de Durazno</p>
+                  <p className="italic">S/ 11.00 - x3 - S/ 33.00</p>
+                </div>
+                <button className="w-10 h-10 bg-red-800 rounded-full"><img src="src/img/eliminar.png" alt="Borrar"/></button>
+            </div>
+          </div>
+          <div>
+            <div className="divider divider-start"><b>SUB-TOTAL</b></div>
+            <div className="flex flex-col justify-right w-full bg-red italic"><b>S/ 25.50</b></div>
+          </div>
         </div>
       </div>
 

@@ -81,7 +81,9 @@ def get_carta(categoria=None, search=None):
 
             # poner nombre de subcategoria en campo consistente
             item["sub_categoria"] = item.pop("nombre_subcat", None)
-            productos.append(item)
+            
+            if item.get("estado") is True:
+                productos.append(item)
 
         cur.close()
         conn.close()
