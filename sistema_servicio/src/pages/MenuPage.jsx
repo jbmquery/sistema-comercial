@@ -35,16 +35,19 @@ function Menues() {
   }, [categoria, search]);
 
   return (
-    <div className="flex flex-col justify-center">
+    <div className="flex flex-col justify-center"> {/* ← tu centrado original */}
+      
       {/* Header */}
-      <div className="w-full shadow-md">
-        <HeaderCom/>
+      <div className="w-full shadow-md z-10">
+        <HeaderCom />
       </div>
 
       {/* Sección pedido */}
       <div className="flex flex-col md:flex-row justify-center bg-purple-500">
+        
         {/* Sección menú */}
         <div className="md:w-250">
+          
           {/* Categorías */}
           <div className="flex flex-wrap bg-red-500 justify-center items-center gap-2 py-2">
             {categorias.map((cat) => (
@@ -70,8 +73,15 @@ function Menues() {
             />
           </div>
 
-          {/* Productos */}
-          <div className="bg-gray-100 flex w-full flex-col py-2 px-4">
+          {/* Productos - SCROLL INTERNO SIN MOVER NADA */}
+          <div 
+            className="bg-gray-100 flex w-full flex-col py-2 px-4 m-0 overflow-y-auto"
+            style={{ 
+              maxHeight: 'calc(100vh - 180px)', // Ajusta este valor
+              minHeight: '0',
+              flex: '1 1 auto' 
+            }}
+          >
             {Object.keys(porSubcategoria).length > 0 ? (
               Object.entries(porSubcategoria).map(([subcat, prods]) => (
                 <div key={subcat} className="mb-6">
@@ -90,7 +100,7 @@ function Menues() {
         </div>
 
         {/* Resumen pedidos */}
-        <div className="md:w-100 bg-gray-300 pt-2 pb-10 px-4">
+        <div className="md:w-100 bg-gray-300 pt-2 pb-10 px-4 flex flex-col justify-between">
           <div>
             <div className="pb-5 pt-3">
               <b>RESUMEN DEL PEDIDO:</b>
@@ -119,28 +129,27 @@ function Menues() {
                 </div>
                 <button className="w-10 h-10 bg-red-800 rounded-full"><img src="src/img/eliminar.png" alt="Borrar"/></button>
             </div>
+            <div className="pb-10">
+              <div className="divider divider-start"><b>SUB-TOTAL</b></div>
+              <div className="flex flex-col justify-right w-full bg-red italic"><b>S/ 53.00</b></div>
+            </div>
           </div>
-          <div>
-            <div className="divider divider-start"><b>SUB-TOTAL</b></div>
-            <div className="flex flex-col justify-right w-full bg-red italic"><b>S/ 25.50</b></div>
+          {/* Confirmación */}
+          <div className="flex flex-row justify-center items-center p-4 md:p-6 lg:p-8 bg-cyan-200 w-full">
+            <button
+              type="submit"
+              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              Guardar
+            </button>
           </div>
         </div>
-      </div>
-
-      {/* Confirmación */}
-      <div className="flex flex-row justify-center items-center p-4 md:p-6 lg:p-8 bg-cyan-200 w-full">
-        <button
-          type="submit"
-          className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        >
-          Guardar
-        </button>
       </div>
     </div>
   );
