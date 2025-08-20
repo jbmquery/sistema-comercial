@@ -1,7 +1,7 @@
-function cardsmenu({ producto }) {
+function cardsmenu({ producto, onAdd }) {
   // precio puede ser number o string; aseguramos formato
-  const precioNum = producto?.precio ? Number(producto.precio) : null;
-  const precioStr = precioNum !== null && !isNaN(precioNum) ? precioNum.toFixed(2) : "";
+  const precioNum = producto?.precio ? Number(producto.precio) : 0;
+  const precioStr = !isNaN(precioNum) ? precioNum.toFixed(2) : "0.00";
   
   return (
     <div className="card bg-white shadow-md">
@@ -12,7 +12,7 @@ function cardsmenu({ producto }) {
               <p className="card-title justify-center text-black float-start text-sm">{producto.porcion} {producto.unidad_medida} {producto.porcion ?` - `:``}
             {precioStr ? ` S/ ${precioStr}` : ""}</p>
               <div className="card-actions justify-center md:mb-3">
-                  <button className="btn btn-secondary rounded-full">Añadir</button>
+                  <button className="btn btn-secondary rounded-full" onClick={onAdd} >Añadir</button>
               </div>
             </div>
         </div>

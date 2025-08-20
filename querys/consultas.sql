@@ -131,8 +131,8 @@ CREATE TABLE IF NOT EXISTS public.receta
 -- Tabla: pedidos (cabecera)
 CREATE TABLE IF NOT EXISTS public.pedidos
 (
-    id_pedido bigint NOT NULL,
-    numero_orden bigint NOT NULL,
+    id_pedido serial NOT NULL,
+    numero_orden serial NOT NULL,
     id_mesa bigint,
     id_cliente bigint, --puede ser NULL si es anónimo, pero mejor no
     id_usuario bigint,
@@ -165,7 +165,7 @@ CREATE TABLE IF NOT EXISTS public.pedidos
 -- Tabla: detalle_pedido (líneas del pedido)
 CREATE TABLE IF NOT EXISTS public.detalle_pedido
 (
-    id_detalle bigint NOT NULL,
+    id_detalle serial NOT NULL,
     id_pedido bigint,
     id_carta bigint,
     cantidad bigint NOT NULL,

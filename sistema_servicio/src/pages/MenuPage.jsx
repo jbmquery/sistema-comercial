@@ -222,7 +222,7 @@ function Menues() {
                 return (
                   <div key={item.id_carta} className="flex flex-row justify-between mb-4">
                     <div className="flex flex-col">
-                      <p>- {item.nombre}</p>
+                      <p>- {item.nombre} {item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""}</p>
                       <p className="italic">
                         S/ {Number(item.precio).toFixed(2)} - x{item.cantidad} - S/ {subtotal}
                       </p>
@@ -231,7 +231,7 @@ function Menues() {
                       className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center"
                       onClick={() => eliminarDelCarrito(item.id_carta)}
                     >
-                      <span className="text-white font-bold">✕</span>
+                      <img src="../src/img/eliminar.png" alt="Eliminar" className="w-10 h-10" />
                     </button>
                   </div>
                 );
