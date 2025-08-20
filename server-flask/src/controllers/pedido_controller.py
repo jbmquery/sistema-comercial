@@ -2,6 +2,8 @@
 from conexion_postgresql import get_connection
 import psycopg2
 
+# controllers/pedido_controller.py
+
 def crear_pedido(datos):
     conn = None
     cursor = None
@@ -9,7 +11,15 @@ def crear_pedido(datos):
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Insertar en pedidos
+        # 1. Verificar que la mesa exista y esté disponible
+        cursor.execute("SELECT disponibilidad FROM mesas WHERE id_mesas = %s", (datos['id_mesa'],))
+        mesa = cursor.fetchone()
+        if not mesa:
+            return {"message": "Mesa no encontrada"}
+        if not mesa[0]:
+            return {"message": "La mesa ya está ocupada"}
+
+        # 2. Insertar el pedido
         query_pedido = """
         INSERT INTO pedidos (
             id_mesa, id_cliente, id_usuario, fecha, hora_pedido,
@@ -34,7 +44,7 @@ def crear_pedido(datos):
         ))
         id_pedido = cursor.fetchone()[0]
 
-        # Insertar en detalle_pedido
+        # 3. Insertar detalles
         for detalle in datos['detalles']:
             query_detalle = """
             INSERT INTO detalle_pedido (
@@ -50,8 +60,15 @@ def crear_pedido(datos):
                 detalle['es_canjeable']
             ))
 
+        # 4. Actualizar disponibilidad de la mesa → FALSE (ocupada)
+        cursor.execute(
+            "UPDATE mesas SET disponibilidad = %s WHERE id_mesas = %s",
+            (False, datos['id_mesa'])
+        )
+
+        # 5. Confirmar transacción
         conn.commit()
-        return {"id_pedido": id_pedido, "message": "Pedido guardado"}
+        return {"id_pedido": id_pedido, "message": "Pedido guardado y mesa ocupada"}
 
     except Exception as e:
         if conn:

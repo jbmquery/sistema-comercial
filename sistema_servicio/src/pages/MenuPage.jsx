@@ -76,73 +76,67 @@ function Menues() {
   ).toFixed(2);
 
   // Guardar pedido en backend
-  const guardarPedido = async () => {
-    if (carrito.length === 0) {
-      alert("El carrito está vacío");
+ const guardarPedido = async () => {
+  if (carrito.length === 0) {
+    alert("El carrito está vacío");
+    return;
+  }
+  if (!nombreMesa) {
+    alert("No se ha seleccionado una mesa");
+    return;
+  }
+
+  try {
+    const resMesas = await fetch('/api/mesas');
+    const dataMesas = await resMesas.json();
+    const mesa = dataMesas.mesas.find(m => m.nombre === nombreMesa);
+    if (!mesa) {
+      alert("Mesa no encontrada");
       return;
     }
-    if (!nombreMesa) {
-      alert("No se ha seleccionado una mesa");
-      return;
-    }
 
-    // Buscar id_mesa por nombre (temporal, luego desde /api/mesas con id)
-    try {
-      const resMesas = await fetch('/api/mesas');
-      const dataMesas = await resMesas.json();
-      const mesa = dataMesas.mesas.find(m => m.nombre === nombreMesa);
-      if (!mesa) {
-        alert("Mesa no encontrada");
-        return;
-      }
+    const idMesa = mesa.id;
 
-      const idMesa = mesa.id;
-
-      // Preparar payload
-      const pedido = {
-        id_mesa: idMesa,
-        id_usuario: idUsuario,
-        id_cliente: null, // Temporal: cliente anónimo
-        estado: "Pendiente",
-        cantidad_clientes: 1, // Temporal
+    const pedido = {
+      id_mesa: idMesa,
+      id_usuario: idUsuario,
+      id_cliente: null,
+      estado: "Pendiente",
+      cantidad_clientes: 1,
+      observacion: "",
+      forma_pago: "efectivo",
+      puntos_canjeados_total: 0,
+      monto_pagado: parseFloat(subtotalGeneral),
+      monto_vuelto: 0,
+      detalles: carrito.map(item => ({
+        id_carta: item.id_carta,
+        cantidad: item.cantidad,
+        precio_unitario: item.precio,
         observacion: "",
-        forma_pago: "efectivo", // Temporal
-        puntos_canjeados_total: 0, // Temporal
-        monto_pagado: 0, // Se calculará
-        monto_vuelto: 0,
-        detalles: carrito.map(item => ({
-          id_carta: item.id_carta,
-          cantidad: item.cantidad,
-          precio_unitario: item.precio,
-          observacion: "",
-          es_canjeable: false // Temporal
-        }))
-      };
+        es_canjeable: false
+      }))
+    };
 
-      // Calcular monto_pagado
-      pedido.monto_pagado = parseFloat(subtotalGeneral);
+    const response = await fetch('/api/pedidos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(pedido)
+    });
 
-      // Enviar al backend
-      const response = await fetch('/api/pedidos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pedido)
-      });
+    const result = await response.json();
 
-      const result = await response.json();
-
-      if (response.ok) {
-        alert("Pedido guardado con éxito");
-        setCarrito([]); // Limpiar carrito
-        // navigate('/tables'); // Opcional: volver a mesas
-      } else {
-        alert("Error al guardar: " + result.message);
-      }
-    } catch (error) {
-      console.error("Error al guardar pedido:", error);
-      alert("Error de conexión");
+    if (response.ok) {
+      alert("✅ Pedido guardado y mesa ocupada");
+      setCarrito([]);
+      navigate('/tables'); // ← Redirección a /tables
+    } else {
+      alert("Error al guardar: " + result.message);
     }
-  };
+  } catch (error) {
+    console.error("Error al guardar pedido:", error);
+    alert("Error de conexión");
+  }
+};
 
   return (
     <div className="flex flex-col justify-center">
