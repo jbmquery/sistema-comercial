@@ -101,7 +101,7 @@ function Menues() {
       id_mesa: idMesa,
       id_usuario: idUsuario,
       id_cliente: null,
-      estado: "Pendiente",
+      estado: "Sin iniciar",
       cantidad_clientes: 1,
       observacion: "",
       forma_pago: "efectivo",

@@ -165,13 +165,14 @@ CREATE TABLE IF NOT EXISTS public.pedidos
 -- Tabla: detalle_pedido (líneas del pedido)
 CREATE TABLE IF NOT EXISTS public.detalle_pedido
 (
-    id_detalle serial NOT NULL,
+    id_detalle integer NOT NULL DEFAULT nextval('detalle_pedido_id_detalle_seq'::regclass),
     id_pedido bigint,
     id_carta bigint,
     cantidad bigint NOT NULL,
     precio_unitario money,
     observacion character(100) COLLATE pg_catalog."default",
     es_canjeable boolean DEFAULT false,
+    estado character varying(20) COLLATE pg_catalog."default",
     CONSTRAINT detalle_pedido_pkey PRIMARY KEY (id_detalle),
     CONSTRAINT fk_detalle_carta FOREIGN KEY (id_carta)
         REFERENCES public.carta (id_carta) MATCH SIMPLE
