@@ -9,6 +9,8 @@ export default function HeaderNav() {
         <Link className="link btn btn-xs md:btn-md lg:btn-lg btn-outline w-35 md:w-40 bg-secondary text-white" to='/tables'>Mesas</Link>
         <Link className="link btn btn-xs md:btn-md lg:btn-lg btn-outline w-35 md:w-40 bg-secondary text-white" to='/delivery'>Para llevar</Link>
         <Link className="link btn btn-xs md:btn-md lg:btn-lg btn-outline w-35 md:w-40 bg-secondary text-white" to='/pedidos'>Pedidos</Link>
+        <Link className="link btn btn-xs md:btn-md lg:btn-lg btn-outline w-35 md:w-40 bg-secondary text-white" to='/pedidos'>Cobrar</Link>
+        <Link className="link btn btn-xs md:btn-md lg:btn-lg btn-outline w-35 md:w-40 bg-secondary text-white" to='/pedidos'>Clientes</Link>
         <Link className="link btn btn-xs md:btn-md lg:btn-lg btn-outline w-35 md:w-40 bg-secondary text-white" to='/settings'>Configuraciones</Link>
       </nav>
     </div>
