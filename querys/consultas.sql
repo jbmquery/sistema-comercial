@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS public.carta
     nombre character varying(50) COLLATE pg_catalog."default" NOT NULL,
     grupo character varying(50) COLLATE pg_catalog."default" NOT NULL,
     abreviado character varying(30) COLLATE pg_catalog."default" NOT NULL,
-    precio money NOT NULL,
-    puntos_canje bigint, -- puntos requeridos para canjear
+    precio numeric(10,2) NOT NULL,
+    puntos_canje bigint,
     estado boolean NOT NULL DEFAULT true,
     disponible boolean NOT NULL,
     porcion character varying(15) COLLATE pg_catalog."default" NOT NULL,
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS public.inventario
     contenido_por_unidad bigint NOT NULL,
     unidad_contenido character varying(20) COLLATE pg_catalog."default" NOT NULL,
     estado boolean DEFAULT true,
-    precio_por_unidad bigint,
+    precio_por_unidad numeric(10,2),
     id_proveedor bigint,
     CONSTRAINT inventario_pkey PRIMARY KEY (id_inventario)
 )
@@ -131,10 +131,10 @@ CREATE TABLE IF NOT EXISTS public.receta
 -- Tabla: pedidos (cabecera)
 CREATE TABLE IF NOT EXISTS public.pedidos
 (
-    id_pedido serial NOT NULL,
-    numero_orden serial NOT NULL,
+    id_pedido integer NOT NULL DEFAULT nextval('pedidos_id_pedido_seq'::regclass),
+    numero_orden integer NOT NULL DEFAULT nextval('pedidos_numero_orden_seq'::regclass),
     id_mesa bigint,
-    id_cliente bigint, --puede ser NULL si es anónimo, pero mejor no
+    id_cliente bigint,
     id_usuario bigint,
     fecha date,
     hora_pedido time(0) with time zone NOT NULL,
@@ -145,8 +145,8 @@ CREATE TABLE IF NOT EXISTS public.pedidos
     observacion character varying(100) COLLATE pg_catalog."default",
     forma_pago character varying(20) COLLATE pg_catalog."default",
     puntos_canjeados_total bigint,
-    monto_pagado money,
-    monto_vuelto money,
+    monto_pagado numeric(10,2),
+    monto_vuelto numeric(10,2),
     CONSTRAINT pedidos_pkey PRIMARY KEY (id_pedido),
     CONSTRAINT fk_pedido_cliente FOREIGN KEY (id_cliente)
         REFERENCES public.clientes (id_cliente) MATCH SIMPLE
@@ -169,7 +169,7 @@ CREATE TABLE IF NOT EXISTS public.detalle_pedido
     id_pedido bigint,
     id_carta bigint,
     cantidad bigint NOT NULL,
-    precio_unitario money,
+    precio_unitario numeric(10,2),
     observacion character(100) COLLATE pg_catalog."default",
     es_canjeable boolean DEFAULT false,
     estado character varying(20) COLLATE pg_catalog."default",
@@ -183,6 +183,7 @@ CREATE TABLE IF NOT EXISTS public.detalle_pedido
         ON UPDATE CASCADE
         ON DELETE NO ACTION
 )
+
 
 -- Tabla: historial_puntos (auditoría de puntos)
 CREATE TABLE IF NOT EXISTS public.historial_puntos

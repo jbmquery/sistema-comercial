@@ -21,7 +21,9 @@ def obtener_pedidos_activos():
             dp.cantidad,
             dp.precio_unitario::numeric,
             dp.observacion,
-            dp.estado AS estado_detalle
+            dp.estado AS estado_detalle,
+            c.porcion,
+            c.unidad_medida
         FROM pedidos p
         JOIN mesas m ON p.id_mesa = m.id_mesas
         JOIN detalle_pedido dp ON p.id_pedido = dp.id_pedido
@@ -57,11 +59,15 @@ def obtener_pedidos_activos():
             pedidos[id_pedido]["productos"].append({
                 "id_detalle": item['id_detalle'],
                 "id_carta": item['id_carta'],
-                "nombre_producto": item['nombre_producto'],
+                "nombre_producto": (
+                    f"{item['nombre_producto']} ({item['porcion']} {item['unidad_medida']})"
+                    if item['porcion'] and item['unidad_medida']
+                    else item['nombre_producto']
+                ),
                 "cantidad": item['cantidad'],
                 "precio_unitario": item['precio_unitario'],
                 "observacion": item['observacion'],
-                "estado_detalle": str(item['estado_detalle']) if item['estado_detalle'] else "Pendiente",
+                "estado_detalle": item['estado_detalle'],
             })
 
         return list(pedidos.values())

@@ -111,7 +111,16 @@ function PedidosPage() {
 
         const res = await fetch(url);
         const data = await res.json();
-        setProductos(data.productos || []);
+
+        // Extraer todos los productos de por_subcategoria
+        const productosArray = [];
+        const porSubcategoria = data.por_subcategoria || {};
+
+        Object.keys(porSubcategoria).forEach(subcat => {
+          productosArray.push(...porSubcategoria[subcat]);
+        });
+
+        setProductos(productosArray);
       } catch (error) {
         console.error("Error al cargar productos:", error);
         setProductos([]);

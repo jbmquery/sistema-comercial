@@ -48,8 +48,8 @@ def crear_pedido(datos):
         for detalle in datos['detalles']:
             query_detalle = """
             INSERT INTO detalle_pedido (
-                id_pedido, id_carta, cantidad, precio_unitario, observacion, es_canjeable
-            ) VALUES (%s, %s, %s, %s, %s, %s)
+                id_pedido, id_carta, cantidad, precio_unitario, observacion, es_canjeable, estado
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
             cursor.execute(query_detalle, (
                 id_pedido,
@@ -57,7 +57,8 @@ def crear_pedido(datos):
                 detalle['cantidad'],
                 detalle['precio_unitario'],
                 detalle.get('observacion', ''),
-                detalle['es_canjeable']
+                detalle['es_canjeable'],
+                detalle['estado']
             ))
 
         # 4. Actualizar disponibilidad de la mesa → FALSE (ocupada)

@@ -104,16 +104,17 @@ function Menues() {
       estado: "Sin iniciar",
       cantidad_clientes: 1,
       observacion: "",
-      forma_pago: "efectivo",
+      forma_pago: "",
       puntos_canjeados_total: 0,
-      monto_pagado: parseFloat(subtotalGeneral),
+      monto_pagado: 0,
       monto_vuelto: 0,
       detalles: carrito.map(item => ({
         id_carta: item.id_carta,
         cantidad: item.cantidad,
         precio_unitario: item.precio,
         observacion: "",
-        es_canjeable: false
+        es_canjeable: false,
+        estado: "Pendiente"
       }))
     };
 
