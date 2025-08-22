@@ -7,6 +7,9 @@ function PedidosPage() {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Estado para controlar qué pedidos están expandidos
+  const [expanded, setExpanded] = useState({});
+
   // Estado para el modal de "Agregar producto"
   const [showModal, setShowModal] = useState(false);
   const [selectedPedido, setSelectedPedido] = useState(null);
@@ -16,8 +19,14 @@ function PedidosPage() {
     observacion: '',
     estado: 'Pendiente'
   });
-  const [productos, setProductos] = useState([]); // Lista de productos del menú
-  const [loadingProductos, setLoadingProductos] = useState(true); // Opcional: indicador de carga
+
+  // Estado para productos y filtros
+  const [productos, setProductos] = useState([]);
+  const [loadingProductos, setLoadingProductos] = useState(true);
+  const [categorias, setCategorias] = useState([]);
+  const [subcategorias, setSubcategorias] = useState([]);
+  const [selectedCategoria, setSelectedCategoria] = useState('');
+  const [selectedSubcategoria, setSelectedSubcategoria] = useState('');
 
   // Cargar pedidos activos
   useEffect(() => {
@@ -25,10 +34,20 @@ function PedidosPage() {
       try {
         const res = await fetch('/api/pedidos/activos');
         const data = await res.json();
-        setPedidos(Array.isArray(data) ? data : []);
+        const pedidosArray = Array.isArray(data) ? data : [];
+
+        // Conservar el estado de expansión
+        const newExpanded = { ...expanded };
+        pedidosArray.forEach(pedido => {
+          if (!(pedido.id_pedido in newExpanded)) {
+            newExpanded[pedido.id_pedido] = true; // solo nuevos se abren
+          }
+        });
+
+        setPedidos(pedidosArray);
+        setExpanded(newExpanded);
       } catch (error) {
         console.error("Error al cargar pedidos:", error);
-        setPedidos([]);
       } finally {
         setLoading(false);
       }
@@ -41,15 +60,58 @@ function PedidosPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Cargar productos del menú (para el dropdown)
+  // Cargar categorías al montar
   useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        const res = await fetch('/api/categorias');
+        const data = await res.json();
+        setCategorias(data.categorias || []);
+      } catch (error) {
+        console.error("Error al cargar categorías:", error);
+        setCategorias([]);
+      }
+    };
+    fetchCategorias();
+  }, []);
+
+  // Cargar subcategorías cuando cambie la categoría
+  useEffect(() => {
+    if (!selectedCategoria) {
+      setSubcategorias([]);
+      setSelectedSubcategoria('');
+      return;
+    }
+    const fetchSubcategorias = async () => {
+      try {
+        const res = await fetch(`/api/subcategorias?categoria=${selectedCategoria}`);
+        const data = await res.json();
+        setSubcategorias(data.subcategorias || []);
+        setSelectedSubcategoria(''); // Resetear subcategoría
+      } catch (error) {
+        console.error("Error al cargar subcategorías:", error);
+        setSubcategorias([]);
+        setSelectedSubcategoria('');
+      }
+    };
+    fetchSubcategorias();
+  }, [selectedCategoria]);
+
+  // Cargar productos cuando cambie categoría o subcategoría
+  useEffect(() => {
+    if (!selectedCategoria) return;
+
     const fetchProductos = async () => {
       setLoadingProductos(true);
       try {
-        const res = await fetch('/api/carta?categoria=Bebidas');
+        let url = `/api/carta?categoria=${selectedCategoria}`;
+        if (selectedSubcategoria) {
+          url += `&sub_categoria=${selectedSubcategoria}`;
+        }
+
+        const res = await fetch(url);
         const data = await res.json();
-        const productos = Array.isArray(data.productos) ? data.productos : [];
-        setProductos(productos);
+        setProductos(data.productos || []);
       } catch (error) {
         console.error("Error al cargar productos:", error);
         setProductos([]);
@@ -59,7 +121,7 @@ function PedidosPage() {
     };
 
     fetchProductos();
-  }, []);
+  }, [selectedCategoria, selectedSubcategoria]);
 
   // Abrir modal y asociar al pedido
   const handleOpenModal = (pedido) => {
@@ -71,6 +133,11 @@ function PedidosPage() {
       estado: 'Pendiente'
     });
     setShowModal(true);
+    // Resetear filtros al abrir
+    setSelectedCategoria('');
+    setSelectedSubcategoria('');
+    setProductos([]);
+    setLoadingProductos(true);
   };
 
   // Manejar cambios en el formulario
@@ -116,7 +183,18 @@ function PedidosPage() {
         // Refrescar pedidos
         const res = await fetch('/api/pedidos/activos');
         const data = await res.json();
-        setPedidos(Array.isArray(data) ? data : []);
+        const pedidosArray = Array.isArray(data) ? data : [];
+
+        // Conservar estado de expansión
+        const newExpanded = { ...expanded };
+        pedidosArray.forEach(p => {
+          if (!(p.id_pedido in newExpanded)) {
+            newExpanded[p.id_pedido] = true;
+          }
+        });
+
+        setPedidos(pedidosArray);
+        setExpanded(newExpanded);
       } else {
         alert("Error: " + result.message);
       }
@@ -137,15 +215,26 @@ function PedidosPage() {
           <p className="text-center">No hay pedidos activos</p>
         ) : (
           pedidos.map((pedido) => (
-            <div key={pedido.id_pedido} className="collapse bg-base-100 border-base-300 border mb-4">
-              <input type="checkbox" />
-              <div className="collapse-title font-semibold flex flex-row justify-left md:justify-between items-center gap-3 !pr-4 pr-12">
+            <div 
+              key={pedido.id_pedido} 
+              className="bg-base-100 border border-base-300 rounded-lg mb-4 overflow-hidden"
+            >
+              {/* Título del pedido */}
+              <div
+                className="font-semibold flex flex-row justify-left md:justify-between items-center gap-3 !pr-4 pr-12 px-4 py-3 bg-base-100 cursor-pointer"
+                onClick={() => {
+                  setExpanded(prev => ({
+                    ...prev,
+                    [pedido.id_pedido]: !prev[pedido.id_pedido]
+                  }));
+                }}
+              >
                 <div className="flex flex-row justify-center items-center gap-5">
                   <span>{pedido.nombre_mesa}</span>
                   <button 
                     className="btn btn-xs" 
                     onClick={(e) => {
-                      e.stopPropagation(); // ✅ Evita que se despliegue el acordeón
+                      e.stopPropagation(); // Evita que se togglee el acordeón
                       handleOpenModal(pedido);
                     }}
                   >
@@ -174,7 +263,7 @@ function PedidosPage() {
                       e.stopPropagation();
                       // handleEliminarPedido(pedido);
                     }}
-                    >
+                  >
                     <svg
                       width="16"
                       height="16"
@@ -203,73 +292,80 @@ function PedidosPage() {
                 </div>
               </div>
 
-              <div className="collapse-content p-0">
-                <div className="overflow-x-auto touch-pan-x">
-                  <table className="table table-compact w-full min-w-[640px]">
-                    <thead>
-                      <tr className="text-center bg-base-200">
-                        <th>Cant.</th>
-                        <th>Nombre Producto</th>
-                        <th>Estado</th>
-                        <th>Precio Unit.</th>
-                        <th>Observación</th>
-                        <th>Configuraciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pedido.productos.map((prod) => (
-                        <tr key={prod.id_detalle} className="bg-base-100">
-                          <td className="text-center">{prod.cantidad}</td>
-                          <td>{prod.nombre_producto}</td>
-                          <td className="flex justify-center">
-                            <button className={`btn btn-xs btn-active ${
-                              prod.estado_detalle === 'Listo' ? 'btn-success' : ''
-                            }`}>
-                              {prod.estado_detalle}
-                            </button>
-                          </td>
-                          <td className="text-center">{prod.precio_unitario}</td>
-                          <td>{prod.observacion || ''}</td>
-                          <td className="flex justify-center gap-2">
-                            <button className="btn btn-square btn-xs">
-                              <svg
-                                width="16"
-                                height="16"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                              </svg>
-                            </button>
-                            <button className="btn btn-square btn-xs">
-                              <svg
-                                width="16"
-                                height="16"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M3 6h18" />
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                              </svg>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {/* Contenido expandido */}
+              {expanded[pedido.id_pedido] && (
+                <div className="p-0">
+                  <div className="overflow-x-auto touch-pan-x">
+                    {pedido.productos && pedido.productos.length > 0 ? (
+                      <table className="table table-compact w-full min-w-[640px]">
+                        <thead>
+                          <tr className="text-center bg-base-200">
+                            <th>Cant.</th>
+                            <th>Nombre Producto</th>
+                            <th>Estado</th>
+                            <th>Precio Unit.</th>
+                            <th>Observación</th>
+                            <th>Configuraciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pedido.productos.map((prod) => (
+                            <tr key={prod.id_detalle} className="bg-base-100">
+                              <td className="text-center">{prod.cantidad}</td>
+                              <td>{prod.nombre_producto}</td>
+                              <td className="flex justify-center">
+                                <button className={`btn btn-xs btn-active ${
+                                  prod.estado_detalle === 'Listo' ? 'btn-success' : ''
+                                }`}>
+                                  {prod.estado_detalle}
+                                </button>
+                              </td>
+                              <td className="text-center">{prod.precio_unitario}</td>
+                              <td>{prod.observacion?.trim() || ''}</td>
+                              <td className="flex justify-center gap-2">
+                                <button className="btn btn-square btn-xs">
+                                  <svg
+                                    width="16"
+                                    height="16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                  </svg>
+                                </button>
+                                <button className="btn btn-square btn-xs">
+                                  <svg
+                                    width="16"
+                                    height="16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M3 6h18" />
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                  </svg>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p className="p-4 text-center text-gray-500">No hay productos en este pedido</p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ))
         )}
@@ -277,11 +373,49 @@ function PedidosPage() {
 
       {/* Modal: Agregar producto */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 min-h-[540px] md:min-h-[550px]">
             <h3 className="text-lg font-semibold mb-4">
               Agregar a {selectedPedido?.nombre_mesa}
             </h3>
+
+            {/* Filtros */}
+            <div className="space-y-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Categoría</label>
+                <select
+                  value={selectedCategoria}
+                  onChange={(e) => setSelectedCategoria(e.target.value)}
+                  className="select select-bordered w-full"
+                  required
+                >
+                  <option value="">Seleccionar categoría</option>
+                  {categorias.map(cat => (
+                    <option key={cat.id_categoria} value={cat.id_categoria}>
+                      {cat.nombre_cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedCategoria && subcategorias.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">Subcategoría</label>
+                  <select
+                    value={selectedSubcategoria}
+                    onChange={(e) => setSelectedSubcategoria(e.target.value)}
+                    className="select select-bordered w-full"
+                  >
+                    <option value="">Todas</option>
+                    {subcategorias.map(sub => (
+                      <option key={sub.id_subcat} value={sub.id_subcat}>
+                        {sub.nombre_subcat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
 
             {loadingProductos ? (
               <p>Cargando productos...</p>
