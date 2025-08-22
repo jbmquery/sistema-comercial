@@ -76,7 +76,7 @@ function Menues() {
   ).toFixed(2);
 
   // Guardar pedido en backend
- const guardarPedido = async () => {
+const guardarPedido = async () => {
   if (carrito.length === 0) {
     alert("El carrito está vacío");
     return;
@@ -129,7 +129,7 @@ function Menues() {
     if (response.ok) {
       alert("✅ Pedido guardado y mesa ocupada");
       setCarrito([]);
-      navigate('/tables'); // ← Redirección a /tables
+      navigate('/pedidos'); // ← Redirección a /pedidos
     } else {
       alert("Error al guardar: " + result.message);
     }

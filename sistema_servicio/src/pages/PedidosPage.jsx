@@ -28,6 +28,8 @@ function PedidosPage() {
   const [selectedCategoria, setSelectedCategoria] = useState('');
   const [selectedSubcategoria, setSelectedSubcategoria] = useState('');
 
+
+
   // Cargar pedidos activos
   useEffect(() => {
     const fetchPedidos = async () => {
@@ -36,16 +38,17 @@ function PedidosPage() {
         const data = await res.json();
         const pedidosArray = Array.isArray(data) ? data : [];
 
-        // Conservar el estado de expansión
-        const newExpanded = { ...expanded };
-        pedidosArray.forEach(pedido => {
-          if (!(pedido.id_pedido in newExpanded)) {
-            newExpanded[pedido.id_pedido] = true; // solo nuevos se abren
-          }
-        });
-
+        // Conservar estado de expansión
         setPedidos(pedidosArray);
-        setExpanded(newExpanded);
+        setExpanded(prev => {
+          const newExpanded = { ...prev };
+          pedidosArray.forEach(p => {
+            if (!(p.id_pedido in newExpanded)) {
+              newExpanded[p.id_pedido] = true; // nuevos: abiertos
+            }
+          });
+          return newExpanded;
+        });
       } catch (error) {
         console.error("Error al cargar pedidos:", error);
       } finally {
@@ -53,13 +56,17 @@ function PedidosPage() {
       }
     };
 
+    // Carga inicial
     fetchPedidos();
 
-    // Refresco cada 5 segundos
+    // Polling cada 5 segundos
     const interval = setInterval(fetchPedidos, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, []); // ✅ Solo al montar
 
+
+
+  
   // Cargar categorías al montar
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -74,6 +81,8 @@ function PedidosPage() {
     };
     fetchCategorias();
   }, []);
+
+
 
   // Cargar subcategorías cuando cambie la categoría
   useEffect(() => {
@@ -213,13 +222,104 @@ function PedidosPage() {
     }
   };
 
+  // Eliminar pedido (placeholder)
+  const handleEliminarPedido = async (pedido) => {
+    const confirmado = window.confirm(
+      `¿Estás seguro de cancelar el pedido de ${pedido.nombre_mesa}?\n\nEsta acción no se puede deshacer.`
+    );
+    if (!confirmado) return;
+
+    try {
+      const response = await fetch('/api/pedidos/cancelar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_pedido: pedido.id_pedido })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("✅ Pedido cancelado");
+        // Refrescar pedidos
+        const res = await fetch('/api/pedidos/activos');
+        const data = await res.json();
+        const pedidosArray = Array.isArray(data) ? data : [];
+
+        setPedidos(pedidosArray);
+
+        // Conservar estado de expansión
+        setExpanded(prev => {
+          const newExpanded = { ...prev };
+          pedidosArray.forEach(p => {
+            if (!(p.id_pedido in newExpanded)) {
+              newExpanded[p.id_pedido] = true;
+            }
+          });
+          return newExpanded;
+        });
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error al cancelar pedido:", error);
+      alert("Error de conexión con el servidor");
+    }
+  };
+
+  // Actualizar os estados de detalle_pedido en la tabla cuando se modifiquen
+
+  const cambiarEstadoProducto = async (e, pedido, producto) => {
+    e.stopPropagation(); // ✅ Ahora `e` está definido
+
+    try {
+      const response = await fetch('/api/detalle_pedido/actualizar', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_detalle: producto.id_detalle,
+          estado: 'Listo'
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Refrescar pedidos
+        const res = await fetch('/api/pedidos/activos');
+        const data = await res.json();
+        const pedidosArray = Array.isArray(data) ? data : [];
+
+        setPedidos(pedidosArray);
+
+        // Conservar estado de expansión
+        setExpanded(prev => {
+          const newExpanded = { ...prev };
+          pedidosArray.forEach(p => {
+            if (!(p.id_pedido in newExpanded)) {
+              newExpanded[p.id_pedido] = true;
+            }
+          });
+          return newExpanded;
+        });
+
+        alert("✅ Estado actualizado");
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error al actualizar estado:", error);
+      alert("Error de conexión");
+    }
+  };
+
+
   return (
     <div className="flex flex-col justify-center items-center">
       <HeaderNav />
       
       <div className="pt-10 w-full max-w-4xl px-4">
         {loading ? (
-          <p>Cargando pedidos...</p>
+          <p>Cargando pedidos...</p> 
         ) : pedidos.length === 0 ? (
           <p className="text-center">No hay pedidos activos</p>
         ) : (
@@ -270,7 +370,7 @@ function PedidosPage() {
                     className="btn btn-xs"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // handleEliminarPedido(pedido);
+                      handleEliminarPedido(pedido);
                     }}
                   >
                     <svg
@@ -323,9 +423,17 @@ function PedidosPage() {
                               <td className="text-center">{prod.cantidad}</td>
                               <td>{prod.nombre_producto}</td>
                               <td className="flex justify-center">
-                                <button className={`btn btn-xs btn-active ${
-                                  prod.estado_detalle === 'Listo' ? 'btn-success' : ''
-                                }`}>
+                                <button 
+                                  className={`btn btn-xs btn-active ${
+                                    prod.estado_detalle === 'Listo' ? 'btn-success' : ''
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (prod.estado_detalle !== 'Listo') {
+                                      cambiarEstadoProducto(e, pedido, prod); // ✅ Pasa `e`
+                                    }
+                                  }}
+                                >
                                   {prod.estado_detalle}
                                 </button>
                               </td>

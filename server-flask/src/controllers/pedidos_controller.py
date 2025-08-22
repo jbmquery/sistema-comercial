@@ -80,3 +80,61 @@ def obtener_pedidos_activos():
             cursor.close()
         if conn:
             conn.close()
+
+# Eliminar Pedidos
+
+def cancelar_pedido(id_pedido):
+    conn = None
+    cursor = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Verificar si el pedido existe
+        cursor.execute("SELECT id_mesa, estado FROM pedidos WHERE id_pedido = %s", (id_pedido,))
+        row = cursor.fetchone()
+        if not row:
+            return {"message": "Pedido no encontrado"}
+        
+        id_mesa = row[0]
+        estado_pedido = row[1]
+
+        if estado_pedido == 'Cancelado':
+            return {"message": "El pedido ya está cancelado"}
+
+        # Obtener los detalles del pedido
+        cursor.execute("SELECT id_detalle, estado FROM detalle_pedido WHERE id_pedido = %s", (id_pedido,))
+        detalles = cursor.fetchall()
+
+        # Actualizar estado de los detalles
+        for id_detalle, estado_detalle in detalles:
+            nuevo_estado = 'Perdida' if estado_detalle == 'Listo' else 'Cancelado'
+            cursor.execute(
+                "UPDATE detalle_pedido SET estado = %s WHERE id_detalle = %s",
+                (nuevo_estado, id_detalle)
+            )
+
+        # Actualizar estado del pedido
+        cursor.execute(
+            "UPDATE pedidos SET estado = 'Cancelado' WHERE id_pedido = %s",
+            (id_pedido,)
+        )
+
+        # Liberar la mesa (disponibilidad = true)
+        cursor.execute(
+            "UPDATE mesas SET disponibilidad = true WHERE id_mesas = %s",
+            (id_mesa,)
+        )
+
+        conn.commit()
+        return {"success": True, "message": "Pedido cancelado y mesa liberada"}
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return {"message": f"Error al cancelar pedido: {str(e)}"}
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
