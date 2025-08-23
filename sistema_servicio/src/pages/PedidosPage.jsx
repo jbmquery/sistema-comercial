@@ -28,7 +28,10 @@ function PedidosPage() {
   const [selectedCategoria, setSelectedCategoria] = useState('');
   const [selectedSubcategoria, setSelectedSubcategoria] = useState('');
 
-
+  // Estado para el modal de editar observación
+  const [showObservacionModal, setShowObservacionModal] = useState(false);
+  const [selectedDetalle, setSelectedDetalle] = useState(null);
+  const [nuevaObservacion, setNuevaObservacion] = useState('');
 
   // Cargar pedidos activos
   useEffect(() => {
@@ -312,6 +315,61 @@ function PedidosPage() {
     }
   };
 
+  // Funcion para abrir el modal de editar detalle_pedido (observacion)
+  const abrirModalObservacion = (e, detalle, observacion) => {
+    e.stopPropagation();
+    setSelectedDetalle(detalle);
+    setNuevaObservacion(observacion || '');
+    setShowObservacionModal(true);
+  };
+
+  // Funcion para guardar la nueva observacion
+  const guardarObservacion = async () => {
+    if (!selectedDetalle) return;
+
+    try {
+      const response = await fetch('/api/detalle_pedido/observacion', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_detalle: selectedDetalle.id_detalle,
+          observacion: nuevaObservacion
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Refrescar pedidos
+        const res = await fetch('/api/pedidos/activos');
+        const data = await res.json();
+        const pedidosArray = Array.isArray(data) ? data : [];
+
+        setPedidos(pedidosArray);
+
+        // Conservar estado de expansión
+        setExpanded(prev => {
+          const newExpanded = { ...prev };
+          pedidosArray.forEach(p => {
+            if (!(p.id_pedido in newExpanded)) {
+              newExpanded[p.id_pedido] = true;
+            }
+          });
+          return newExpanded;
+        });
+
+        // Cerrar modal
+        setShowObservacionModal(false);
+        setSelectedDetalle(null);
+        setNuevaObservacion('');
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error al guardar observación:", error);
+      alert("Error de conexión");
+    }
+  };
 
   return (
     <div className="flex flex-col justify-center items-center">
@@ -440,7 +498,10 @@ function PedidosPage() {
                               <td className="text-center">{prod.precio_unitario}</td>
                               <td>{prod.observacion?.trim() || ''}</td>
                               <td className="flex justify-center gap-2">
-                                <button className="btn btn-square btn-xs">
+                                <button
+                                  className="btn btn-square btn-xs"
+                                  onClick={(e) => abrirModalObservacion(e, prod, prod.observacion)}
+                                >
                                   <svg
                                     width="16"
                                     height="16"
@@ -607,6 +668,51 @@ function PedidosPage() {
           </div>
         </div>
       )}
+
+      {/* Modal: Editar Observación */}
+      {showObservacionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold mb-4">
+              Editar observación - {selectedDetalle?.nombre_producto}
+            </h3>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-1">Observación</label>
+              <input
+                type="text"
+                value={nuevaObservacion}
+                onChange={(e) => setNuevaObservacion(e.target.value)}
+                placeholder="Ej: sin azúcar, extra hielo"
+                className="input input-bordered w-full"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => {
+                  setShowObservacionModal(false);
+                  setSelectedDetalle(null);
+                  setNuevaObservacion('');
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={guardarObservacion}
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

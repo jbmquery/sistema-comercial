@@ -103,7 +103,7 @@ def actualizar_estado_detalle(id_detalle, nuevo_estado):
                     (nuevo_estado_pedido, id_pedido)
                 )
                 # Liberar la mesa
-                cursor.execute("UPDATE mesas SET disponibilidad = true WHERE id_mesas = %s", (id_mesa,))
+                cursor.execute("UPDATE mesas SET disponibilidad = false WHERE id_mesas = %s", (id_mesa,))
             else:
                 # Solo actualizar estado
                 cursor.execute(
@@ -118,6 +118,31 @@ def actualizar_estado_detalle(id_detalle, nuevo_estado):
         if conn:
             conn.rollback()
         return {"message": f"Error al actualizar estado: {str(e)}"}
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def actualizar_observacion_detalle(id_detalle, observacion):
+    conn = None
+    cursor = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "UPDATE detalle_pedido SET observacion = %s WHERE id_detalle = %s",
+            (observacion, id_detalle)
+        )
+
+        conn.commit()
+        return {"success": True, "message": "Observación actualizada"}
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return {"message": f"Error al actualizar observación: {str(e)}"}
     finally:
         if cursor:
             cursor.close()

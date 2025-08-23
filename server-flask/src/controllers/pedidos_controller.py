@@ -122,7 +122,7 @@ def cancelar_pedido(id_pedido):
 
         # Liberar la mesa (disponibilidad = true)
         cursor.execute(
-            "UPDATE mesas SET disponibilidad = true WHERE id_mesas = %s",
+            "UPDATE mesas SET disponibilidad = false WHERE id_mesas = %s",
             (id_mesa,)
         )
 
