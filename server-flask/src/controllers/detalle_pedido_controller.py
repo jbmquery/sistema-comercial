@@ -148,3 +148,70 @@ def actualizar_observacion_detalle(id_detalle, observacion):
             cursor.close()
         if conn:
             conn.close()
+
+# Eliminar detalle de pedido
+
+def eliminar_detalle_pedido(id_detalle):
+    conn = None
+    cursor = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Obtener id_pedido y estado
+        cursor.execute("SELECT id_pedido, estado FROM detalle_pedido WHERE id_detalle = %s", (id_detalle,))
+        row = cursor.fetchone()
+        if not row:
+            return {"message": "Detalle no encontrado"}
+        
+        id_pedido = row[0]
+        estado_detalle = row[1]
+
+        if estado_detalle == 'Listo':
+            return {"message": "No se puede eliminar un producto ya listo"}
+
+        # Eliminar el detalle
+        cursor.execute("DELETE FROM detalle_pedido WHERE id_detalle = %s", (id_detalle,))
+
+        # Verificar si quedan productos
+        cursor.execute("SELECT estado FROM detalle_pedido WHERE id_pedido = %s", (id_pedido,))
+        estados_restantes = [r[0] for r in cursor.fetchall()]
+
+        # Determinar nuevo estado del pedido
+        if not estados_restantes:
+            # No quedan productos
+            nuevo_estado_pedido = 'Cancelado'
+            hora_entrega_sql = ""
+        elif all(estado == 'Listo' for estado in estados_restantes):
+            nuevo_estado_pedido = 'Entregado'
+            hora_entrega_sql = ", hora_entrega = CURRENT_TIME"
+        else:
+            nuevo_estado_pedido = 'Proceso'  # o mantener lógica
+            hora_entrega_sql = ""
+
+        # Actualizar estado del pedido si cambia
+        if nuevo_estado_pedido in ['Entregado', 'Cancelado']:
+            if nuevo_estado_pedido == 'Cancelado':
+                # Liberar mesa
+                cursor.execute("UPDATE pedidos SET estado = %s WHERE id_pedido = %s", (nuevo_estado_pedido, id_pedido))
+                cursor.execute("UPDATE mesas SET disponibilidad = true WHERE id_mesas = (SELECT id_mesa FROM pedidos WHERE id_pedido = %s)", (id_pedido,))
+            else:
+                # Pedido entregado
+                cursor.execute(f"UPDATE pedidos SET estado = %s {hora_entrega_sql} WHERE id_pedido = %s", (nuevo_estado_pedido, id_pedido))
+        else:
+            # Solo actualizar estado si es necesario
+            if nuevo_estado_pedido != 'Sin iniciar':  # Ajusta según tu lógica
+                cursor.execute("UPDATE pedidos SET estado = %s WHERE id_pedido = %s", (nuevo_estado_pedido, id_pedido))
+
+        conn.commit()
+        return {"success": True, "message": "Producto eliminado"}
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return {"message": f"Error al eliminar producto: {str(e)}"}
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

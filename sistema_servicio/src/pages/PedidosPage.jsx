@@ -371,6 +371,59 @@ function PedidosPage() {
     }
   };
 
+// Eliminar Prodcuto de detalle_pedido
+  const eliminarProducto = async (e, pedido, producto) => {
+    e.stopPropagation();
+
+    // No permitir eliminar si el producto está 'Listo'
+    if (producto.estado_detalle === 'Listo') {
+      alert("❌ No se puede eliminar un producto ya listo.");
+      return;
+    }
+
+    const confirmado = window.confirm(
+      `¿Estás seguro de eliminar "${producto.nombre_producto}" del pedido de ${pedido.nombre_mesa}?`
+    );
+    if (!confirmado) return;
+
+    try {
+      const response = await fetch('/api/detalle_pedido/eliminar', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_detalle: producto.id_detalle })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("✅ Producto eliminado");
+
+        // Refrescar pedidos
+        const res = await fetch('/api/pedidos/activos');
+        const data = await res.json();
+        const pedidosArray = Array.isArray(data) ? data : [];
+
+        setPedidos(pedidosArray);
+
+        // Conservar estado de expansión
+        setExpanded(prev => {
+          const newExpanded = { ...prev };
+          pedidosArray.forEach(p => {
+            if (!(p.id_pedido in newExpanded)) {
+              newExpanded[p.id_pedido] = true;
+            }
+          });
+          return newExpanded;
+        });
+      } else {
+        alert("Error: " + result.message);
+      }
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+      alert("Error de conexión");
+    }
+  };
+
   return (
     <div className="flex flex-col justify-center items-center">
       <HeaderNav />
@@ -517,7 +570,10 @@ function PedidosPage() {
                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                                   </svg>
                                 </button>
-                                <button className="btn btn-square btn-xs">
+                                <button
+                                  className="btn btn-square btn-xs"
+                                  onClick={(e) => eliminarProducto(e, pedido, prod)}
+                                >
                                   <svg
                                     width="16"
                                     height="16"

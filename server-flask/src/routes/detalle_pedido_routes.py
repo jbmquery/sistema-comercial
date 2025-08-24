@@ -1,6 +1,6 @@
 # routes/detalle_pedido_routes.py
 from flask import Blueprint, request, jsonify
-from controllers.detalle_pedido_controller import agregar_detalle, actualizar_estado_detalle, actualizar_observacion_detalle
+from controllers.detalle_pedido_controller import agregar_detalle, actualizar_estado_detalle, actualizar_observacion_detalle, eliminar_detalle_pedido
 
 detalle_pedido_bp = Blueprint('detalle_pedido_bp', __name__)
 
@@ -20,4 +20,10 @@ def actualizar_estado_detalle_route():
 def actualizar_observacion():
     datos = request.get_json()
     resultado = actualizar_observacion_detalle(datos['id_detalle'], datos['observacion'])
+    return jsonify(resultado), 200 if resultado.get('success') else 400
+
+@detalle_pedido_bp.route('/api/detalle_pedido/eliminar', methods=['DELETE'])
+def eliminar_detalle():
+    datos = request.get_json()
+    resultado = eliminar_detalle_pedido(datos['id_detalle'])
     return jsonify(resultado), 200 if resultado.get('success') else 400
