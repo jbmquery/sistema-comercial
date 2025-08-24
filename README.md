@@ -10,3 +10,7 @@ Find the corresponding instructions under:
 - git add .
 - git commit -m "mensaje"
 - git push
+
+# autentificador de NGROK
+
+ngrok config add-authtoken 31icpQPSQHJpmZOUnbFraTGndI9_7dFER9USoAefi7G7BWhGQ

@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    allowedHosts: ['0a30efe12193.ngrok-free.app'],
     proxy: {
       '/api': {
         target: 'http://localhost:5000',  // ← Tu servidor Flask
