@@ -14,3 +14,7 @@ Find the corresponding instructions under:
 # autentificador de NGROK
 
 ngrok config add-authtoken 31icpQPSQHJpmZOUnbFraTGndI9_7dFER9USoAefi7G7BWhGQ
+
+# Ejecutar el ngrok
+
+.\ngrok.exe start --all --config "C:\Users\santi\.ngrok2\ngrok.yml"
