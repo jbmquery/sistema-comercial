@@ -7,7 +7,11 @@ function TablesPage() {
   const [mesas, setMesas] = useState([]);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/mesas`)
+    fetch(`${API_BASE}/api/mesas`,{
+      headers:{
+        "ngrok-skip-browser-warning": "true"
+      }
+    })
       .then((res) => res.json())
       .then((data) => setMesas(data.mesas))
       .catch((err) => console.error("Error al obtener mesas:", err));
