@@ -1,12 +1,13 @@
 import Cards from "../components/cards"
 import HeaderNav from "../components/header_nav"
 import { useEffect, useState } from "react";
+import { API_BASE } from "../config";
 
 function TablesPage() {
   const [mesas, setMesas] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/mesas")
+    fetch(`${API_BASE}/api/mesas`)
       .then((res) => res.json())
       .then((data) => setMesas(data.mesas))
       .catch((err) => console.error("Error al obtener mesas:", err));

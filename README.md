@@ -10,3 +10,11 @@ Find the corresponding instructions under:
 - git add .
 - git commit -m "mensaje"
 - git push
+
+# autentificador de NGROK
+
+.\ngrok.exe config add-authtoken 31icpQPSQHJpmZOUnbFraTGndI9_7dFER9USoAefi7G7BWhGQ
+
+# Ejecutar el ngrok
+
+.\ngrok.exe start --all --config "C:\Users\santi\.ngrok2\ngrok.yml"

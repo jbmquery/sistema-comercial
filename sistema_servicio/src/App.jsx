@@ -4,6 +4,7 @@ import TablesPage from './pages/TablesPage.jsx';
 import Menues from './pages/MenuPage.jsx';
 import ErrorPage from './pages/ErrorPage.jsx';
 import PedidosPage from './pages/PedidosPage.jsx';
+import PagosPage from './pages/PagosPage.jsx';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/tables" element={<TablesPage />} />
         <Route path="/menues" element={<Menues />} />
         <Route path="/pedidos" element={<PedidosPage />} />
+        <Route path="/pagos" element={<PagosPage/>} />
         <Route path="*" element={<ErrorPage />} />
       </Routes>
     </div>
