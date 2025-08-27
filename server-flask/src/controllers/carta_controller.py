@@ -2,7 +2,7 @@ from flask import jsonify
 from conexion_postgresql import get_connection
 from decimal import Decimal
 
-def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None):
+def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None, search=None):
     conn = None
     cursor = None
     try:
@@ -42,6 +42,11 @@ def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None
             else:
                 query += " AND LOWER(sc.nombre_subcat) = LOWER(%s)"
                 params.append(sub_categoria)
+
+        # Filtro por texto de búsqueda en el nombre del producto
+        if search and search.strip():
+            query += " AND LOWER(c.nombre) ILIKE %s"
+            params.append(f"%{search.lower().strip()}%")
 
         query += " ORDER BY sc.nombre_subcat, c.nombre"
 

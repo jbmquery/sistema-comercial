@@ -8,6 +8,7 @@ carta_bp = Blueprint('carta_bp', __name__)
 def get_carta():
     categoria = request.args.get('categoria')
     sub_categoria = request.args.get('sub_categoria')
+    search = request.args.get('search', '').strip()
 
-    productos = obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria)
+    productos = obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria, search)
     return jsonify({"por_subcategoria": productos})  # ← Clave correcta
