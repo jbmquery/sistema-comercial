@@ -1,103 +1,107 @@
-import HeaderNav from '../components/header_nav.jsx'
+// PagosPage.jsx
 import { useState } from 'react';
+import HeaderNav from "../components/header_nav";
+import ModalBuscarCliente from '../components/ModalBuscarCliente';
 
 function PagosPage() {
-  // Estado para controlar qué acordeones están expandidos
-  const [expanded, setExpanded] = useState({});
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-  // Ejemplo de datos estáticos (simulando pedidos)
-  const items = [
-    { id: 1, titulo: "Pedido #1 - Mesa 3" },
-    { id: 2, titulo: "Pedido #2 - Mesa 7" },
-    { id: 3, titulo: "Pedido #3 - Mesa 5" },
-    { id: 4, titulo: "Pedido #4 - Mesa 7" }
-  ];
-  
-    return (
+  const handleSelectCliente = (cliente) => {
+    setClienteSeleccionado(cliente);
+    setShowModal(false);
+  };
+
+  const handleClearCliente = () => {
+    setClienteSeleccionado(null);
+  };
+
+  return (
     <div className="flex flex-col justify-center items-center">
-        <HeaderNav />
-        <div className="pt-10 px-5 flex flex-col md:gap-5 bg-black justify-center">
-          {items.map((item) => (
-            <div
-            key={item.id}
-            className="border border-base-300 rounded-lg mb-3 overflow-hidden max-w-4xl md:min-w-xl"
-            >
-            {/* Título del acordeón */}
-            <div
-                className="font-semibold px-4 py-3 bg-base-100 cursor-pointer hover:bg-base-200 transition"
-                onClick={() =>
-                setExpanded((prev) => ({
-                    ...prev,
-                    [item.id]: !prev[item.id],
-                }))
-                }
-            >
-                {item.titulo}
+      <HeaderNav />
+      
+      <div className='flex flex-col md:flex-row w-full max-w-7xl px-4 gap-4 mt-6'>
+        
+        {/* IZQUIERDA - Lista de pedidos */}
+        <div className='bg-secondary-content p-4 rounded-lg md:w-80 flex-shrink-0'>
+          <h3 className="font-bold mb-4">Pedidos Pendientes</h3>
+          {/* Aquí irá la lista de pedidos */}
+          <div className="space-y-2">
+            <div className="bg-white p-2 rounded shadow">Pedido #1 - Mesa 3</div>
+            <div className="bg-white p-2 rounded shadow">Pedido #2 - Mesa 7</div>
+          </div>
+        </div>
+
+        {/* DERECHA - Detalle del pedido */}
+        <div className='bg-blue-200 p-6 rounded-lg flex-grow'>
+          <h2 className="font-bold mb-6">Detalle del Pedido</h2>
+            {/* DIVISION DENTRO DE DETALLE PEDIDO*/}
+            <div className='flex flex-col md:flex-row gap-6'>
+                {/* TABLA PRODUCTOS*/}
+                <div>
+                {/* Aquí irá el resumen del pedido y formulario de pago */}
+                    <p>Resumen del pedido y pago...</p>
+                </div>
+            <div>
+                {/* Buscar cliente */}
+            <div className="form-control mb-6">
+                <label className="label">
+                <span className="label-text font-medium">Cliente</span>
+                </label>
+                <div className="flex gap-2">
+                <input
+                    type="text"
+                    placeholder="DNI del cliente"
+                    className="input input-bordered w-full"
+                    value={clienteSeleccionado?.dni || ''}
+                    readOnly
+                />
+                <button
+                    onClick={() => setShowModal(true)}
+                    className="btn btn-primary"
+                >
+                    <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m21 21-6-6m2-5a7.001 7.001 0 0 1-11.95 4.95A7 7 0 1 1 17 10Z" />
+                    </svg>
+                    <span className="hidden md:inline">Buscar</span>
+                </button>
+                {clienteSeleccionado && (
+                    <button
+                    onClick={handleClearCliente}
+                    className="btn btn-secondary"
+                    >
+                        <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 11v6m4-6v6M4 7h16m-1 0-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7h14Zm-4 0V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3h6Z" />
+                        </svg>
+                        <span className="hidden md:inline">Limpiar</span>
+                    </button>
+                )}
+                </div>
             </div>
 
-            {/* Contenido desplegable */}
-            {expanded[item.id] && (
-                <div className="p-4 bg-white border-t border-base-200 flex flex-col gap-4">
-                    {/* Contenido desplegable - IZQUIERDO */}
-                    <div>
-                        <div className="divider divider-start">Lista de Productos</div>
-                        <div className="overflow-x-auto">
-                        <table className="table">
-                            {/* head */}
-                            <thead>
-                            <tr>
-                                <th><input type="checkbox" defaultChecked className="checkbox checkbox-neutral" /></th>
-                                <th>#</th>
-                                <th>Descripción</th>
-                                <th>Importe</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {/* row 1 */}
-                            <tr>
-                                <th><input type="checkbox" defaultChecked className="checkbox checkbox-warning" /></th>
-                                <th>1</th>
-                                <td>Americano Frio</td>
-                                <td>5.50</td>
-                            </tr>
-                            {/* row 2 */}
-                            <tr>
-                                <th><input type="checkbox" defaultChecked className="checkbox checkbox-warning" /></th>
-                                <th>1</th>
-                                <td>waffle de fresa</td>
-                                <td>10.00</td>
-                            </tr>
-                            {/* row 3 */}
-                            <tr>
-                                <th><input type="checkbox" defaultChecked className="checkbox checkbox-warning" /></th>
-                                <th>2</th>
-                                <td>Durazno</td>
-                                <td>4.00</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <div className="divider divider-start">Sub-total</div>
-                        <div className='flex justify-end pr-5'>
-                            <h2 className="text-lg font-bold">Total: $19.50</h2>
-                        </div>
-                        </div>
-                    </div>
-                    {/* Contenido desplegable - DERECHO */}
-                    <div className='bg-gray-200 p-2 rounded-b-xl md:rounded-none md:rounded-r-xl'>
-                        <p>Puedes agregar cualquier contenido aquí: formularios, resúmenes, tablas, etc.</p>
-                    </div>
+            {/* Información del cliente seleccionado */}
+            {clienteSeleccionado && (
+                <div className="bg-white p-4 rounded-lg shadow mb-6">
+                <h4 className="font-semibold">Cliente Seleccionado</h4>
+                <p><strong>ID:</strong> {clienteSeleccionado.id_cliente}</p>
+                <p><strong>Nombre:</strong> {clienteSeleccionado.nombre_completo}</p>
+                <p><strong>DNI:</strong> {clienteSeleccionado.dni}</p>
+                <p><strong>Puntos acumulados:</strong> {clienteSeleccionado.puntos_acumulados}</p>
                 </div>
             )}
             </div>
-         ))}
+                </div>
         </div>
+      </div>
+
+      {/* Modal de búsqueda */}
+      <ModalBuscarCliente
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSelectCliente={handleSelectCliente}
+      />
     </div>
-  )
+  );
 }
 
-export default PagosPage
-
-
-
-
-
+export default PagosPage;

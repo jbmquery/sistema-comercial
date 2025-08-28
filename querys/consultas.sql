@@ -170,9 +170,10 @@ CREATE TABLE IF NOT EXISTS public.detalle_pedido
     id_carta bigint,
     cantidad bigint NOT NULL,
     precio_unitario numeric(10,2),
-    observacion character(100) COLLATE pg_catalog."default",
+    observacion text COLLATE pg_catalog."default",
     es_canjeable boolean DEFAULT false,
     estado character varying(20) COLLATE pg_catalog."default",
+    canjeado_por integer,
     CONSTRAINT detalle_pedido_pkey PRIMARY KEY (id_detalle),
     CONSTRAINT fk_detalle_carta FOREIGN KEY (id_carta)
         REFERENCES public.carta (id_carta) MATCH SIMPLE
@@ -211,3 +212,4 @@ CREATE INDEX IF NOT EXISTS idx_pedidos_fecha ON pedidos(fecha);
 CREATE INDEX IF NOT EXISTS idx_pedidos_cliente ON pedidos(id_cliente);
 CREATE INDEX IF NOT EXISTS idx_detalle_pedido ON detalle_pedido(id_pedido);
 CREATE INDEX IF NOT EXISTS idx_historial_puntos ON historial_puntos(id_cliente, fecha);
+CREATE INDEX IF NOT EXISTS idx_clientes_dni ON clientes (dni);
