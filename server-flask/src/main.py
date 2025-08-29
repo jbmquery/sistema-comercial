@@ -20,6 +20,7 @@ from routes.pedidos_routes import pedidos_bp
 from routes.detalle_pedido_routes import detalle_pedido_bp
 from routes.categorias_routes import categorias_bp
 from routes.pagos_routes import pagos_bp
+from routes.dividir_producto_routes import dividir_bp
 
 
 app.register_blueprint(login_bp)
@@ -30,6 +31,7 @@ app.register_blueprint(pedidos_bp)
 app.register_blueprint(detalle_pedido_bp)
 app.register_blueprint(categorias_bp)
 app.register_blueprint(pagos_bp)
+app.register_blueprint(dividir_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)
