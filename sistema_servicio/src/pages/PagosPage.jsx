@@ -258,7 +258,7 @@ function PagosPage() {
             {/* Buscar cliente */}
             <div className="md:w-80 flex-shrink-0">
               <div className="form-control mb-6">
-                <div className="divider divider-start font-semibold mb-4">Cliente que acumula Puntos</div>
+                <div className="divider divider-start font-semibold mb-4">Cliente acumula Puntos</div>
                 <label className="label cursor-pointer">
                   <span className="label-text font-medium mb-4">Habilitar</span>
                   <input
@@ -333,7 +333,7 @@ function PagosPage() {
                 <div className="mt-6">
                 <div className="divider divider-start font-semibold mb-4">Descuentos (puntos)</div>
                 <label className="label cursor-pointer mb-4">
-                    <span className="label-text">Habilitar</span>
+                    <span className="label-text font-medium">Habilitar</span>
                     <input
                     type="checkbox"
                     checked={canApplyDiscounts}
@@ -376,7 +376,7 @@ function PagosPage() {
                             </button>
                             <button
                                 onClick={() => eliminarDescuento(index)}
-                                className="btn btn-sm btn-error"
+                                className="btn btn-sm btn-neutral"
                                 >
                                 <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M10 11v6m4-6v6M4 7h16m-1 0-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7h14Zm-4 0V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3h6Z" />
@@ -422,7 +422,11 @@ function PagosPage() {
                     </div>
                 )}
                 </div>
-
+                <div className='divider'></div>
+                <div className="flex flex-row justify-between gap-4 mb-15">
+                    <button className='btn btn-neutral'>Cancelar</button>
+                    <button className='btn btn-success text-white'>Pagar</button>
+                </div>
             </div>
           </div>
         </div>
