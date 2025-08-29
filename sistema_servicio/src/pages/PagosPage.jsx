@@ -27,8 +27,8 @@ function PagosPage() {
           <h3 className="font-bold mb-4">Pedidos Pendientes</h3>
           {/* Aquí irá la lista de pedidos */}
           <div className="space-y-2">
-            <div className="bg-white p-2 rounded shadow">Pedido #1 - Mesa 3</div>
-            <div className="bg-white p-2 rounded shadow">Pedido #2 - Mesa 7</div>
+            <div className="bg-white p-2 rounded shadow">Pedido #43 - Mesa 1</div>
+            <div className="bg-white p-2 rounded shadow">Pedido #44 - Mesa 3</div>
           </div>
         </div>
 
@@ -40,7 +40,37 @@ function PagosPage() {
                 {/* TABLA PRODUCTOS*/}
                 <div>
                 {/* Aquí irá el resumen del pedido y formulario de pago */}
-                    <p>Resumen del pedido y pago...</p>
+                    <div className="overflow-x-auto">
+                        <table className="table">
+                            {/* head */}
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Descripcion</th>
+                                <th>Importe</th>
+                                <th>Acción</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {/* row 1 */}
+                            <tr>
+                                <th>1</th>
+                                <td>Americano Frio</td>
+                                <td>5.50</td>
+                                <td></td>
+                            </tr>
+                            {/* row 2 */}
+                            <tr>
+                                <th>3</th>
+                                <td>waffle de Durazno</td>
+                                <td>11.00</td>
+                                <td><button className='btn btn-warning btn-xs'>dividir</button></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        </div>
+                        <div className='divider divider-start'>Sub-total</div>
+                        <div className='text-right font-bold text-lg'>16.50</div>
                 </div>
             <div>
                 {/* Buscar cliente */}

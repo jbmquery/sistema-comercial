@@ -11,6 +11,10 @@ Find the corresponding instructions under:
 - git commit -m "mensaje"
 - git push
 
+# Para ver el registro de cambio
+
+- git log --oneline
+
 # autentificador de NGROK
 
 .\ngrok.exe config add-authtoken 31icpQPSQHJpmZOUnbFraTGndI9_7dFER9USoAefi7G7BWhGQ
