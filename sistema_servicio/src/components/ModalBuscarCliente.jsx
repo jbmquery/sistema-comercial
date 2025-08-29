@@ -77,7 +77,11 @@ function ModalBuscarCliente({ isOpen, onClose, onSelectCliente }) {
                         onClick={() => onSelectCliente(cliente)}
                         className="btn btn-md btn-primary"
                       >
-                        Seleccionar
+                        <svg width={16} height={16} fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path fillRule="evenodd" d="M12.352 18.848a1.2 1.2 0 0 1 0-1.696L17.503 12l-5.151-5.152a1.2 1.2 0 1 1 1.696-1.696l6 6a1.2 1.2 0 0 1 0 1.696l-6 6a1.2 1.2 0 0 1-1.696 0Z" clipRule="evenodd" />
+                        <path fillRule="evenodd" d="M5.152 18.848a1.2 1.2 0 0 1 0-1.696L10.303 12 5.152 6.848a1.2 1.2 0 0 1 1.696-1.696l6 6a1.2 1.2 0 0 1 0 1.696l-6 6a1.2 1.2 0 0 1-1.696 0Z" clipRule="evenodd" />
+                        </svg>
+                        <span className="hidden md:inline">Seleccionar</span>
                       </button>
                     </td>
                   </tr>
