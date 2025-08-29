@@ -141,6 +141,31 @@ function PagosPage() {
     setDescuentos(nuevosDescuentos);
     };
 
+    // MODAL CONFIRMAR PAGOS
+
+    const [showModalPago, setShowModalPago] = useState(false);
+    const [formaPago, setFormaPago] = useState('');
+    const [montoPagado, setMontoPagado] = useState('');
+    const [montoVuelto, setMontoVuelto] = useState(0);
+
+    const calcularTotales = () => {
+    const subtotal = detalle.reduce((sum, item) => sum + (item.precio_unitario * item.cantidad), 0);
+    
+    const puntosCanjeadosTotal = descuentos.reduce((total, desc) => {
+        const item = detalle.find(d => d.id_detalle === desc.id_detalle);
+        return total + (item?.puntos_canje || 0);
+    }, 0);
+
+    const descuentoSoles = descuentos.reduce((total, desc) => {
+        const item = detalle.find(d => d.id_detalle === desc.id_detalle);
+        return total + (item?.precio_unitario || 0); // ✅ El descuento es el precio del producto, no 1 punto = S/1
+    }, 0);
+
+    const totalAPagar = subtotal - descuentoSoles;
+
+    return { subtotal, descuentoSoles, puntosCanjeadosTotal, totalAPagar };
+    };
+
   return (
     <div className="flex flex-col justify-center items-center">
       <HeaderNav />
@@ -194,7 +219,7 @@ function PagosPage() {
                         {detalle.map((item) => (
                           <tr key={item.id_detalle}>
                             <th>{item.cantidad}</th>
-                            <td>{item.nombre_producto}</td>
+                            <td>{item.nombre_producto} {item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""}</td>
                             <td>S/ {(item.precio_unitario * item.cantidad).toFixed(2)}</td>
                             <td>
                               {item.cantidad > 1 && (
@@ -321,12 +346,14 @@ function PagosPage() {
 
                 <div className="divider divider-start font-semibold mb-4">Método de Pago</div>
                 <select className="select select-bordered select-md w-full"
+                    value={formaPago}
+                    onChange={(e) => setFormaPago(e.target.value)}               
                 >
-                <option value="">Seleccionar método de pago</option>
-                <option value="efectivo">Efectivo</option>
-                <option value="yape">Yape</option>
-                <option value="plin">Plin</option>
-                <option value="transferencia">Transferencia</option>
+                    <option value="">Seleccionar método de pago</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="yape">Yape</option>
+                    <option value="plin">Plin</option>
+                    <option value="transferencia">Transferencia</option>
                 </select>
 
                 {/* DESCUENTOS POR PUNTOS */}
@@ -402,7 +429,7 @@ function PagosPage() {
                                 <option value="">Seleccionar producto</option>
                                 {getProductosCanjeables(index).map((item) => (
                                     <option key={item.id_detalle} value={item.id_detalle}>
-                                    {item.nombre_producto} (Costo: {item.puntos_canje} puntos)
+                                    {item.cantidad} - {item.nombre_producto} {item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""} (Costo: {item.puntos_canje} puntos)
                                     </option>
                                 ))}
                                 </select>
@@ -425,7 +452,24 @@ function PagosPage() {
                 <div className='divider'></div>
                 <div className="flex flex-row justify-between gap-4 mb-15">
                     <button className='btn btn-neutral'>Cancelar</button>
-                    <button className='btn btn-success text-white'>Pagar</button>
+                    <button
+                    className='btn btn-success text-white'
+                    onClick={() => {
+                        if (!selectedPedido) {
+                        alert("Selecciona un pedido");
+                        return;
+                        }
+                        if (!formaPago) {
+                        alert("Selecciona un método de pago");
+                        return;
+                        }
+                        setShowModalPago(true);
+                        setMontoPagado('');
+                        setMontoVuelto(0);
+                    }}
+                    >
+                    Pagar
+                    </button>
                 </div>
             </div>
           </div>
@@ -453,6 +497,237 @@ function PagosPage() {
             setShowModalDescuento(false);
         }}
         />
+
+            {/* MODAL DE RESUMEN DE PAGO */}
+            {showModalPago && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold">Resumen de Pago - {selectedPedido?.nombre_mesa}</h3>
+                    <button
+                    onClick={() => setShowModalPago(false)}
+                    className="btn btn-sm btn-circle btn-ghost"
+                    >
+                    ✕
+                    </button>
+                </div>
+
+                {/* Productos */}
+                <div className="mb-4">
+                    <div className="font-semibold mb-2">Productos</div>
+                    <div className="overflow-x-auto">
+                    <table className="table table-compact w-full">
+                        <thead>
+                        <tr>
+                            <th>Cant.</th>
+                            <th>Descripción</th>
+                            <th>Importe</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {Object.entries(
+                            detalle.reduce((acc, item) => {
+                            const key = item.nombre_producto;
+                            acc[key] = acc[key] || { ...item, cantidad: 0 };
+                            acc[key].cantidad += item.cantidad;
+                            return acc;
+                            }, {})
+                        ).map(([, item]) => (
+                            <tr key={item.nombre_producto}>
+                            <td>{item.cantidad}</td>
+                            <td>{item.nombre_producto}</td>
+                            <td>S/ {(item.precio_unitario * item.cantidad).toFixed(2)}</td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+
+                {/* Descuentos */}
+                {descuentos.length > 0 && (
+                    <div className="mb-4">
+                    <div className="font-semibold mb-2">Descuentos (puntos)</div>
+                    <div className="overflow-x-auto">
+                        <table className="table table-compact w-full">
+                        <thead>
+                            <tr>
+                            <th>Cant.</th>
+                            <th>Descripción</th>
+                            <th>Puntos utilizados</th>
+                            <th>Descuento (S/.)</th>
+                            <th>Puntos descontados a</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {descuentos.map((descuento, index) => {
+                            const item = detalle.find(d => d.id_detalle === descuento.id_detalle);
+                            if (!item) return null;
+                            return (
+                                <tr key={index}>
+                                <td>1</td>
+                                <td>{item.nombre_producto}</td>
+                                <td>{item.puntos_canje} puntos</td>
+                                <td>S/ {item.precio_unitario.toFixed(2)}</td>
+                                <td>{descuento.cliente?.dni}</td>
+                                </tr>
+                            );
+                            })}
+                        </tbody>
+                        </table>
+                    </div>
+                    </div>
+                )}
+
+                {/* Totales */}
+                <div className="mb-4">
+                    <div className="flex justify-between">
+                    <span>Sub-total:</span>
+                    <span>S/ {calcularTotales().subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                    <span>Descuentos:</span>
+                    <span>S/ {calcularTotales().descuentoSoles.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-lg">
+                    <span>Total a pagar:</span>
+                    <span>S/ {calcularTotales().totalAPagar.toFixed(2)}</span>
+                    </div>
+                </div>
+
+                {/* Monto pagado y vuelto */}
+                <div className="mb-4">
+                    <div className="form-control">
+                    <label className="label">
+                        <span className="label-text">Monto pagado</span>
+                    </label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        value={montoPagado}
+                        onChange={(e) => {
+                        const valor = parseFloat(e.target.value) || 0;
+                        setMontoPagado(valor);
+                        const vuelto = valor - calcularTotales().totalAPagar;
+                        setMontoVuelto(vuelto >= 0 ? vuelto : 0);
+                        }}
+                        className="input input-bordered"
+                        disabled={formaPago !== 'efectivo'}
+                        placeholder="Ingrese monto"
+                    />
+                    </div>
+
+                    <div className="form-control mt-2">
+                    <label className="label">
+                        <span className="label-text">Vuelto</span>
+                    </label>
+                    <input
+                        type="number"
+                        value={montoVuelto.toFixed(2)}
+                        readOnly
+                        className="input input-bordered"
+                    />
+                    </div>
+                </div>
+
+                {/* Botones de acción */}
+                <div className="flex justify-end gap-3 mt-6">
+                    <button
+                    onClick={() => {
+                        // Después del pago, este botón limpia todo
+                        setSelectedPedido(null);
+                        setDetalle([]);
+                        setSubtotal(0);
+                        setClienteSeleccionado(null);
+                        setCanBuscarCliente(false);
+                        setDescuentos([]);
+                        setCanApplyDiscounts(false);
+                        setFormaPago('');
+                        setShowModalPago(false);
+                    }}
+                    className="btn btn-neutral"
+                    >
+                    Nuevo pago
+                    </button>
+                    
+                    <button
+                    onClick={async () => {
+                        if (!window.confirm("¿Confirmar pago?")) return;
+
+                        const { puntosCanjeadosTotal, totalAPagar } = calcularTotales();
+                        const monto = formaPago === 'efectivo' ? parseFloat(montoPagado) : totalAPagar;
+                        const vuelto = formaPago === 'efectivo' ? montoVuelto : 0;
+
+                        // ✅ --- INSERTA AQUÍ EL CÓDIGO QUE TE PASÉ ---
+                        
+                        // Validar que todos los descuentos tengan producto seleccionado
+                        if (descuentos.some(d => d.cliente && !d.id_detalle)) {
+                        alert("Completa todos los productos en los descuentos");
+                        return;
+                        }
+
+                        // Filtrar solo descuentos válidos (con cliente y producto)
+                        const descuentosValidos = descuentos
+                        .filter(d => d.cliente && d.id_detalle)
+                        .map(d => ({
+                            id_cliente: d.cliente.id_cliente,
+                            id_detalle: d.id_detalle
+                        }));
+
+                        // Preparar datos para enviar al backend
+                        const datos = {
+                        id_pedido: selectedPedido.id_pedido,
+                        forma_pago: formaPago,
+                        monto_pagado: monto,
+                        monto_vuelto: vuelto,
+                        puntos_canjeados_total: puntosCanjeadosTotal,
+                        cliente_acumula_id: clienteSeleccionado?.id_cliente || null,
+                        descuentos: descuentosValidos
+                        };
+
+                        // ✅ --- HASTA AQUÍ ---
+
+                        try {
+                        const response = await fetch(`${API_BASE}/api/pagos/registrar`, {
+                            method: 'POST',
+                            headers: {
+                            'Content-Type': 'application/json',
+                            'ngrok-skip-browser-warning': 'true'
+                            },
+                            body: JSON.stringify(datos)
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            alert("✅ Pago registrado con éxito");
+                            if (window.confirm("¿Desea imprimir el voucher?")) {
+                            // Aquí iría la impresión
+                            }
+                            // El botón "Nuevo pago" ya limpia todo
+                        } else {
+                            alert("Error: " + result.message);
+                        }
+                        } catch (error) {
+                        console.error("Error al registrar pago:", error);
+                        alert("Error de conexión");
+                        }
+                    }}
+                    className="btn btn-success text-white"
+                    >
+                    CONFIRMAR PAGO
+                    </button>
+
+                </div>
+
+                {/* Botones Imprimir y Compartir (placeholder) */}
+                <div className="flex justify-end gap-2 mt-4">
+                    <button className="btn btn-sm btn-outline">Imprimir</button>
+                    <button className="btn btn-sm btn-outline">Compartir</button>
+                </div>
+                </div>
+            </div>
+            )}
 
     </div>
   );

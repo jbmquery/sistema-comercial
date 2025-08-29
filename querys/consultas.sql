@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS public.detalle_pedido
 -- Tabla: historial_puntos (auditoría de puntos)
 CREATE TABLE IF NOT EXISTS public.historial_puntos
 (
-    id_historial bigint NOT NULL,
+    id_historial bigint NOT NULL DEFAULT nextval('historial_puntos_id_historial_seq'::regclass),
     id_cliente bigint NOT NULL,
     id_pedido bigint,
     tipo character varying(15) COLLATE pg_catalog."default" NOT NULL,

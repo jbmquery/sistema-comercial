@@ -19,7 +19,9 @@ def obtener_detalle_con_puntos(id_pedido):
             c.nombre,
             c.puntos_canje,
             dp.estado,
-            dp.id_carta
+            dp.id_carta,
+            c.porcion,
+            c.unidad_medida
         FROM detalle_pedido dp
         JOIN carta c ON dp.id_carta = c.id_carta
         WHERE dp.id_pedido = %s
@@ -36,7 +38,9 @@ def obtener_detalle_con_puntos(id_pedido):
                 "nombre_producto": row[3],
                 "puntos_canje": row[4],
                 "estado": row[5],
-                "id_carta": row[6]
+                "id_carta": row[6],
+                "porcion": row[7],
+                "unidad_medida": row[8]
             }
             for row in rows
         ]
@@ -69,7 +73,7 @@ def validar_canje_producto(id_cliente, id_detalle):
 
         # Obtener puntos_canje del producto
         cursor.execute("""
-            SELECT c.puntos_canje, dp.id_detalle
+            SELECT c.puntos_canje, dp.id_detalle, dp.cantidad
             FROM detalle_pedido dp
             JOIN carta c ON dp.id_carta = c.id_carta
             WHERE dp.id_detalle = %s
@@ -101,7 +105,10 @@ def validar_canje_producto(id_cliente, id_detalle):
         if conn:
             conn.close()
 
+""""AQUI VA LA FUNCION REGISTRAR CANJE MULTIPLE"""
+
 def registrar_canje_multiple(datos):
+    print("🔍 Tipo de 'str':", type(str))
     """
     Registra el pago, actualiza estados, puntos, y genera historial
     """
@@ -111,32 +118,44 @@ def registrar_canje_multiple(datos):
         conn = get_connection()
         cursor = conn.cursor()
 
+        print("✅ [DEBUG] Iniciando registro de pago con datos:", datos)
+
         id_pedido = datos.get('id_pedido')
         forma_pago = datos.get('forma_pago')
         monto_pagado = datos.get('monto_pagado')
         monto_vuelto = datos.get('monto_vuelto')
         puntos_canjeados_total = datos.get('puntos_canjeados_total', 0)
-        cliente_acumula_id = datos.get('cliente_acumula_id')  # El que recibe puntos
-        descuentos = datos.get('descuentos', [])  # [{ id_cliente, id_detalle }]
+        cliente_acumula_id = datos.get('cliente_acumula_id')
+        descuentos = datos.get('descuentos', [])
 
-        # Validar pedido
+        print(f"🔍 Validando pedido ID: {id_pedido}")
         cursor.execute("SELECT id_mesa, estado FROM pedidos WHERE id_pedido = %s", (id_pedido,))
         pedido_row = cursor.fetchone()
-        if not pedido_row or pedido_row[1] != 'Entregado':
+        if not pedido_row:
+            print("❌ Pedido no encontrado")
+            return {"success": False, "message": "Pedido no encontrado"}
+        if pedido_row[1] != 'Entregado':
+            print("❌ Estado del pedido no es 'Entregado'")
             return {"success": False, "message": "Pedido no válido"}
-
+        
         id_mesa = pedido_row[0]
+        print(f"✅ Pedido válido. Mesa: {id_mesa}")
 
         # --- 1. Actualizar detalle_pedido: marcar canjeados ---
-        for desc in descuentos:
+        for i, desc in enumerate(descuentos):
+            print(f"🔄 Actualizando detalle {desc['id_detalle']} para cliente {desc['id_cliente']}")
             cursor.execute("""
                 UPDATE detalle_pedido 
                 SET estado = 'Canjeado', canjeado_por = %s 
                 WHERE id_detalle = %s
             """, (desc['id_cliente'], desc['id_detalle']))
+            if cursor.rowcount == 0:
+                print(f"❌ No se encontró id_detalle={desc['id_detalle']}")
+                raise Exception("Detalle no encontrado")
 
         # --- 2. Actualizar puntos de clientes que canjearon ---
-        for desc in descuentos:
+        for i, desc in enumerate(descuentos):
+            print(f"🔄 Restando puntos al cliente {desc['id_cliente']} por id_detalle={desc['id_detalle']}")
             cursor.execute("""
                 UPDATE clientes 
                 SET puntos_acumulados = puntos_acumulados - (
@@ -146,6 +165,9 @@ def registrar_canje_multiple(datos):
                 )
                 WHERE id_cliente = %s
             """, (desc['id_detalle'], desc['id_cliente']))
+            if cursor.rowcount == 0:
+                print(f"❌ Cliente {desc['id_cliente']} no encontrado")
+                raise Exception("Cliente no encontrado")
 
             # Registrar en historial_puntos
             cursor.execute("""
@@ -157,20 +179,24 @@ def registrar_canje_multiple(datos):
 
         # --- 3. Acumular puntos para el cliente principal (si aplica) ---
         if cliente_acumula_id:
-            # Calcular monto pagado (no canjeado)
+            print(f"🔄 Acumulando puntos para cliente {cliente_acumula_id}")
             cursor.execute("""
                 SELECT SUM(precio_unitario * cantidad) 
                 FROM detalle_pedido 
                 WHERE id_pedido = %s AND estado != 'Canjeado'
-            """)
+            """,(id_pedido,)),
             monto_pagado_db = cursor.fetchone()[0] or 0
             puntos_ganados = int(monto_pagado_db)
+            print(f"💰 Puntos a ganar: {puntos_ganados}")
 
             cursor.execute("""
                 UPDATE clientes 
                 SET puntos_acumulados = puntos_acumulados + %s 
                 WHERE id_cliente = %s
             """, (puntos_ganados, cliente_acumula_id))
+            if cursor.rowcount == 0:
+                print(f"❌ Cliente acumula {cliente_acumula_id} no encontrado")
+                raise Exception("Cliente acumula no encontrado")
 
             cursor.execute("""
                 INSERT INTO historial_puntos (id_historial, id_cliente, id_pedido, tipo, puntos, fecha, descripcion)
@@ -178,6 +204,7 @@ def registrar_canje_multiple(datos):
             """, (cliente_acumula_id, id_pedido, puntos_ganados))
 
         # --- 4. Actualizar pedido ---
+        print(f"🔄 Actualizando pedido {id_pedido} a 'Pagado'")
         cursor.execute("""
             UPDATE pedidos 
             SET estado = 'Pagado', 
@@ -191,15 +218,18 @@ def registrar_canje_multiple(datos):
         """, (forma_pago, puntos_canjeados_total, monto_pagado, monto_vuelto, cliente_acumula_id, id_pedido))
 
         # --- 5. Liberar mesa ---
+        print(f"🔓 Liberando mesa {id_mesa}")
         cursor.execute("UPDATE mesas SET disponibilidad = true WHERE id_mesas = %s", (id_mesa,))
 
         conn.commit()
+        print("🎉 ¡Pago registrado con éxito!")
         return {"success": True, "message": "Pago registrado correctamente"}
+    
     except Exception as e:
         if conn:
             conn.rollback()
-        print(f"Error registrando pago: {e}")
-        return {"success": False, "message": "Error interno"}
+        print(f"💥 ERROR CRÍTICO: {e}")
+        return {"success": False, "message": f"Error interno: {str(e)}"}
     finally:
         if cursor:
             cursor.close()
