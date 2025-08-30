@@ -226,9 +226,7 @@ function PagosPage() {
                                     onClick={async () => {
                                         if (!selectedPedido) return;
 
-                                        const confirmado = window.confirm(
-                                        `¿Dividir ${item.nombre_producto}?`
-                                        );
+                                        const confirmado = window.confirm(`¿Dividir ${item.nombre_producto}?`);
                                         if (!confirmado) return;
 
                                         try {
@@ -245,7 +243,7 @@ function PagosPage() {
 
                                         if (response.ok) {
                                             // Refrescar el detalle del pedido
-                                            const res = await fetch(`${API_BASE}/api/pedidos/${selectedPedido.id_pedido}/detalle`, {
+                                            const res = await fetch(`${API_BASE}/api/pedidos/${selectedPedido.id_pedido}/detalle-con-puntos`, {
                                             headers: { 'ngrok-skip-browser-warning': 'true' }
                                             });
                                             const data = await res.json();
