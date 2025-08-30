@@ -158,12 +158,13 @@ def registrar_canje_multiple(datos):
             print(f"🔄 Restando puntos al cliente {desc['id_cliente']} por id_detalle={desc['id_detalle']}")
             cursor.execute("""
                 UPDATE clientes 
-                SET puntos_acumulados = puntos_acumulados - (
-                    SELECT c.puntos_canje FROM carta c 
-                    JOIN detalle_pedido dp ON c.id_carta = dp.id_carta 
-                    WHERE dp.id_detalle = %s
-                )
-                WHERE id_cliente = %s
+                    SET puntos_acumulados = puntos_acumulados - (
+                        SELECT c.puntos_canje * dp.cantidad 
+                        FROM detalle_pedido dp
+                        JOIN carta c ON dp.id_carta = c.id_carta 
+                        WHERE dp.id_detalle = %s
+                    )
+                    WHERE id_cliente = %s
             """, (desc['id_detalle'], desc['id_cliente']))
             if cursor.rowcount == 0:
                 print(f"❌ Cliente {desc['id_cliente']} no encontrado")
@@ -173,7 +174,10 @@ def registrar_canje_multiple(datos):
             cursor.execute("""
                 INSERT INTO historial_puntos (id_historial, id_cliente, id_pedido, tipo, puntos, fecha, descripcion)
                 VALUES (nextval('historial_puntos_id_historial_seq'), %s, %s, 'Canje', 
-                        -(SELECT c.puntos_canje FROM carta c JOIN detalle_pedido dp ON c.id_carta = dp.id_carta WHERE dp.id_detalle = %s),
+                        -(SELECT c.puntos_canje * dp.cantidad 
+                        FROM carta c 
+                        JOIN detalle_pedido dp ON c.id_carta = dp.id_carta 
+                        WHERE dp.id_detalle = %s),
                         CURRENT_DATE, 'Canje por producto')
             """, (desc['id_cliente'], id_pedido, desc['id_detalle']))
 

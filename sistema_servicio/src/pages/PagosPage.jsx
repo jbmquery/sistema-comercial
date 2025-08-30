@@ -150,13 +150,13 @@ function PagosPage() {
     const subtotal = detalle.reduce((sum, item) => sum + (item.precio_unitario * item.cantidad), 0);
     
     const puntosCanjeadosTotal = descuentos.reduce((total, desc) => {
-        const item = detalle.find(d => d.id_detalle === desc.id_detalle);
-        return total + (item?.puntos_canje || 0);
+    const item = detalle.find(d => d.id_detalle === desc.id_detalle);
+    return total + (item?.puntos_canje * item?.cantidad || 0); // ✅ Por cantidad
     }, 0);
 
     const descuentoSoles = descuentos.reduce((total, desc) => {
-        const item = detalle.find(d => d.id_detalle === desc.id_detalle);
-        return total + (item?.precio_unitario || 0); // ✅ El descuento es el precio del producto, no 1 punto = S/1
+    const item = detalle.find(d => d.id_detalle === desc.id_detalle);
+    return total + (item?.precio_unitario * item?.cantidad || 0); // ✅ Por cantidad
     }, 0);
 
     const totalAPagar = subtotal - descuentoSoles;
@@ -538,7 +538,7 @@ function PagosPage() {
                         <tbody>
                         {Object.entries(
                             detalle.reduce((acc, item) => {
-                            const key = item.nombre_producto;
+                            const key = `${item.nombre_producto}${item.porcion ? `_${item.porcion}_${item.unidad_medida}` : ''}`;
                             acc[key] = acc[key] || { ...item, cantidad: 0 };
                             acc[key].cantidad += item.cantidad;
                             return acc;
@@ -546,7 +546,7 @@ function PagosPage() {
                         ).map(([, item]) => (
                             <tr key={item.nombre_producto}>
                             <td>{item.cantidad}</td>
-                            <td>{item.nombre_producto}</td>
+                            <td>{item.nombre_producto} {item.porcion ? `(${item.porcion} ${item.unidad_medida})` : ""}</td>
                             <td>S/ {(item.precio_unitario * item.cantidad).toFixed(2)}</td>
                             </tr>
                         ))}
@@ -578,11 +578,11 @@ function PagosPage() {
                             if (!item) return null;
                             return (
                                 <tr key={index}>
-                                <td>1</td>
-                                <td>{item.nombre_producto}</td>
-                                <td>{item.puntos_canje} puntos</td>
-                                <td>S/ {item.precio_unitario.toFixed(2)}</td>
-                                <td>{descuento.cliente?.dni}</td>
+                                    <td>{item.cantidad}</td> {/* ✅ Cantidad real del detalle */}
+                                    <td>{item.nombre_producto} {item.porcion ? `(${item.porcion} ${item.unidad_medida})` : ""}</td>
+                                    <td>{item.puntos_canje * item.cantidad} puntos</td> {/* ✅ Total de puntos */}
+                                    <td>S/ {(item.precio_unitario * item.cantidad).toFixed(2)}</td> {/* ✅ Descuento total */}
+                                    <td>{descuento.cliente?.dni}</td>
                                 </tr>
                             );
                             })}
