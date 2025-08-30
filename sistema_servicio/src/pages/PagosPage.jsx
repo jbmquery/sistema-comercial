@@ -164,6 +164,10 @@ function PagosPage() {
     return { subtotal, descuentoSoles, puntosCanjeadosTotal, totalAPagar };
     };
 
+    // CONTROLADOR DEL MODAL DE RESUMEN DE PAGO
+
+    const [pagoRealizado, setPagoRealizado] = useState(false);
+
   return (
     <div className="flex flex-col justify-center items-center">
       <HeaderNav />
@@ -477,6 +481,7 @@ function PagosPage() {
                         setShowModalPago(true);
                         setMontoPagado('');
                         setMontoVuelto(0);
+                        setPagoRealizado(false); // Reiniciar estado al abrir
                     }}
                     >
                     Pagar
@@ -515,12 +520,6 @@ function PagosPage() {
                 <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold">Resumen de Pago - {selectedPedido?.nombre_mesa}</h3>
-                    <button
-                    onClick={() => setShowModalPago(false)}
-                    className="btn btn-sm btn-circle btn-ghost"
-                    >
-                    ✕
-                    </button>
                 </div>
 
                 {/* Productos */}
@@ -638,9 +637,84 @@ function PagosPage() {
 
                 {/* Botones de acción */}
                 <div className="flex justify-between items-center gap-3 mt-6">
+                {/* Botones iniciales: solo visibles ANTES del pago */}
+                {!pagoRealizado ? (
+                    <>
                     <button
-                    onClick={() => {
-                        // Después del pago, este botón limpia todo
+                        onClick={() => setShowModalPago(false)}
+                        className="btn btn-md  btn-default"
+                    >
+                        <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="m11 16-4-4m0 0 4-4m-4 4h14m-5 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v1" />
+                        </svg>
+                        <span>Atras</span>
+                    </button>
+
+                    <button
+                        onClick={async () => {
+                        if (!window.confirm("¿Confirmar pago?")) return;
+
+                        const { puntosCanjeadosTotal, totalAPagar } = calcularTotales();
+                        const monto = formaPago === 'efectivo' ? parseFloat(montoPagado) : totalAPagar;
+                        const vuelto = formaPago === 'efectivo' ? montoVuelto : 0;
+
+                        // Validar descuentos
+                        if (descuentos.some(d => d.cliente && !d.id_detalle)) {
+                            alert("Completa todos los productos en los descuentos");
+                            return;
+                        }
+
+                        const descuentosValidos = descuentos
+                            .filter(d => d.cliente && d.id_detalle)
+                            .map(d => ({
+                            id_cliente: d.cliente.id_cliente,
+                            id_detalle: d.id_detalle
+                            }));
+
+                        const datos = {
+                            id_pedido: selectedPedido.id_pedido,
+                            forma_pago: formaPago,
+                            monto_pagado: monto,
+                            monto_vuelto: vuelto,
+                            puntos_canjeados_total: puntosCanjeadosTotal,
+                            cliente_acumula_id: clienteSeleccionado?.id_cliente || null,
+                            descuentos: descuentosValidos
+                        };
+
+                        try {
+                            const response = await fetch(`${API_BASE}/api/pagos/registrar`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'ngrok-skip-browser-warning': 'true'
+                            },
+                            body: JSON.stringify(datos)
+                            });
+
+                            const result = await response.json();
+
+                            if (response.ok) {
+                            alert("✅ Pago registrado con éxito");
+                            setPagoRealizado(true); // ✅ Marcar como pagado
+                            } else {
+                            alert("Error: " + result.message);
+                            }
+                        } catch (error) {
+                            console.error("Error al registrar pago:", error);
+                            alert("Error de conexión");
+                        }
+                        }}
+                        className="btn btn-success text-white"
+                    >
+                        Pagar
+                    </button>
+                    </>
+                ) : (
+                    // Botones finales: solo visibles DESPUÉS del pago
+                    <>
+                    <button
+                        onClick={() => {
+                        // Limpia todo el estado
                         setSelectedPedido(null);
                         setDetalle([]);
                         setSubtotal(0);
@@ -650,98 +724,35 @@ function PagosPage() {
                         setCanApplyDiscounts(false);
                         setFormaPago('');
                         setShowModalPago(false);
-                    }}
-                    className="btn btn-neutral"
+                        setPagoRealizado(false);
+                        }}
+                        className="btn btn-neutral"
                     >
-                    Nuevo
+                        Cerrar
                     </button>
-                    {/* Botones Imprimir y Compartir (placeholder) */}
+
+                    {/* Botones Imprimir y Compartir */}
                     <div className="flex justify-end gap-2 items-center">
                         <button className="btn btn-md btn-outline">
-                            <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M9 21h6a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2Zm0 0h6a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-1.414.586" />
                             <path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2" />
                             <path d="M17 5v4H7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2Z" />
-                            </svg>
-                            <span className='hidden md:inline'>Imprimir</span>
+                        </svg>
+                        <span className='hidden md:inline'>Imprimir</span>
                         </button>
                         <button className="btn btn-md btn-outline">
-                            <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 1 1 0-2.684m0 2.684 6.632 3.316m-6.632-6 6.632-3.316m0 9.316a3 3 0 1 0 5.368 2.684 3 3 0 0 0-5.368-2.684Zm0-9.316a3.003 3.003 0 0 0 4.025 1.341 3 3 0 1 0-4.025-1.341Z" />
-                            </svg>
-                            <span className='hidden md:inline'>Compartir</span>
+                        </svg>
+                        <span className='hidden md:inline'>Compartir</span>
                         </button>
                     </div>
-                    {/*BOTON CONFIRMAR PAGO*/}
-                    <button
-                    onClick={async () => {
-                        if (!window.confirm("¿Confirmar pago?")) return;
-
-                        const { puntosCanjeadosTotal, totalAPagar } = calcularTotales();
-                        const monto = formaPago === 'efectivo' ? parseFloat(montoPagado) : totalAPagar;
-                        const vuelto = formaPago === 'efectivo' ? montoVuelto : 0;
-
-                        // ✅ --- INSERTA AQUÍ EL CÓDIGO QUE TE PASÉ ---
-                        
-                        // Validar que todos los descuentos tengan producto seleccionado
-                        if (descuentos.some(d => d.cliente && !d.id_detalle)) {
-                        alert("Completa todos los productos en los descuentos");
-                        return;
-                        }
-
-                        // Filtrar solo descuentos válidos (con cliente y producto)
-                        const descuentosValidos = descuentos
-                        .filter(d => d.cliente && d.id_detalle)
-                        .map(d => ({
-                            id_cliente: d.cliente.id_cliente,
-                            id_detalle: d.id_detalle
-                        }));
-
-                        // Preparar datos para enviar al backend
-                        const datos = {
-                        id_pedido: selectedPedido.id_pedido,
-                        forma_pago: formaPago,
-                        monto_pagado: monto,
-                        monto_vuelto: vuelto,
-                        puntos_canjeados_total: puntosCanjeadosTotal,
-                        cliente_acumula_id: clienteSeleccionado?.id_cliente || null,
-                        descuentos: descuentosValidos
-                        };
-
-                        // ✅ --- HASTA AQUÍ ---
-
-                        try {
-                        const response = await fetch(`${API_BASE}/api/pagos/registrar`, {
-                            method: 'POST',
-                            headers: {
-                            'Content-Type': 'application/json',
-                            'ngrok-skip-browser-warning': 'true'
-                            },
-                            body: JSON.stringify(datos)
-                        });
-
-                        const result = await response.json();
-
-                        if (response.ok) {
-                            alert("✅ Pago registrado con éxito");
-                            if (window.confirm("¿Desea imprimir el voucher?")) {
-                            // Aquí iría la impresión
-                            }
-                            // El botón "Nuevo pago" ya limpia todo
-                        } else {
-                            alert("Error: " + result.message);
-                        }
-                        } catch (error) {
-                        console.error("Error al registrar pago:", error);
-                        alert("Error de conexión");
-                        }
-                    }}
-                    className="btn btn-success text-white"
-                    >
-                    Pagar
-                    </button>
-
+                    </>
+                )}
                 </div>
+                                
+                
                 </div>
             </div>
             )}
