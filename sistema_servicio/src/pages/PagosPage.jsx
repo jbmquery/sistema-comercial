@@ -609,12 +609,13 @@ function PagosPage() {
                 </div>
 
                 {/* Monto pagado y vuelto */}
-                <div className="mb-4">
-                    <div className="form-control">
+                <div className="flex flex-col md:flex-row gap-2 justify-center items-center">
+                    
+                    <div className="form-control w-full">
                     <label className="label">
                         <span className="label-text">Monto pagado</span>
                     </label>
-                    <input type="number" step="0.01" value={montoPagado} onChange={(e) => {
+                    <input type="number" step="0.5" value={montoPagado} onChange={(e) => {
                         const valor = parseFloat(e.target.value) || 0;
                         setMontoPagado(valor);
                         const vuelto = valor - calcularTotales().totalAPagar;
@@ -626,12 +627,13 @@ function PagosPage() {
                     />
                     </div>
 
-                    <div className="form-control mt-2">
+                    <div className="form-control w-full">
                     <label className="label">
                         <span className="label-text">Vuelto</span>
                     </label>
                     <input type="number" value={montoVuelto.toFixed(2)} readOnly className="input input-bordered"/>
                     </div>
+                    
                 </div>
 
                 {/* Botones de acción */}
