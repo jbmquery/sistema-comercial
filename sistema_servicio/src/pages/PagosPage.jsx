@@ -565,9 +565,9 @@ function PagosPage() {
                             <tr>
                             <th>Cant.</th>
                             <th>Descripción</th>
-                            <th>Puntos utilizados</th>
+                            <th>P. utilizados</th>
                             <th>Descuento (S/.)</th>
-                            <th>Puntos descontados a</th>
+                            <th>Descontados a</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -593,18 +593,18 @@ function PagosPage() {
                 )}
 
                 {/* Totales */}
-                <div className="mb-4">
-                    <div className="flex justify-between">
-                    <span>Sub-total:</span>
-                    <span>S/ {calcularTotales().subtotal.toFixed(2)}</span>
+                <div className="mb-4 mt-10">
+                    <div className="flex justify-end gap-5">
+                        <span>Sub-total:</span>
+                        <span>S/ {calcularTotales().subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between">
-                    <span>Descuentos:</span>
-                    <span>S/ {calcularTotales().descuentoSoles.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg">
-                    <span>Total a pagar:</span>
-                    <span>S/ {calcularTotales().totalAPagar.toFixed(2)}</span>
+                        <div className="flex justify-end gap-5">
+                            <span>Descuentos:</span>
+                            <span>S/ {calcularTotales().descuentoSoles.toFixed(2)}</span>
+                        </div>
+                    <div className="flex justify-end gap-5 font-bold text-lg">
+                        <span>Total a pagar:</span>
+                        <span>S/ {calcularTotales().totalAPagar.toFixed(2)}</span>
                     </div>
                 </div>
 
@@ -614,11 +614,7 @@ function PagosPage() {
                     <label className="label">
                         <span className="label-text">Monto pagado</span>
                     </label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        value={montoPagado}
-                        onChange={(e) => {
+                    <input type="number" step="0.01" value={montoPagado} onChange={(e) => {
                         const valor = parseFloat(e.target.value) || 0;
                         setMontoPagado(valor);
                         const vuelto = valor - calcularTotales().totalAPagar;
@@ -634,17 +630,12 @@ function PagosPage() {
                     <label className="label">
                         <span className="label-text">Vuelto</span>
                     </label>
-                    <input
-                        type="number"
-                        value={montoVuelto.toFixed(2)}
-                        readOnly
-                        className="input input-bordered"
-                    />
+                    <input type="number" value={montoVuelto.toFixed(2)} readOnly className="input input-bordered"/>
                     </div>
                 </div>
 
                 {/* Botones de acción */}
-                <div className="flex justify-end gap-3 mt-6">
+                <div className="flex justify-between items-center gap-3 mt-6">
                     <button
                     onClick={() => {
                         // Después del pago, este botón limpia todo
@@ -660,9 +651,26 @@ function PagosPage() {
                     }}
                     className="btn btn-neutral"
                     >
-                    Nuevo pago
+                    Nuevo
                     </button>
-                    
+                    {/* Botones Imprimir y Compartir (placeholder) */}
+                    <div className="flex justify-end gap-2 items-center">
+                        <button className="btn btn-md btn-outline">
+                            <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 21h6a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2Zm0 0h6a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-1.414.586" />
+                            <path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2" />
+                            <path d="M17 5v4H7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2Z" />
+                            </svg>
+                            <span className='hidden md:inline'>Imprimir</span>
+                        </button>
+                        <button className="btn btn-md btn-outline">
+                            <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 1 1 0-2.684m0 2.684 6.632 3.316m-6.632-6 6.632-3.316m0 9.316a3 3 0 1 0 5.368 2.684 3 3 0 0 0-5.368-2.684Zm0-9.316a3.003 3.003 0 0 0 4.025 1.341 3 3 0 1 0-4.025-1.341Z" />
+                            </svg>
+                            <span className='hidden md:inline'>Compartir</span>
+                        </button>
+                    </div>
+                    {/*BOTON CONFIRMAR PAGO*/}
                     <button
                     onClick={async () => {
                         if (!window.confirm("¿Confirmar pago?")) return;
@@ -728,15 +736,9 @@ function PagosPage() {
                     }}
                     className="btn btn-success text-white"
                     >
-                    CONFIRMAR PAGO
+                    Pagar
                     </button>
 
-                </div>
-
-                {/* Botones Imprimir y Compartir (placeholder) */}
-                <div className="flex justify-end gap-2 mt-4">
-                    <button className="btn btn-sm btn-outline">Imprimir</button>
-                    <button className="btn btn-sm btn-outline">Compartir</button>
                 </div>
                 </div>
             </div>

@@ -15,6 +15,10 @@ Find the corresponding instructions under:
 
 - git log --oneline
 
+# Si quieres que tu rama apunte a ese commit (descartar cambios posteriores):
+
+- git reset --hard [9ee75f4157a3e1cc3bf077ce9a93592c1e61f1b4]
+
 # autentificador de NGROK
 
 .\ngrok.exe config add-authtoken 31icpQPSQHJpmZOUnbFraTGndI9_7dFER9USoAefi7G7BWhGQ
