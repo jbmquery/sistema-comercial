@@ -83,11 +83,12 @@ function PagosPage() {
     // Función para seleccionar producto
     const handleSeleccionarProducto = (index, id_detalle) => {
     const nuevosDescuentos = [...descuentos];
-    nuevosDescuentos[index] = { ...nuevosDescuentos[index], id_detalle: parseInt(id_detalle) };
+    nuevosDescuentos[index] = { ...nuevosDescuentos[index], id_detalle: parseInt(id_detalle,10) };
     setDescuentos(nuevosDescuentos);
     };
 
     // Obtener productos que pueden ser canjeados (no repetidos, y que el cliente tenga puntos)
+    
     const getProductosCanjeables = (currentIndex) => {
     if (!selectedPedido) return [];
 
@@ -97,7 +98,7 @@ function PagosPage() {
     const id_cliente_actual = descuentoActual.cliente.id_cliente;
     const puntos_totales_cliente = descuentoActual.cliente.puntos_acumulados;
 
-    // 🔢 Calcular cuántos puntos YA HA USADO este cliente en OTROS descuentos
+    // 🔢 Calcular cuántos puntos YA HA USADO este cliente (en otros descuentos)
     const puntos_usados_por_este_cliente = descuentos
         .filter((d, i) => 
         i !== currentIndex && 
@@ -106,27 +107,24 @@ function PagosPage() {
         )
         .reduce((total, d) => {
         const item = detalle.find(det => det.id_detalle === d.id_detalle);
-        return total + (item?.puntos_canje || 0);
+        return total + (item?.puntos_canje * item?.cantidad || 0); // ✅ Multiplicado por cantidad
         }, 0);
 
     const puntos_disponibles = puntos_totales_cliente - puntos_usados_por_este_cliente;
 
     return detalle.filter(item => {
-        // 1. Validar que tenga puntos_canje
+        // 1. Validar puntos_canje
         if (!item.puntos_canje || item.puntos_canje <= 0) return false;
 
-        // 2. Verificar que no esté ya canjeado en cualquier otro descuento (por cualquier cliente)
-        const ya_canjeado = descuentos.some((d, i) => 
-        d.id_detalle === item.id_detalle && i !== currentIndex
-        );
-        if (ya_canjeado) return false;
+        // 2. Calcular costo total del producto (por toda su cantidad)
+        const costoTotal = item.cantidad * item.puntos_canje;
 
-        // 3. Verificar que este cliente tenga suficientes puntos para canjearlo
-        if (item.puntos_canje > puntos_disponibles) {
-        return false;
-        }
+        // 3. Verificar que el cliente tenga suficientes puntos
+        if (costoTotal > puntos_disponibles) return false;
 
-        return true;
+        // 4. Verificar que NO haya sido canjeado completamente
+        const veces_canjeado = descuentos.filter(d => d.id_detalle === item.id_detalle).length;
+        return veces_canjeado === 0; // ✅ Solo aparece si no ha sido canjeado ni una vez
     });
     };
 
@@ -428,11 +426,26 @@ function PagosPage() {
                                 >
                                 <option value="">Seleccionar producto</option>
                                 {getProductosCanjeables(index).map((item) => (
-                                    <option key={item.id_detalle} value={item.id_detalle}>
-                                    {item.cantidad} - {item.nombre_producto} {item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""} (Costo: {item.puntos_canje} puntos)
+                                    <option
+                                    key={item.id_detalle}
+                                    value={item.id_detalle}
+                                    >
+                                    {item.cantidad} - {item.nombre_producto} {item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""} (Costo: {item.puntos_canje * item.cantidad} puntos)
                                     </option>
                                 ))}
                                 </select>
+
+                                {/* ✅ Muestra el producto seleccionado aunque ya no esté en la lista */}
+                                {descuento.id_detalle && !getProductosCanjeables(index).some(item => item.id_detalle === descuento.id_detalle) && (
+                                <div className="text-xs text-black mt-1 text-center mt-3 font-bold">
+                                    {(() => {
+                                    const item = detalle.find(d => d.id_detalle === descuento.id_detalle);
+                                    return item
+                                        ? `${item.cantidad} - ${item.nombre_producto}${item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""} (Costo: ${item.puntos_canje * item.cantidad} puntos)`
+                                        : "Producto no disponible";
+                                    })()}
+                                </div>
+                                )}
                             </div>
                             )}
                         </div>
@@ -561,6 +574,8 @@ function PagosPage() {
                         </thead>
                         <tbody>
                             {descuentos.map((descuento, index) => {
+                            console.log("Descuento actual:", descuento);
+                            console.log("Productos canjeables:", getProductosCanjeables(index));
                             const item = detalle.find(d => d.id_detalle === descuento.id_detalle);
                             if (!item) return null;
                             return (
