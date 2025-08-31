@@ -14,20 +14,21 @@ function PagosPage() {
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
 
   // Cargar pedidos entregados
-  useEffect(() => {
     const fetchPedidos = async () => {
-      try {
+    try {
         const res = await fetch(`${API_BASE}/api/pedidos/entregados`, {
-          headers: { 'ngrok-skip-browser-warning': 'true' }
+        headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         const data = await res.json();
         setPedidos(data.pedidos || []);
-      } catch (error) {
+    } catch (error) {
         console.error("Error al cargar pedidos:", error);
-      }
+    }
     };
+
+    useEffect(() => {
     fetchPedidos();
-  }, []);
+    }, []);
 
   // Cargar detalle del pedido seleccionado
   const handleSelectPedido = async (pedido) => {
@@ -190,7 +191,6 @@ function PagosPage() {
                   }`}
                 >
                   <p><strong>Pedido #{pedido.numero_orden} | </strong>{pedido.nombre_mesa}</p>
-                  {/* ❌ Hora eliminada */}
                 </div>
               ))
             )}
@@ -706,7 +706,7 @@ function PagosPage() {
                         }}
                         className="btn btn-success text-white"
                     >
-                        Pagar
+                        Confirmar Pago
                     </button>
                     </>
                 ) : (
@@ -723,6 +723,7 @@ function PagosPage() {
                         setDescuentos([]);
                         setCanApplyDiscounts(false);
                         setFormaPago('');
+                        fetchPedidos();
                         setShowModalPago(false);
                         setPagoRealizado(false);
                         }}
