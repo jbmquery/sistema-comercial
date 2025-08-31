@@ -291,11 +291,11 @@ const imprimirVoucherPDF = () => {
 
   // --- LOGO (opcional) ---
   const logo = new Image();
-  logo.src = '/img/logo-pluvia-cafe.png'; // Asegúrate de que exista
+  logo.src = '/img/logo_pluvia_completo.png'; // Asegúrate de que exista
 
   logo.onload = () => {
-    const logoWidth = 15;
-    const logoHeight = 15;
+    const logoWidth = 20;
+    const logoHeight = 20;
     doc.addImage(logo, 'PNG', (pageWidth - logoWidth) / 2, y, logoWidth, logoHeight);
     y += logoHeight + 2;
   };
@@ -402,7 +402,7 @@ const imprimirVoucherPDF = () => {
   // --- MENSAJE FINAL ---
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(8);
-  doc.text('¡Esperamos verte pronto!', margin, y, { maxWidth: pageWidth - 2 * margin, align: 'center' });
+  doc.text('¡Esperamos verte pronto!', margin, y,);
   y += 5;
 
   doc.setFont('helvetica', 'normal');
@@ -427,8 +427,17 @@ const imprimirVoucherPDF = () => {
       // --- TEXTO DEL QR ---
       doc.setFont('helvetica', 'italic');
       doc.setFontSize(7);
-      doc.text('Escanea para contactarnos', margin, y, { maxWidth: pageWidth - 2 * margin, align: 'center' });
+      doc.text('Escanea para contactarnos', margin, y,);
       y += 5;
+
+       // --- CONTACTO SOFTWARE ---
+
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(5);
+      doc.text('Si desea información acerca del software, puede solicitarle el', margin, y);
+      y += 3;
+      doc.text('número de contacto a la sueña del establecimiento', margin, y);
+      y += 3;
 
       // Guardar PDF
       doc.save(`voucher-pedido-${selectedPedido.numero_orden}.pdf`);
