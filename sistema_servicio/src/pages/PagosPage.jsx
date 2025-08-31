@@ -207,7 +207,7 @@ function PagosPage() {
       let detalleTexto = "";
       Object.values(productosAgrupados).forEach(item => {
         const total = (item.precio_unitario * item.cantidad).toFixed(2);
-        detalleTexto += `${item.cantidad} - ${item.abreviado}${item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""} - S/${total}\n`;
+        detalleTexto += `${item.cantidad} - ${item.abreviado}${item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""} - S/ ${total}\n`;
       });
 
       // ✅ Generar lista de descuentos (solo si hay descuentos)
@@ -218,52 +218,59 @@ function PagosPage() {
         const item = detalle.find(d => d.id_detalle === descuento.id_detalle);
         if (item) {
           const total = (item.precio_unitario * item.cantidad).toFixed(2);
-          descuentosTexto += `${item.cantidad} - ${item.abreviado}${item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""} - S/${total}\n`;
+          descuentosTexto += `${item.cantidad} - ${item.abreviado}${item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""} - S/ ${total}\n`;
         }
       });
 
       // ✅ Construir mensaje con formato limpio
       let mensaje = `
-             ☕ *Pluvia Café*
-          _Café, amor y barrio_
-    -----------------------------------
-    Gracias por tu visita!
-    N° de pedido: ${selectedPedido.numero_orden}
-    F: ${fecha} - H: ${hora}
-    --------------Detalle--------------
-    ${detalleTexto.trim()}
-    `;
+------------------------------------
 
-      // ✅ Añadir sección "Descuentos" solo si hay descuentos
-      if (tieneDescuentos) {
-        mensaje += `-----------Descuentos------------
-    ${descuentosTexto.trim()}
-    `;
+*Pluvia Café*  -  _Café, amor y barrio_
+
+------------------------------------
+!Gracias por tu visita!
+N° de pedido: ${selectedPedido.numero_orden}
+F: ${fecha} - H: ${hora}
+------------- Detalle --------------
+${detalleTexto.trim()}
+`;
+
+// ✅ Añadir sección "Descuentos" solo si hay descuentos
+if (tieneDescuentos) {
+mensaje += `---------- Descuentos ------------
+${descuentosTexto.trim()}
+`;
       }
 
       // ✅ Añadir totales (siempre visible)
-      mensaje += `-----------Sub-Total--------------
-    *Total:* S/${subtotal.toFixed(2)}
-    *Descuento:* S/${descuentoSoles.toFixed(2)}
-    *Total a pagar:* S/${totalAPagar.toFixed(2)}
+mensaje += `---------- Sub-Total --------------
+*Total:* S/ ${subtotal.toFixed(2)}
+*Descuento:* S/ ${descuentoSoles.toFixed(2)}
+*Total a pagar:* S/ ${totalAPagar.toFixed(2)}
 
-    _¡Esperamos verte pronto!_
-    -----------------------------------
-    Recuerda, que puedes consultar a
-    través de WhatsApp o de manera
-    presencial. Cuantos puntos tienes
-    acumulados.
-    -----------------------------------
-      `.trim();
+_¡Esperamos verte pronto!_
+`
 
-      // ✅ Codificar mensaje para URL
-      const mensajeCodificado = encodeURIComponent(mensaje);
-      const numero = cliente.celular.replace(/\D/g, ''); // Solo números
-      const url = `https://wa.me/${numero}?text=${mensajeCodificado}`;
+if (tieneDescuentos) {
+mensaje += `------------------------------------
+Recuerda, que puedes consultar a
+través de WhatsApp o de manera
+presencial. Cuantos puntos tienes
+acumulados.
+------------------------------------`
+}
+
+mensaje +=``.trim();
+
+// ✅ Codificar mensaje para URL
+const mensajeCodificado = encodeURIComponent(mensaje);
+const numero = cliente.celular.replace(/\D/g, ''); // Solo números
+const url = `https://wa.me/${numero}?text=${mensajeCodificado}`;
 
       // ✅ Abrir WhatsApp
-      window.open(url, '_blank');
-    };
+window.open(url, '_blank');
+};
 
   return (
     <div className="flex flex-col justify-center items-center">
