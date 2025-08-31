@@ -21,7 +21,8 @@ def obtener_detalle_con_puntos(id_pedido):
             dp.estado,
             dp.id_carta,
             c.porcion,
-            c.unidad_medida
+            c.unidad_medida,
+            c.abreviado
         FROM detalle_pedido dp
         JOIN carta c ON dp.id_carta = c.id_carta
         WHERE dp.id_pedido = %s
@@ -40,7 +41,8 @@ def obtener_detalle_con_puntos(id_pedido):
                 "estado": row[5],
                 "id_carta": row[6],
                 "porcion": row[7],
-                "unidad_medida": row[8]
+                "unidad_medida": row[8],
+                "abreviado": row[9]
             }
             for row in rows
         ]

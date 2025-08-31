@@ -169,6 +169,102 @@ function PagosPage() {
 
     const [pagoRealizado, setPagoRealizado] = useState(false);
 
+    // FUNCION COMPARTIR POR WHATSAPP
+
+    const compartirPorWhatsApp = () => {
+      // ✅ Validar que el cliente seleccionado tenga celular
+      if (!clienteSeleccionado?.celular) {
+        alert("Cliente no registrado o sin número de celular");
+        return;
+      }
+
+      const cliente = clienteSeleccionado;
+      const { subtotal, descuentoSoles, totalAPagar } = calcularTotales();
+
+      // ✅ Fecha y hora actual (emisión del voucher)
+      const ahora = new Date();
+      const fecha = ahora.toLocaleDateString('es-PE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+      const hora = ahora.toLocaleTimeString('es-PE', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // ✅ Agrupar productos por abreviado (sin repetir)
+      const productosAgrupados = detalle.reduce((acc, item) => {
+        const key = item.abreviado;
+        if (!acc[key]) {
+          acc[key] = { ...item, cantidad: 0 };
+        }
+        acc[key].cantidad += item.cantidad;
+        return acc;
+      }, {});
+
+      // ✅ Generar lista de productos (alineada)
+      let detalleTexto = "";
+      Object.values(productosAgrupados).forEach(item => {
+        const total = (item.precio_unitario * item.cantidad).toFixed(2);
+        detalleTexto += `${item.cantidad} - ${item.abreviado}${item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""} - S/${total}\n`;
+      });
+
+      // ✅ Generar lista de descuentos (solo si hay descuentos)
+      let descuentosTexto = "";
+      let tieneDescuentos = descuentos.length > 0;
+
+      descuentos.forEach(descuento => {
+        const item = detalle.find(d => d.id_detalle === descuento.id_detalle);
+        if (item) {
+          const total = (item.precio_unitario * item.cantidad).toFixed(2);
+          descuentosTexto += `${item.cantidad} - ${item.abreviado}${item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""} - S/${total}\n`;
+        }
+      });
+
+      // ✅ Construir mensaje con formato limpio
+      let mensaje = `
+             ☕ *Pluvia Café*
+          _Café, amor y barrio_
+    -----------------------------------
+    Gracias por tu visita!
+    N° de pedido: ${selectedPedido.numero_orden}
+    F: ${fecha} - H: ${hora}
+    --------------Detalle--------------
+    ${detalleTexto.trim()}
+    `;
+
+      // ✅ Añadir sección "Descuentos" solo si hay descuentos
+      if (tieneDescuentos) {
+        mensaje += `-----------Descuentos------------
+    ${descuentosTexto.trim()}
+    `;
+      }
+
+      // ✅ Añadir totales (siempre visible)
+      mensaje += `-----------Sub-Total--------------
+    *Total:* S/${subtotal.toFixed(2)}
+    *Descuento:* S/${descuentoSoles.toFixed(2)}
+    *Total a pagar:* S/${totalAPagar.toFixed(2)}
+
+    _¡Esperamos verte pronto!_
+    -----------------------------------
+    Recuerda, que puedes consultar a
+    través de WhatsApp o de manera
+    presencial. Cuantos puntos tienes
+    acumulados.
+    -----------------------------------
+      `.trim();
+
+      // ✅ Codificar mensaje para URL
+      const mensajeCodificado = encodeURIComponent(mensaje);
+      const numero = cliente.celular.replace(/\D/g, ''); // Solo números
+      const url = `https://wa.me/${numero}?text=${mensajeCodificado}`;
+
+      // ✅ Abrir WhatsApp
+      window.open(url, '_blank');
+    };
+
   return (
     <div className="flex flex-col justify-center items-center">
       <HeaderNav />
@@ -742,7 +838,12 @@ function PagosPage() {
                         </svg>
                         <span className='hidden md:inline'>Imprimir</span>
                         </button>
-                        <button className="btn btn-md btn-outline">
+                        <button
+                          onClick={compartirPorWhatsApp}
+                          className="btn btn-md btn-outline"
+                          disabled={!clienteSeleccionado?.celular}
+                          title={clienteSeleccionado?.celular ? "Enviar por WhatsApp" : "Cliente sin número"}
+                        >
                         <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 1 1 0-2.684m0 2.684 6.632 3.316m-6.632-6 6.632-3.316m0 9.316a3 3 0 1 0 5.368 2.684 3 3 0 0 0-5.368-2.684Zm0-9.316a3.003 3.003 0 0 0 4.025 1.341 3 3 0 1 0-4.025-1.341Z" />
                         </svg>
