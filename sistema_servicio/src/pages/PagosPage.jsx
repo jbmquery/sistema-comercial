@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import HeaderNav from "../components/header_nav";
 import ModalBuscarCliente from '../components/ModalBuscarCliente';
 import { API_BASE } from '../config';
+import jsPDF from 'jspdf';
 
 function PagosPage() {
   const [pedidos, setPedidos] = useState([]);
@@ -244,7 +245,7 @@ ${descuentosTexto.trim()}
       }
 
       // ✅ Añadir totales (siempre visible)
-mensaje += `---------- Sub-Total --------------
+mensaje += `----------- Sub-Total -------------
 *Total:* S/ ${subtotal.toFixed(2)}
 *Descuento:* S/ ${descuentoSoles.toFixed(2)}
 *Total a pagar:* S/ ${totalAPagar.toFixed(2)}
@@ -270,6 +271,169 @@ const url = `https://wa.me/${numero}?text=${mensajeCodificado}`;
 
       // ✅ Abrir WhatsApp
 window.open(url, '_blank');
+};
+
+// FUNCION IMPRIMIR VOUCHER O GENERAR PDF
+
+const imprimirVoucherPDF = () => {
+  const { subtotal, descuentoSoles, totalAPagar } = calcularTotales();
+
+  // Configuración del PDF: tamaño A7 (≈ 57mm ancho)
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: [57, 210] // Ancho: 57mm, alto: variable
+  });
+
+  const margin = 2; // Margen pequeño para aprovechar el ancho
+  const pageWidth = 57;
+  let y = 10;
+
+  // --- LOGO (opcional) ---
+  const logo = new Image();
+  logo.src = '/img/logo-pluvia-cafe.png'; // Asegúrate de que exista
+
+  logo.onload = () => {
+    const logoWidth = 15;
+    const logoHeight = 15;
+    doc.addImage(logo, 'PNG', (pageWidth - logoWidth) / 2, y, logoWidth, logoHeight);
+    y += logoHeight + 2;
+  };
+
+  // --- TÍTULO ---
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('Pluvia Café', margin, y, { maxWidth: pageWidth - 2 * margin });
+  y += 5;
+
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(9);
+  doc.text('Café, amor y barrio', margin, y);
+  y += 6;
+
+  // --- DATOS DEL PEDIDO ---
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text(`N° de pedido: ${selectedPedido.numero_orden}`, margin, y);
+  y += 5;
+
+  const ahora = new Date();
+  const fecha = ahora.toLocaleDateString('es-PE');
+  const hora = ahora.toLocaleTimeString('es-PE');
+  doc.text(`F: ${fecha} - H: ${hora}`, margin, y);
+  y += 8;
+
+  // --- LÍNEA SEPARADORA ---
+  doc.setDrawColor(0);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 6;
+
+  // --- DETALLE DEL PEDIDO ---
+  doc.setFont('helvetica', 'bold');
+  doc.text('Detalle del Pedido', margin, y);
+  y += 5;
+
+  // Agrupar productos por abreviado
+  const productosAgrupados = Object.values(detalle.reduce((acc, item) => {
+    const key = item.abreviado;
+    acc[key] = acc[key] || { ...item, cantidad: 0 };
+    acc[key].cantidad += item.cantidad;
+    return acc;
+  }, {}));
+
+  // Tabla de productos
+  productosAgrupados.forEach(item => {
+    const nombre = `${item.abreviado}${item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""}`;
+    const importe = `S/ ${(item.precio_unitario * item.cantidad).toFixed(2)}`;
+    const linea = `${item.cantidad} x ${nombre} - ${importe}`;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text(linea, margin, y);
+    y += 4;
+  });
+
+  y += 2;
+
+  // --- DESCUENTOS (si hay) ---
+  if (descuentos.length > 0) {
+    doc.setFont('helvetica', 'bold');
+    doc.text('Descuentos', margin, y);
+    y += 5;
+
+    descuentos.forEach(descuento => {
+      const item = detalle.find(d => d.id_detalle === descuento.id_detalle);
+      if (!item) return;
+      const nombre = `${item.abreviado}${item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""}`;
+      const importe = `S/ ${(item.precio_unitario * item.cantidad).toFixed(2)}`;
+      const linea = `${item.cantidad} x ${nombre} - ${importe}`;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.text(linea, margin, y);
+      y += 4;
+    });
+
+    y += 2;
+  }
+
+  // --- LÍNEA SEPARADORA ---
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 4;
+
+  // --- TOTALES ---
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('Sub-Total', margin, y);
+  y += 5;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Total: S/ ${subtotal.toFixed(2)}`, pageWidth - margin, y, { align: 'right' });
+  y += 4;
+  doc.text(`Descuento: S/ ${descuentoSoles.toFixed(2)}`, pageWidth - margin, y, { align: 'right' });
+  y += 4;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text(`Total a pagar: S/ ${totalAPagar.toFixed(2)}`, pageWidth - margin, y, { align: 'right' });
+  y += 8;
+
+  // --- LÍNEA SEPARADORA ---
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 6;
+
+  // --- MENSAJE FINAL ---
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(8);
+  doc.text('¡Esperamos verte pronto!', margin, y, { maxWidth: pageWidth - 2 * margin, align: 'center' });
+  y += 5;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('Recuerda, que puedes consultar a', margin, y);
+  y += 4;
+  doc.text('través de WhatsApp o presencial.', margin, y);
+  y += 6;
+
+  // --- QR CODE ---
+  import('qrcode').then(qrModule => {
+    const qr = qrModule.default;
+    const whatsappUrl = 'https://wa.me/51956228708';
+
+    qr.toDataURL(whatsappUrl, { errorCorrectionLevel: 'M' }, (err, url) => {
+      if (err) throw err;
+
+      const qrSize = 25;
+      const qrX = (pageWidth - qrSize) / 2;
+      doc.addImage(url, 'PNG', qrX, y, qrSize, qrSize);
+      y += qrSize + 2;
+
+      // --- TEXTO DEL QR ---
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(7);
+      doc.text('Escanea para contactarnos', margin, y, { maxWidth: pageWidth - 2 * margin, align: 'center' });
+      y += 5;
+
+      // Guardar PDF
+      doc.save(`voucher-pedido-${selectedPedido.numero_orden}.pdf`);
+    });
+  });
 };
 
   return (
@@ -837,7 +1001,10 @@ window.open(url, '_blank');
 
                     {/* Botones Imprimir y Compartir */}
                     <div className="flex justify-end gap-2 items-center">
-                        <button className="btn btn-md btn-outline">
+                        <button
+                          onClick={imprimirVoucherPDF}
+                          className="btn btn-md btn-outline"
+                        >
                         <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M9 21h6a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2Zm0 0h6a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-1.414.586" />
                             <path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2" />
