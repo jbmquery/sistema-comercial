@@ -3,7 +3,7 @@
 import HeaderCom from "../components/header_com";
 import CardsMenu from "../components/cardsmenu";
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import React from 'react';
 
 function Menues() {
@@ -70,10 +70,9 @@ function Menues() {
   };
 
   // Calcular subtotal general
-  const subtotalGeneral = carrito.reduce(
-    (total, item) => total + (item.precio * item.cantidad),
-    0
-  ).toFixed(2);
+  const subtotalGeneral = useMemo(() => {
+    return carrito.reduce((total, item) => total + (item.precio * item.cantidad), 0).toFixed(2);
+  }, [carrito]);
 
   // Guardar pedido en backend
 const guardarPedido = async () => {

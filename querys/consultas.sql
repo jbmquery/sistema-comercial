@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS public.mesas
     nombre character varying(15) COLLATE pg_catalog."default" NOT NULL,
     capacidad bigint NOT NULL,
     disponibilidad boolean NOT NULL,
+    tipo_mesa character varying(15) COLLATE pg_catalog."default",
     CONSTRAINT mesas_pkey PRIMARY KEY (id_mesas)
 )
 

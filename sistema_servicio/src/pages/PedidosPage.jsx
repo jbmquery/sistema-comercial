@@ -430,7 +430,7 @@ function PedidosPage() {
       
       <div className="pt-10 w-full max-w-4xl px-4">
         {loading ? (
-          <p>Cargando pedidos...</p> 
+          <div className='text-center'><span className="loading loading-bars loading-md"></span></div>
         ) : pedidos.length === 0 ? (
           <p className="text-center">No hay pedidos activos</p>
         ) : (

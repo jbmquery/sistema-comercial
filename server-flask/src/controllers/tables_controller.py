@@ -2,7 +2,7 @@ from conexion_postgresql import get_connection
 
 def obtener_mesas():
     query = """
-        SELECT id_mesas, nombre, capacidad, disponibilidad
+        SELECT id_mesas, nombre, capacidad, disponibilidad, tipo_mesa
         FROM mesas
         ORDER BY id_mesas
     """
@@ -21,7 +21,8 @@ def obtener_mesas():
                 "id": row[0],
                 "nombre": row[1],
                 "capacidad": row[2],
-                "disponibilidad": row[3]
+                "disponibilidad": row[3],
+                "tipo_mesa": row[4]
             })
 
         return mesas

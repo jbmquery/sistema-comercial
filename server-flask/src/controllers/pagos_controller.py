@@ -15,7 +15,8 @@ def buscar_clientes_por_dni(dni):
             ape_paterno,
             ape_materno,
             dni,
-            puntos_acumulados
+            puntos_acumulados,
+            celular
         FROM clientes 
         WHERE dni ILIKE %s
         ORDER BY id_cliente
@@ -29,7 +30,8 @@ def buscar_clientes_por_dni(dni):
                 "id_cliente": row[0],
                 "nombre_completo": f"{row[1]} {row[2] or ''} {row[3] or ''}".strip(),
                 "dni": row[4],
-                "puntos_acumulados": row[5] or 0
+                "puntos_acumulados": row[5] or 0,
+                "celular": row[6]
             }
             for row in rows
         ]
