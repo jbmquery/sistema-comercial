@@ -26,3 +26,8 @@ Find the corresponding instructions under:
 # Ejecutar el ngrok
 
 .\ngrok.exe start --all --config "C:\Users\santi\.ngrok2\ngrok.yml"
+
+# Lugares donde actualizar NGROK en el codigo------
+
+- server-flask/src/main.py ----------   FRONTEND
+- SISTEMA_SERVICIO/src/config.js ----   BACKEND

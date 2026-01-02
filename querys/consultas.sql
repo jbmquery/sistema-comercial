@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS public.sub_categorias
 -- Tabla: carta (menú)
 CREATE TABLE IF NOT EXISTS public.carta
 (
-    id_carta bigint NOT NULL,
+    id_carta bigint NOT NULL DEFAULT nextval('carta_id_carta_seq'::regclass),
     categoria bigint NOT NULL,
     sub_categoria bigint NOT NULL,
     nombre character varying(50) COLLATE pg_catalog."default" NOT NULL,
@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS public.carta
     puntos_canje bigint,
     estado boolean NOT NULL DEFAULT true,
     disponible boolean NOT NULL,
-    porcion character varying(15) COLLATE pg_catalog."default" NOT NULL,
-    unidad_medida character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    porcion character varying(15) COLLATE pg_catalog."default",
+    unidad_medida character varying(20) COLLATE pg_catalog."default",
     observacion character varying(100) COLLATE pg_catalog."default",
     url_imagen character varying(50) COLLATE pg_catalog."default",
     CONSTRAINT carta_pkey PRIMARY KEY (id_carta),
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS public.usuarios
 )
 
 -- Tabla: clientes (con sistema de puntos)
-CREATE TABLE IF NOT EXISTS public.clientes
+/* CREATE TABLE IF NOT EXISTS public.clientes
 (
     id_cliente bigint NOT NULL,
     nombres character varying(50) COLLATE pg_catalog."default" NOT NULL,
@@ -95,7 +95,21 @@ CREATE TABLE IF NOT EXISTS public.clientes
     fecha_registro date NOT NULL,
     estado boolean DEFAULT true,
     CONSTRAINT clientes_pkey PRIMARY KEY (id_cliente)
+) */
+CREATE TABLE IF NOT EXISTS public.clientes
+(
+    id_cliente bigint NOT NULL DEFAULT nextval('clientes_id_cliente_seq'::regclass),
+    nombres character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    ape_paterno character varying(30) COLLATE pg_catalog."default",
+    ape_materno character varying(30) COLLATE pg_catalog."default",
+    celular character varying(15) COLLATE pg_catalog."default",
+    dni character varying(12) COLLATE pg_catalog."default" NOT NULL,
+    puntos_acumulados bigint,
+    fecha_registro date NOT NULL,
+    estado boolean DEFAULT true,
+    CONSTRAINT clientes_pkey PRIMARY KEY (id_cliente)
 )
+
 
 -- Tabla: inventario
 CREATE TABLE IF NOT EXISTS public.inventario

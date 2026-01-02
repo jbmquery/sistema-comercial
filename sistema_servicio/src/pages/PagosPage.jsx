@@ -550,7 +550,23 @@ const imprimirVoucherPDF = () => {
                     </table>
                   </div>
                   <div className='divider divider-start'>Sub-total</div>
-                  <div className='text-right font-bold text-lg'>S/ {subtotal.toFixed(2)}</div>
+                  <div className='flex justify-between items-center'>
+                  {/* Botones Imprimir detalle de pedido*/}
+                    <div className="flex justify-center m-0">
+                          <button
+                            onClick={imprimirVoucherPDF}
+                            className="btn btn-md btn-outline"
+                          >
+                          <svg width={16} height={16} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M9 21h6a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2Zm0 0h6a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H9a2 2 0 0 0-1.414.586" />
+                              <path d="M17 17h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2" />
+                              <path d="M17 5v4H7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2Z" />
+                          </svg>
+                          <span className='hidden md:inline'>Imprimir</span>
+                          </button>
+                    </div>
+                    <div className='text-right font-bold text-lg'>S/ {subtotal.toFixed(2)}</div>
+                  </div>
                 </>
               ) : (
                 <p className="text-gray-500">Selecciona un pedido para ver su detalle</p>

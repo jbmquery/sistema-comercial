@@ -6,7 +6,7 @@ app = Flask(__name__)
 # Define los orígenes permitidos
 origins = [
     "http://localhost:5173",           # ← Frontend en desarrollo
-    "https://8ec7dd4fa1b6.ngrok-free.app"  # ← URL de tu frontend en ngrok
+    "https://697459caa15b.ngrok-free.app"  # ← URL de tu frontend en ngrok
 ]
 
 CORS(app, origins=origins, supports_credentials=True)
@@ -22,6 +22,8 @@ from routes.categorias_routes import categorias_bp
 from routes.pagos_routes import pagos_bp
 from routes.dividir_producto_routes import dividir_bp
 from routes.canje_routes import canje_bp
+from routes.ventas_dia_routes import ventas_dia_bp
+from routes.clientes_routes import clientes_bp
 
 
 app.register_blueprint(login_bp)
@@ -34,6 +36,8 @@ app.register_blueprint(categorias_bp)
 app.register_blueprint(pagos_bp)
 app.register_blueprint(dividir_bp)
 app.register_blueprint(canje_bp)
+app.register_blueprint(ventas_dia_bp)
+app.register_blueprint(clientes_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)

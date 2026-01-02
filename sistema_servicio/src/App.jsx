@@ -5,6 +5,10 @@ import Menues from './pages/MenuPage.jsx';
 import ErrorPage from './pages/ErrorPage.jsx';
 import PedidosPage from './pages/PedidosPage.jsx';
 import PagosPage from './pages/PagosPage.jsx';
+import VentasDiaPage from './pages/VentasDiaPage.jsx';
+import ClientesPage from './pages/ClientesPage.jsx';
+import GuiaPages from './pages/GuiaPage.jsx';
+import CartaPage from './pages/CartaPage.jsx';
 
 function App() {
   return (
@@ -15,6 +19,10 @@ function App() {
         <Route path="/menues" element={<Menues />} />
         <Route path="/pedidos" element={<PedidosPage />} />
         <Route path="/pagos" element={<PagosPage/>} />
+        <Route path="/ventas_dia" element={<VentasDiaPage/>} />
+        <Route path="/clientes" element={<ClientesPage/>} />
+        <Route path="/guia" element={<GuiaPages/>} />
+        <Route path="/carta" element={<CartaPage/>} />
         <Route path="*" element={<ErrorPage />} />
       </Routes>
     </div>
