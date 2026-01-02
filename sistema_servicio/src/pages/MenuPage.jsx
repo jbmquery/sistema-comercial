@@ -155,7 +155,7 @@ const guardarPedido = async () => {
             {categorias.map((cat) => (
               <button
                 key={cat.id}
-                className={`btn md:btn-md btn-outline w-30 md:w-40 ${categoria === cat.nombre ? "bg-blue-500 text-white" : "bg-secondary text-white"}`}
+                className={`btn md:btn-md btn-outline w-20 md:w-40 ${categoria === cat.nombre ? "bg-blue-500 text-white" : "bg-secondary text-white"}`}
                 onClick={() => setCategoria(cat.nombre)}
               >
                 {cat.nombre}
@@ -165,7 +165,7 @@ const guardarPedido = async () => {
 
           {/* Buscador */}
           <div className="bg-yellow-200 flex flex-row justify-between py-2 px-4 items-center">
-            <p>Mesa seleccionada: <b>{nombreMesa}</b></p>
+            <p>Pedido para: <b>{nombreMesa}</b></p>
             <input
               type="text"
               className="input w-35 md:w-60 lg:w-80"
@@ -178,7 +178,7 @@ const guardarPedido = async () => {
           {/* Productos */}
           <div 
             className="bg-gray-100 flex w-full flex-col py-2 px-4 m-0 overflow-y-auto"
-            style={{ maxHeight: 'calc(100vh - 180px)', minHeight: '0', flex: '1 1 auto' }}
+            style={{ maxHeight: 'calc(100vh - 192px)', minHeight: '0', flex: '1 1 auto' }}
           >
             {Object.keys(porSubcategoria).length > 0 ? (
               Object.entries(porSubcategoria).map(([subcat, prods]) => (
