@@ -9,6 +9,7 @@ import VentasDiaPage from './pages/VentasDiaPage.jsx';
 import ClientesPage from './pages/ClientesPage.jsx';
 import GuiaPages from './pages/GuiaPage.jsx';
 import CartaPage from './pages/CartaPage.jsx';
+import EditTablesPage from './pages/EditTablesPage.jsx';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/guia" element={<GuiaPages/>} />
         <Route path="/carta" element={<CartaPage/>} />
         <Route path="*" element={<ErrorPage />} />
+        <Route path="/admin_settings" element={<EditTablesPage/>} />
       </Routes>
     </div>
   );

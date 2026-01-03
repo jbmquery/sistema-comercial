@@ -23,18 +23,18 @@ function CardsMenu({ grupo, productos, onAdd }) {
           </p>
 
           {/* Botones dinámicos */}
-          <div className="card-actions justify-center my-2 flex gap-2">
+          <div className="card-actions justify-center my-2 flex gap-1 md:gap-2">
 
             {/* CASO: UN SOLO PRODUCTO */}
             {unico ? (
               <button
-                className="btn btn-secondary rounded-xl"
+                className="btn btn-secondary rounded-xl btn-sm min-w-13"
                 disabled={!productoUnico.disponible}
                 onClick={() => onAdd(productoUnico)}
               >
                 <span className="">
                   {productoUnico.porcion != null
-                    ? productoUnico.porcion
+                    ? productoUnico.porcion + " " + (productoUnico.unidad_medida || "")
                     : "+"}
                 </span>
               </button>
@@ -43,12 +43,12 @@ function CardsMenu({ grupo, productos, onAdd }) {
               productosOrdenados.map((prod) => (
                 <button
                   key={prod.id_carta}
-                  className="btn btn-secondary rounded-xl"
+                  className="btn btn-secondary rounded-xl btn-sm"
                   disabled={!prod.disponible}
                   onClick={() => onAdd(prod)}
                 >
                   <span className="">
-                    {prod.porcion}
+                    {prod.porcion + " " + (prod.unidad_medida || "")}
                   </span>
                 </button>
               ))
