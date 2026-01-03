@@ -138,6 +138,18 @@ const guardarPedido = async () => {
   }
 };
 
+
+// ✅ agrupar por grupo para las cardsmenu
+
+  const agruparPorGrupo = (productos) => {
+    return productos.reduce((acc, prod) => {
+      const key = prod.grupo || prod.nombre;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(prod);
+      return acc;
+    }, {});
+  };
+
   return (
     <div className="flex flex-col justify-center">
       {/* Header */}
@@ -176,29 +188,39 @@ const guardarPedido = async () => {
           </div>
 
           {/* Productos */}
-          <div 
-            className="bg-gray-100 flex w-full flex-col py-2 px-4 m-0 overflow-y-auto"
-            style={{ maxHeight: 'calc(100vh - 192px)', minHeight: '0', flex: '1 1 auto' }}
-          >
-            {Object.keys(porSubcategoria).length > 0 ? (
-              Object.entries(porSubcategoria).map(([subcat, prods]) => (
-                <div key={subcat} className="mb-6">
-                  <div className="divider divider-start"><b>{subcat}</b></div>
-                  <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
-                    {prods.map((prod) => (
-                      <CardsMenu 
-                        key={prod.id_carta} 
-                        producto={prod} 
-                        onAdd={() => agregarAlCarrito(prod)} 
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-center p-4">No hay productos</p>
-            )}
-          </div>
+{/* Productos */}
+<div 
+  className="bg-gray-100 flex w-full flex-col py-2 px-4 m-0 overflow-y-auto"
+  style={{ maxHeight: 'calc(100vh - 192px)', minHeight: '0', flex: '1 1 auto' }}
+>
+  {Object.keys(porSubcategoria).length > 0 ? (
+    Object.entries(porSubcategoria).map(([subcat, prods]) => (
+      <div key={subcat} className="mb-6">
+        <div className="divider divider-start">
+          <b>{subcat}</b>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
+
+          {Object.entries(agruparPorGrupo(prods)).map(
+            ([grupo, productosGrupo]) => (
+              <CardsMenu
+                key={grupo}
+                grupo={grupo}
+                productos={productosGrupo}
+                onAdd={agregarAlCarrito}
+              />
+            )
+          )}
+
+        </div>
+      </div>
+    ))
+  ) : (
+    <p className="text-center p-4">No hay productos</p>
+  )}
+</div>
+
         </div>
 
         {/* Resumen pedidos */}

@@ -13,9 +13,11 @@ def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None
         SELECT 
             c.id_carta,
             c.nombre,
+            c.grupo,
             c.porcion,
             c.unidad_medida,
             c.precio,
+            c.disponible,
             c.url_imagen,
             c.sub_categoria,
             sc.nombre_subcat,
@@ -43,7 +45,6 @@ def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None
                 query += " AND LOWER(sc.nombre_subcat) = LOWER(%s)"
                 params.append(sub_categoria)
 
-        # Filtro por texto de búsqueda en el nombre del producto
         if search and search.strip():
             query += " AND LOWER(c.nombre) ILIKE %s"
             params.append(f"%{search.lower().strip()}%")
@@ -53,26 +54,31 @@ def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None
         cursor.execute(query, params)
         rows = cursor.fetchall()
 
-        # Agrupar por nombre_subcat
         productos_agrupados = {}
+
         for row in rows:
-            subcat = row[7]  # nombre_subcat
+            subcat = row[9]  # nombre_subcat
+
             producto = {
                 "id_carta": row[0],
                 "nombre": row[1],
-                "porcion": row[2],
-                "unidad_medida": row[3],
-                "precio": float(row[4]) if row[4] else 0.0,
-                "url_imagen": row[5],
-                "sub_categoria": row[6],
-                "nombre_subcat": row[7],
-                "nombre_cat": row[8]
+                "grupo": row[2],
+                "porcion": row[3],
+                "unidad_medida": row[4],
+                "precio": float(row[5]) if row[5] else 0.0,
+                "disponible": row[6],          # ✅ boolean real
+                "url_imagen": row[7],
+                "sub_categoria": row[8],
+                "nombre_subcat": row[9],
+                "nombre_cat": row[10]
             }
+
             if subcat not in productos_agrupados:
                 productos_agrupados[subcat] = []
+
             productos_agrupados[subcat].append(producto)
 
-        return productos_agrupados  # ← Devuelve objeto agrupado
+        return productos_agrupados
 
     except Exception as e:
         print(f"Error al obtener productos: {e}")
