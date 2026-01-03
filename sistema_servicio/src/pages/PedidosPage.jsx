@@ -525,7 +525,7 @@ function PedidosPage() {
                             <th>Estado</th>
                             <th>Precio Unit.</th>
                             <th>Observación</th>
-                            <th>Configuraciones</th>
+                            <th>Configurar</th>
                           </tr>
                         </thead>
                         <tbody>
