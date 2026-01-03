@@ -29,12 +29,7 @@ function CardsMenu({ grupo, productos, onAdd }) {
             {unico ? (
               <button
                 className="btn btn-secondary rounded-xl"
-                disabled={
-                  !(productoUnico.disponible === true ||
-                    productoUnico.disponible === 1 ||
-                    productoUnico.disponible === "1" ||
-                    productoUnico.disponible === "True")
-                }
+                disabled={!productoUnico.disponible}
                 onClick={() => onAdd(productoUnico)}
               >
                 <span className="">
@@ -49,12 +44,7 @@ function CardsMenu({ grupo, productos, onAdd }) {
                 <button
                   key={prod.id_carta}
                   className="btn btn-secondary rounded-xl"
-                  disabled={
-                    !(prod.disponible === true ||
-                      prod.disponible === 1 ||
-                      prod.disponible === "1" ||
-                      prod.disponible === "True")
-                  }
+                  disabled={!prod.disponible}
                   onClick={() => onAdd(prod)}
                 >
                   <span className="">

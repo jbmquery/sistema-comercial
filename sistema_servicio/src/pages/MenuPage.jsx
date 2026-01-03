@@ -56,6 +56,7 @@ function Menues() {
         return [...prev, { ...producto, cantidad: 1 }];
       }
     });
+    mostrarAlerta();
   };
 
   // Eliminar o decrementar producto
@@ -150,8 +151,65 @@ const guardarPedido = async () => {
     }, {});
   };
 
+// Alertas y renderizado
+  
+  const [alerts, setAlerts] = useState([]);
+
+  const mostrarAlerta = () => {
+  const id = Date.now();
+
+  setAlerts((prev) => [
+    ...prev,
+    { id, visible: true }
+  ]);
+
+  // Inicia fade-out
+  setTimeout(() => {
+    setAlerts((prev) =>
+      prev.map((a) =>
+        a.id === id ? { ...a, visible: false } : a
+      )
+    );
+  }, 800); // empieza a desvanecer
+
+  // Elimina del DOM
+  setTimeout(() => {
+    setAlerts((prev) => prev.filter((a) => a.id !== id));
+  }, 1000);
+};
+
+
+
   return (
     <div className="flex flex-col justify-center">
+      {/* Alertas */}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-y-2">
+        {alerts.map((alert) => (
+          <div
+            key={alert.id}
+            role="alert"
+            className={`alert alert-success transition-opacity duration-200 w-90 ${
+              alert.visible ? "opacity-100" : "opacity-0"
+            }`}
+          >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 shrink-0 stroke-current"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span>Se agregó producto al carrito</span>
+        </div>
+      ))}
+    </div>
+
       {/* Header */}
       <div className="w-full shadow-md z-10">
         <HeaderCom />

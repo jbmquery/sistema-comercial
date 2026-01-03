@@ -80,17 +80,17 @@ function VentasDiaPage() {
         {/* Resumen de pagos */}
         <div className="bg-base-200 rounded-box p-4 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-green-50 p-3 rounded-lg">
-              <p className="text-sm text-gray-500">Efectivo</p>
-              <p className="text-xl font-bold text-green-700">S/ {ventas.resumen_pagos.efectivo.toFixed(2)}</p>
-            </div>
             <div className="bg-blue-50 p-3 rounded-lg">
-              <p className="text-sm text-gray-500">Yape</p>
-              <p className="text-xl font-bold text-blue-700">S/ {ventas.resumen_pagos.yape.toFixed(2)}</p>
+              <p className="text-sm text-gray-500">Efectivo</p>
+              <p className="text-xl font-bold text-blue-700">S/ {ventas.resumen_pagos.efectivo.toFixed(2)}</p>
             </div>
             <div className="bg-purple-50 p-3 rounded-lg">
+              <p className="text-sm text-gray-500">Yape</p>
+              <p className="text-xl font-bold text-purple-700">S/ {ventas.resumen_pagos.yape.toFixed(2)}</p>
+            </div>
+            <div className="bg-green-50 p-3 rounded-lg">
               <p className="text-sm text-gray-500">Plin</p>
-              <p className="text-xl font-bold text-purple-700">S/ {ventas.resumen_pagos.plin.toFixed(2)}</p>
+              <p className="text-xl font-bold text-green-700">S/ {ventas.resumen_pagos.plin.toFixed(2)}</p>
             </div>
             <div className="bg-orange-50 p-3 rounded-lg">
               <p className="text-sm text-gray-500">Transferencia</p>
