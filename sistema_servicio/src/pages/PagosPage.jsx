@@ -588,7 +588,7 @@ const imprimirVoucherPDF = () => {
                         setClienteSeleccionado(null); // ✅ Limpiar cliente
                       }
                     }}
-                    className="checkbox checkbox-primary mb-4"
+                    className="toggle mb-4"
                   />
                 </label>
                 <div className="flex gap-2">
@@ -662,7 +662,7 @@ const imprimirVoucherPDF = () => {
                         setDescuentos([]); // Limpiar descuentos si se deshabilita
                         }
                     }}
-                    className="checkbox checkbox-primary"
+                    className="toggle"
                     />
                 </label>
 

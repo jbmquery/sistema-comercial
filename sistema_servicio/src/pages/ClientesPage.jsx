@@ -334,7 +334,7 @@ function ClientesPage() {
                     type="checkbox"
                     checked={currentCliente.estado}
                     onChange={e => setCurrentCliente({...currentCliente, estado: e.target.checked})}
-                    className="checkbox checkbox-primary"
+                    className="toggle"
                   />
                 </label>
               </div>
