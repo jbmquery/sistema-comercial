@@ -51,15 +51,24 @@ CREATE TABLE IF NOT EXISTS public.carta
 )
 
 -- Tabla: mesas
+-- Table: public.mesas
+
+-- DROP TABLE IF EXISTS public.mesas;
+
 CREATE TABLE IF NOT EXISTS public.mesas
 (
-    id_mesas bigint NOT NULL,
+    id_mesas bigint NOT NULL DEFAULT nextval('mesas_id_mesas_seq'::regclass),
     nombre character varying(15) COLLATE pg_catalog."default" NOT NULL,
     capacidad bigint NOT NULL,
     disponibilidad boolean NOT NULL,
     tipo_mesa character varying(15) COLLATE pg_catalog."default",
     CONSTRAINT mesas_pkey PRIMARY KEY (id_mesas)
 )
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.mesas
+    OWNER to postgres;
 
 -- Tabla: usuarios (empleados: meseros, cajeros, etc.)
 CREATE TABLE IF NOT EXISTS public.usuarios

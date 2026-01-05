@@ -10,6 +10,7 @@ import ClientesPage from './pages/ClientesPage.jsx';
 import GuiaPages from './pages/GuiaPage.jsx';
 import CartaPage from './pages/CartaPage.jsx';
 import EditTablesPage from './pages/EditTablesPage.jsx';
+import EditCartaPage from './pages/EditCartaPage.jsx';
 
 function App() {
   return (
@@ -25,7 +26,8 @@ function App() {
         <Route path="/guia" element={<GuiaPages/>} />
         <Route path="/carta" element={<CartaPage/>} />
         <Route path="*" element={<ErrorPage />} />
-        <Route path="/admin_settings" element={<EditTablesPage/>} />
+        <Route path="/edit-tables" element={<EditTablesPage/>} />
+        <Route path="/edit-carta" element={<EditCartaPage/>} />
       </Routes>
     </div>
   );

@@ -11,7 +11,7 @@ export default function HeaderNav() {
         <Link className="link btn btn-md lg:btn-lg btn-outline w-25 md:w-40 bg-secondary text-white" to='/pagos'>Pagos</Link>
         <Link className="link btn btn-md lg:btn-lg btn-outline w-25 md:w-40 bg-secondary text-white" to='/clientes'>Clientes</Link>
         <Link className="link btn btn-md lg:btn-lg btn-outline w-25 md:w-40 bg-secondary text-white" to='/ventas_dia'>Ventas</Link>
-        <Link className="link btn btn-md lg:btn-lg btn-outline w-25 md:w-40 bg-secondary text-white" to='/admin_settings'>Admin</Link>
+        <Link className="link btn btn-md lg:btn-lg btn-outline w-25 md:w-40 bg-secondary text-white" to='/edit-tables'>Admin</Link>
       </nav>
     </div>
   );

@@ -75,6 +75,8 @@ function Menues() {
     return carrito.reduce((total, item) => total + (item.precio * item.cantidad), 0).toFixed(2);
   }, [carrito]);
 
+
+
   // Guardar pedido en backend
 const guardarPedido = async () => {
   if (carrito.length === 0) {
@@ -95,7 +97,7 @@ const guardarPedido = async () => {
       return;
     }
 
-    const idMesa = mesa.id;
+    const idMesa = mesa.id_mesas;
 
     const pedido = {
       id_mesa: idMesa,
@@ -138,6 +140,8 @@ const guardarPedido = async () => {
     alert("Error de conexión");
   }
 };
+
+
 
 
 // ✅ agrupar por grupo para las cardsmenu
