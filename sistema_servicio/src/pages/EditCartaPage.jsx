@@ -1,187 +1,323 @@
-import { useEffect, useState } from 'react';
-import HeaderCom from '../components/header_com.jsx';
-import { API_BASE } from '../config';
+import { useEffect, useState } from "react";
+import HeaderCom from "../components/header_com.jsx";
+import { API_BASE } from "../config";
 import { Link } from "react-router-dom";
 
 function EditCartaPage() {
 
-  const [mesas, setMesas] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentMesa, setCurrentMesa] = useState({
-    id_mesas: '',
-    nombre: '',
-    capacidad: '',
-    disponibilidad: true,
-    tipo_mesa: ''
+  /* =======================
+     ESTADOS
+  ======================= */
+
+  const [categorias, setCategorias] = useState([]);
+  const [subcategorias, setSubcategorias] = useState([]);
+  const [cartas, setCartas] = useState([]);
+
+  const [categoriaForm, setCategoriaForm] = useState({
+    id_categoria: "",
+    nombre_cat: "",
+    descripcion: ""
   });
 
+  const [subcategoriaForm, setSubcategoriaForm] = useState({
+    id_subcat: "",
+    nombre_subcat: "",
+    descripcion: "",
+    categoria: ""
+  });
+
+  const [cartaForm, setCartaForm] = useState({
+    id_carta: "",
+    categoria: "",
+    sub_categoria: "",
+    nombre: "",
+    grupo: "",
+    abreviado: "",
+    precio: "",
+    puntos_canje: "",
+    estado: true,
+    disponible: true,
+    porcion: "",
+    unidad_medida: "",
+    observacion: "",
+    url_imagen: ""
+  });
+
+  const [editCategoria, setEditCategoria] = useState(false);
+  const [editSubcategoria, setEditSubcategoria] = useState(false);
+  const [editCarta, setEditCarta] = useState(false);
+
+  /* =======================
+     CARGA INICIAL
+  ======================= */
+
   useEffect(() => {
-    fetchMesas();
+    fetchCategorias();
+    fetchCartas();
   }, []);
 
-  const fetchMesas = async () => {
-    const res = await fetch(`${API_BASE}/api/mesas`, {
-      headers: { 'ngrok-skip-browser-warning': 'true' }
+  const fetchCategorias = async () => {
+    const res = await fetch(`${API_BASE}/api/categorias`, {
+      headers: { "ngrok-skip-browser-warning": "true" }
     });
     const data = await res.json();
-    setMesas(data.mesas);
+    setCategorias(data.categorias || []);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const fetchSubcategorias = async (categoriaId) => {
+    const res = await fetch(
+      `${API_BASE}/api/subcategorias?categoria=${categoriaId}`,
+      { headers: { "ngrok-skip-browser-warning": "true" } }
+    );
+    const data = await res.json();
+    setSubcategorias(data.subcategorias || []);
+  };
 
-    const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing
-      ? `${API_BASE}/api/mesas/${currentMesa.id_mesas}`
-      : `${API_BASE}/api/mesas`;
-
-    const res = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true'
-      },
-      body: JSON.stringify({
-        nombre: currentMesa.nombre,
-        capacidad: currentMesa.capacidad,
-        disponibilidad: currentMesa.disponibilidad,
-        tipo_mesa: currentMesa.tipo_mesa
-      })
+  const fetchCartas = async () => {
+    const res = await fetch(`${API_BASE}/api/carta`, {
+      headers: { "ngrok-skip-browser-warning": "true" }
     });
-
-    if (res.ok) {
-      fetchMesas();
-      resetForm();
-    } else {
-      alert('Error al guardar mesa');
-    }
+    const data = await res.json();
+    setCartas(Object.values(data.por_subcategoria || {}).flat());
   };
 
-  const handleEdit = (mesa) => {
-    setCurrentMesa(mesa);
-    setIsEditing(true);
-  };
+  /* =======================
+     CSV
+  ======================= */
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Eliminar mesa?')) return;
+  const descargarCSV = () => {
+    if (!cartas.length) return;
 
-    await fetch(`${API_BASE}/api/mesas/${id}`, {
-      method: 'DELETE',
-      headers: { 'ngrok-skip-browser-warning': 'true' }
-    });
+    const headers = Object.keys(cartas[0]).join(",");
+    const rows = cartas.map(c =>
+      Object.values(c).map(v => `"${v ?? ""}"`).join(",")
+    );
 
-    fetchMesas();
-  };
+    const csv = [headers, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
 
-  const resetForm = () => {
-    setCurrentMesa({
-      id_mesas: '',
-      nombre: '',
-      capacidad: '',
-      disponibilidad: true,
-      tipo_mesa: ''
-    });
-    setIsEditing(false);
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "carta.csv";
+    link.click();
   };
 
   return (
     <div className="w-full shadow-md">
       <HeaderCom />
 
-      <div className="flex flex-col md:flex-row w-full">
-        <div className="drawer lg:drawer-open w-full">
-          <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
+      <div className="drawer lg:drawer-open">
+        <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
 
-          {/* CONTENIDO PRINCIPAL */}
-          <div className="drawer-content p-4 w-full">
+        {/* ================= CONTENIDO PRINCIPAL ================= */}
+        <div className="drawer-content p-4">
 
-            <label htmlFor="my-drawer-3" className="btn drawer-button lg:hidden mb-4">
-              ☰
-            </label>
+          <label htmlFor="my-drawer-3" className="btn drawer-button lg:hidden mb-4">
+            ☰
+          </label>
 
-            <h1 className="text-2xl font-bold mb-4">Gestión de Mesas</h1>
+          <h1 className="text-2xl font-bold mb-6">Gestión de Carta</h1>
 
-            {/* FORMULARIO */}
-            <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow mb-6 w-full">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <input
-                  className="input input-bordered"
-                  placeholder="Nombre"
-                  value={currentMesa.nombre}
-                  onChange={e => setCurrentMesa({ ...currentMesa, nombre: e.target.value })}
-                  required
-                />
-                <input
-                  type="number"
-                  className="input input-bordered"
-                  placeholder="Capacidad"
-                  value={currentMesa.capacidad}
-                  onChange={e => setCurrentMesa({ ...currentMesa, capacidad: e.target.value })}
-                  required
-                />
-                <input
-                  className="input input-bordered"
-                  placeholder="Tipo de mesa"
-                  value={currentMesa.tipo_mesa}
-                  onChange={e => setCurrentMesa({ ...currentMesa, tipo_mesa: e.target.value })}
-                />
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={currentMesa.disponibilidad}
-                    onChange={e => setCurrentMesa({ ...currentMesa, disponibilidad: e.target.checked })}
-                    className="toggle toggle-primary"
-                  />
-                  Disponible
-                </label>
+          {/* ================= CATEGORÍAS + SUBCATEGORÍAS ================= */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+
+            {/* CATEGORÍAS */}
+            <div className="bg-white p-4 rounded shadow">
+              <h2 className="font-semibold mb-3">Categorías</h2>
+
+              <input
+                className="input input-bordered w-full mb-2"
+                placeholder="Nombre"
+                value={categoriaForm.nombre_cat}
+                onChange={e => setCategoriaForm({ ...categoriaForm, nombre_cat: e.target.value })}
+              />
+
+              <input
+                className="input input-bordered w-full mb-3"
+                placeholder="Descripción"
+                value={categoriaForm.descripcion}
+                onChange={e => setCategoriaForm({ ...categoriaForm, descripcion: e.target.value })}
+              />
+
+              <button className="btn btn-primary btn-sm mb-4">
+                {editCategoria ? "Actualizar" : "Crear"}
+              </button>
+
+              <div className="overflow-x-auto">
+                <table className="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Nombre</th>
+                      <th>Descripción</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categorias.map(c => (
+                      <tr key={c.id_categoria}>
+                        <td>{c.id_categoria}</td>
+                        <td>{c.nombre_cat}</td>
+                        <td>{c.descripcion}</td>
+                        <td className="flex gap-2">
+                          <button
+                            className="btn btn-xs"
+                            onClick={() => {
+                              setCategoriaForm(c);
+                              setEditCategoria(true);
+                            }}
+                          >
+                            Editar
+                          </button>
+                          <button className="btn btn-xs btn-error">
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+            </div>
 
-              <div className="mt-4 flex gap-2 justify-end">
-                <button type="button" onClick={resetForm} className="btn btn-outline">
-                  Cancelar
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  {isEditing ? 'Actualizar' : 'Crear'}
-                </button>
+            {/* SUBCATEGORÍAS */}
+            <div className="bg-white p-4 rounded shadow">
+              <h2 className="font-semibold mb-3">Subcategorías</h2>
+
+              <select
+                className="select select-bordered w-full mb-2"
+                value={subcategoriaForm.categoria}
+                onChange={e => {
+                  setSubcategoriaForm({ ...subcategoriaForm, categoria: e.target.value });
+                  fetchSubcategorias(e.target.value);
+                }}
+              >
+                <option value="">Seleccione categoría</option>
+                {categorias.map(c => (
+                  <option key={c.id_categoria} value={c.id_categoria}>
+                    {c.nombre_cat}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                className="input input-bordered w-full mb-2"
+                placeholder="Nombre"
+                value={subcategoriaForm.nombre_subcat}
+                onChange={e =>
+                  setSubcategoriaForm({ ...subcategoriaForm, nombre_subcat: e.target.value })
+                }
+              />
+
+              <input
+                className="input input-bordered w-full mb-3"
+                placeholder="Descripción"
+                value={subcategoriaForm.descripcion}
+                onChange={e =>
+                  setSubcategoriaForm({ ...subcategoriaForm, descripcion: e.target.value })
+                }
+              />
+
+              <button className="btn btn-primary btn-sm mb-4">
+                {editSubcategoria ? "Actualizar" : "Crear"}
+              </button>
+
+              <div className="overflow-x-auto">
+                <table className="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Subcategoría</th>
+                      <th>Categoría</th>
+                      <th>Descripción</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subcategorias.map(s => (
+                      <tr key={s.id_subcat}>
+                        <td>{s.id_subcat}</td>
+                        <td>{s.nombre_subcat}</td>
+                        <td>{s.nombre_cat}</td>
+                        <td>{s.descripcion}</td>
+                        <td className="flex gap-2">
+                          <button
+                            className="btn btn-xs"
+                            onClick={() => {
+                              setSubcategoriaForm(s);
+                              setEditSubcategoria(true);
+                            }}
+                          >
+                            Editar
+                          </button>
+                          <button className="btn btn-xs btn-error">
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </form>
+            </div>
+          </div>
 
-            {/* TABLA */}
-            <div className="bg-white rounded shadow overflow-x-auto">
-              <table className="table">
+          {/* ================= CARTA ================= */}
+          <div className="bg-white p-4 rounded shadow">
+            <h2 className="font-semibold mb-4">Carta</h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+              <input className="input input-bordered" placeholder="Nombre" />
+              <input className="input input-bordered" placeholder="Grupo" />
+              <input className="input input-bordered" placeholder="Abreviado" />
+              <input className="input input-bordered" placeholder="Precio" />
+              <input className="input input-bordered" placeholder="Puntos canje" />
+              <input className="input input-bordered" placeholder="Porción" />
+              <input className="input input-bordered" placeholder="Unidad medida" />
+              <input className="input input-bordered" placeholder="URL Imagen" />
+              <input className="input input-bordered md:col-span-3" placeholder="Observación" />
+            </div>
+
+            <div className="flex gap-2 mb-4">
+              <button className="btn btn-primary btn-sm">
+                {editCarta ? "Actualizar" : "Crear"}
+              </button>
+              <button className="btn btn-outline btn-sm" onClick={descargarCSV}>
+                Descargar CSV
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="table table-sm">
                 <thead>
                   <tr>
                     <th>ID</th>
                     <th>Nombre</th>
-                    <th>Capacidad</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
                     <th>Disponible</th>
-                    <th>Tipo</th>
-                    <th>Acciones</th>
+                    <th>Acción</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {mesas.map(mesa => (
-                    <tr key={mesa.id_mesas}>
-                      <td>{mesa.id_mesas}</td>
-                      <td>{mesa.nombre}</td>
-                      <td>{mesa.capacidad}</td>
-                      <td>
-                        <span className={`badge ${mesa.disponibilidad ? 'badge-success' : 'badge-error'}`}>
-                          {mesa.disponibilidad ? 'Sí' : 'No'}
-                        </span>
-                      </td>
-                      <td>{mesa.tipo_mesa}</td>
+                  {cartas.map(c => (
+                    <tr key={c.id_carta}>
+                      <td>{c.id_carta}</td>
+                      <td>{c.nombre}</td>
+                      <td>S/ {c.precio}</td>
+                      <td>{c.estado ? "Activo" : "Inactivo"}</td>
+                      <td>{c.disponible ? "Sí" : "No"}</td>
                       <td className="flex gap-2">
                         <button
-                          className="btn btn-sm btn-primary"
-                          onClick={() => handleEdit(mesa)}
+                          className="btn btn-xs"
+                          onClick={() => {
+                            setCartaForm(c);
+                            setEditCarta(true);
+                          }}
                         >
                           Editar
                         </button>
-                        <button
-                          className="btn btn-sm btn-error"
-                          onClick={() => handleDelete(mesa.id_mesas)}
-                        >
+                        <button className="btn btn-xs btn-error">
                           Eliminar
                         </button>
                       </td>
@@ -192,8 +328,10 @@ function EditCartaPage() {
             </div>
 
           </div>
-          {/*FIN DEL CONTENIDO PRINCIPAL*/}
-          {/* SIDEBAR */}
+        </div>
+
+        {/* ================= SIDEBAR ================= */}
+{/* SIDEBAR */}
           <div className="drawer-side">
             <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
             <ul className="menu bg-base-200 min-h-full w-80 p-4">
@@ -285,7 +423,6 @@ function EditCartaPage() {
             </ul>
           </div>
           {/* FIN SIDEBAR */}
-        </div>
       </div>
     </div>
   );
