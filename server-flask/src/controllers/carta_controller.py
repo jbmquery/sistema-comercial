@@ -88,3 +88,118 @@ def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None
             cursor.close()
         if conn:
             conn.close()
+
+# ==============================
+# CRUD CARTA
+# ==============================
+
+def crear_carta(data):
+    conn = cursor = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO carta (
+                categoria, sub_categoria, nombre, grupo, abreviado,
+                precio, puntos_canje, estado, disponible,
+                porcion, unidad_medida, observacion, url_imagen
+            )
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (
+            data['categoria'],
+            data['sub_categoria'],
+            data['nombre'],
+            data['grupo'],
+            data['abreviado'],
+            data['precio'],
+            data.get('puntos_canje'),
+            data['estado'],
+            data['disponible'],
+            data.get('porcion'),
+            data.get('unidad_medida'),
+            data.get('observacion'),
+            data.get('url_imagen')
+        ))
+
+        conn.commit()
+        return True
+
+    except Exception as e:
+        if conn: conn.rollback()
+        print("Error crear_carta:", e)
+        return False
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+def actualizar_carta(id_carta, data):
+    conn = cursor = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE carta SET
+                categoria=%s,
+                sub_categoria=%s,
+                nombre=%s,
+                grupo=%s,
+                abreviado=%s,
+                precio=%s,
+                puntos_canje=%s,
+                estado=%s,
+                disponible=%s,
+                porcion=%s,
+                unidad_medida=%s,
+                observacion=%s,
+                url_imagen=%s
+            WHERE id_carta=%s
+        """, (
+            data['categoria'],
+            data['sub_categoria'],
+            data['nombre'],
+            data['grupo'],
+            data['abreviado'],
+            data['precio'],
+            data.get('puntos_canje'),
+            data['estado'],
+            data['disponible'],
+            data.get('porcion'),
+            data.get('unidad_medida'),
+            data.get('observacion'),
+            data.get('url_imagen'),
+            id_carta
+        ))
+
+        conn.commit()
+        return True
+
+    except Exception as e:
+        if conn: conn.rollback()
+        print("Error actualizar_carta:", e)
+        return False
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+
+def eliminar_carta(id_carta):
+    conn = cursor = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("DELETE FROM carta WHERE id_carta=%s", (id_carta,))
+        conn.commit()
+        return True
+
+    except Exception as e:
+        if conn: conn.rollback()
+        print("Error eliminar_carta:", e)
+        return False
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
