@@ -25,33 +25,43 @@ def obtener_categorias():
             conn.close()
 
 def obtener_subcategorias(categoria_id):
-    conn = None
-    cursor = None
+    conn = cursor = None
     try:
         conn = get_connection()
         cursor = conn.cursor()
 
         query = """
-        SELECT id_subcat, nombre_subcat 
-        FROM sub_categorias 
-        WHERE categoria = %s 
-        ORDER BY nombre_subcat
+        SELECT 
+            s.id_subcat,
+            s.nombre_subcat,
+            s.descripcion,
+            s.categoria,
+            c.nombre_cat
+        FROM sub_categorias s
+        JOIN categorias c ON c.id_categoria = s.categoria
+        WHERE s.categoria = %s
+        ORDER BY s.nombre_subcat
         """
         cursor.execute(query, (categoria_id,))
         rows = cursor.fetchall()
 
         return [
-            {"id_subcat": row[0], "nombre_subcat": row[1]}
+            {
+                "id_subcat": row[0],
+                "nombre_subcat": row[1],
+                "descripcion": row[2],
+                "categoria": row[3],
+                "nombre_cat": row[4]
+            }
             for row in rows
         ]
     except Exception as e:
         print(f"Error al obtener subcategorías: {e}")
         return []
     finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
+        if cursor: cursor.close()
+        if conn: conn.close()
+
 
 # ==============================
 # CRUD CATEGORIAS

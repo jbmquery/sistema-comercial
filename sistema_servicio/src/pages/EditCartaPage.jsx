@@ -12,8 +12,9 @@ function EditCartaPage() {
   const [categorias, setCategorias] = useState([]);
   const [subcategorias, setSubcategorias] = useState([]);
   const [cartas, setCartas] = useState([]);
-
+  
   const [filtroCategoria, setFiltroCategoria] = useState("");
+  const [categoriaSubSeleccionada, setCategoriaSubSeleccionada] = useState("");
 
   const [categoriaForm, setCategoriaForm] = useState({
     id_categoria: "",
@@ -51,7 +52,6 @@ function EditCartaPage() {
 
   useEffect(() => {
     fetchCategorias();
-    fetchSubcategorias();
     fetchCartas();
   }, []);
 
@@ -63,13 +63,23 @@ function EditCartaPage() {
     setCategorias(data.categorias || []);
   };
 
-  const fetchSubcategorias = async () => {
-    const res = await fetch(`${API_BASE}/api/subcategorias`, {
-      headers: { "ngrok-skip-browser-warning": "true" }
-    });
+  const fetchSubcategorias = async (categoriaId = "") => {
+    if (!categoriaId) {
+      setSubcategorias([]);
+      return;
+    }
+
+    const res = await fetch(
+      `${API_BASE}/api/subcategorias?categoria=${categoriaId}`,
+      {
+        headers: { "ngrok-skip-browser-warning": "true" }
+      }
+    );
+
     const data = await res.json();
     setSubcategorias(data.subcategorias || []);
   };
+
 
   const fetchCartas = async (categoriaId = "") => {
     const url = categoriaId
@@ -166,7 +176,7 @@ const handleSaveSubcategoria = async () => {
 
   const data = await res.json();
   alert(data.message);
-  fetchSubcategorias();
+  fetchSubcategorias(subcategoriaForm.categoria);
 };
 
 const handleDeleteSubcategoria = async (id) => {
@@ -220,6 +230,36 @@ const handleDeleteCarta = async (id) => {
   fetchCartas(filtroCategoria);
 };
 
+/* =======================
+   HELPER
+======================= */
+
+const editarCarta = async (c) => {
+  // 1. Setear datos base
+  setCartaForm({
+    id_carta: c.id_carta,
+    categoria: c.categoria,
+    sub_categoria: c.sub_categoria,
+    nombre: c.nombre,
+    grupo: c.grupo,
+    abreviado: c.abreviado,
+    precio: c.precio,
+    puntos_canje: c.puntos_canje,
+    estado: c.estado,
+    disponible: c.disponible,
+    porcion: c.porcion,
+    unidad_medida: c.unidad_medida,
+    observacion: c.observacion,
+    url_imagen: c.url_imagen
+  });
+
+  // 2. Cargar subcategorías de ESA categoría
+  await fetchSubcategorias(c.categoria);
+
+  // 3. Abrir modal
+  document.getElementById("modal_carta").checked = true;
+};
+
 
   return (
     <div className="w-full shadow-md">
@@ -266,11 +306,13 @@ const handleDeleteCarta = async (id) => {
                       <td className="flex gap-1">
                         <button
                           className="btn btn-xs"
-                          onClick={() => setCategoriaForm(c)}
+                          onClick={() => {
+                            setCategoriaForm(c);
+                            document.getElementById("modal_categoria").checked = true;
+                          }}
                         >
                           Editar
                         </button>
-
                         <button
                           className="btn btn-xs btn-error"
                           onClick={() => handleDeleteCategoria(c.id_categoria)}
@@ -288,6 +330,23 @@ const handleDeleteCarta = async (id) => {
             {/* SUBCATEGORIAS */}
             <div className="overflow-x-auto bg-white rounded shadow">
               <h2 className="font-bold p-3">Subcategorías</h2>
+              <select
+              className="select select-bordered w-full mb-2"
+              value={categoriaSubSeleccionada}
+              onChange={(e) => {
+                const value = e.target.value;
+                setCategoriaSubSeleccionada(value);
+                fetchSubcategorias(value);
+              }}
+            >
+              <option value="">Seleccione categoría</option>
+              {categorias.map(c => (
+                <option key={c.id_categoria} value={c.id_categoria}>
+                  {c.nombre_cat}
+                </option>
+              ))}
+            </select>
+
               <table className="table table-sm">
                 <thead>
                   <tr>
@@ -303,16 +362,18 @@ const handleDeleteCarta = async (id) => {
                     <tr key={s.id_subcat}>
                       <td>{s.id_subcat}</td>
                       <td>{s.nombre_subcat}</td>
-                      <td>{s.nombre_cat}</td>
+                      <td>{s.categoria}</td>
                       <td>{s.descripcion}</td>
                       <td className="flex gap-1">
                         <button
                           className="btn btn-xs"
-                          onClick={() => setSubcategoriaForm(s)}
+                          onClick={() => {
+                            setSubcategoriaForm(s);
+                            document.getElementById("modal_subcategoria").checked = true;
+                          }}
                         >
                           Editar
                         </button>
-
                         <button
                           className="btn btn-xs btn-error"
                           onClick={() => handleDeleteSubcategoria(s.id_subcat)}
@@ -388,7 +449,13 @@ const handleDeleteCarta = async (id) => {
                     <td>{c.estado ? "Activo" : "Inactivo"}</td>
                     <td>{c.disponible ? "Sí" : "No"}</td>
                     <td className="flex gap-1">
-                      <label htmlFor="modal_carta" className="btn btn-xs">Editar</label>
+                      <button
+                        className="btn btn-xs"
+                        onClick={() => editarCarta(c)}
+                      >
+                        Editar
+                      </button>
+
                       <button
                         className="btn btn-xs btn-error"
                         onClick={() => handleDeleteCarta(c.id_carta)}

@@ -19,6 +19,7 @@ def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None
             c.precio,
             c.disponible,
             c.url_imagen,
+            cat.id_categoria,
             c.sub_categoria,
             sc.nombre_subcat,
             cat.nombre_cat
@@ -57,7 +58,7 @@ def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None
         productos_agrupados = {}
 
         for row in rows:
-            subcat = row[9]  # nombre_subcat
+            subcat = row[10]  # nombre_subcat
 
             producto = {
                 "id_carta": row[0],
@@ -66,12 +67,16 @@ def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None
                 "porcion": row[3],
                 "unidad_medida": row[4],
                 "precio": float(row[5]) if row[5] else 0.0,
-                "disponible": row[6],          # ✅ boolean real
+                "disponible": row[6],
                 "url_imagen": row[7],
-                "sub_categoria": row[8],
-                "nombre_subcat": row[9],
-                "nombre_cat": row[10]
+
+                "categoria": row[8],        # ✅ id_categoria
+                "sub_categoria": row[9],    # ✅ id_subcat
+
+                "nombre_subcat": row[10],
+                "nombre_cat": row[11]
             }
+
 
             if subcat not in productos_agrupados:
                 productos_agrupados[subcat] = []
