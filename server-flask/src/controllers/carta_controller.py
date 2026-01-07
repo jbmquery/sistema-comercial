@@ -14,15 +14,19 @@ def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None
             c.id_carta,
             c.nombre,
             c.grupo,
+            c.abreviado,
             c.porcion,
             c.unidad_medida,
             c.precio,
+            c.puntos_canje,
+            c.estado,
             c.disponible,
             c.url_imagen,
             cat.id_categoria,
             c.sub_categoria,
             sc.nombre_subcat,
-            cat.nombre_cat
+            cat.nombre_cat,
+            c.observacion
         FROM carta c
         JOIN sub_categorias sc ON c.sub_categoria = sc.id_subcat
         JOIN categorias cat ON sc.categoria = cat.id_categoria
@@ -58,23 +62,26 @@ def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None
         productos_agrupados = {}
 
         for row in rows:
-            subcat = row[10]  # nombre_subcat
+            subcat = row[13]  # nombre_subcat
 
             producto = {
                 "id_carta": row[0],
                 "nombre": row[1],
                 "grupo": row[2],
-                "porcion": row[3],
-                "unidad_medida": row[4],
-                "precio": float(row[5]) if row[5] else 0.0,
-                "disponible": row[6],
-                "url_imagen": row[7],
+                "abreviado": row[3],
+                "porcion": row[4],
+                "unidad_medida": row[5],
+                "precio": float(row[6]) if row[6] else 0.0,
+                "puntos_canje": row[7] if row[7] is not None else 0,
+                "estado": row[8],
+                "disponible": row[9],
+                "url_imagen": row[10],
 
-                "categoria": row[8],        # ✅ id_categoria
-                "sub_categoria": row[9],    # ✅ id_subcat
-
-                "nombre_subcat": row[10],
-                "nombre_cat": row[11]
+                "categoria": row[11],        # ✅ id_categoria
+                "sub_categoria": row[12],    # ✅ id_subcat
+                "nombre_subcat": row[13],
+                "nombre_cat": row[14],
+                "observacion": row[15]
             }
 
 

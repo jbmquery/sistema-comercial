@@ -1,7 +1,11 @@
+import { Link } from "react-router-dom";
+
 function HeaderCom() {
   return (
     <header className="flex justify-center py-4 bg-secondary">
-        <img src="../src/img/logo_pluvia_blanco.webp" alt="Pluvia Café" className="h-12" />
+        <Link to='/tables'>
+          <img src="../src/img/logo_pluvia_blanco.webp" alt="Pluvia Café" className="h-12" />
+        </Link>
     </header>
   )
 }

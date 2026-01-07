@@ -7,12 +7,12 @@ def obtener_categorias():
         conn = get_connection()
         cursor = conn.cursor()
 
-        query = "SELECT id_categoria, nombre_cat FROM categorias ORDER BY nombre_cat"
+        query = "SELECT id_categoria, nombre_cat,descripcion FROM categorias ORDER BY nombre_cat"
         cursor.execute(query)
         rows = cursor.fetchall()
 
         return [
-            {"id_categoria": row[0], "nombre_cat": row[1]}
+            {"id_categoria": row[0], "nombre_cat": row[1], "descripcion": row[2]}
             for row in rows
         ]
     except Exception as e:
