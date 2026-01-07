@@ -6,7 +6,7 @@ app = Flask(__name__)
 # Define los orígenes permitidos
 origins = [
     "http://localhost:5173",           # ← Frontend en desarrollo
-    "https://697459caa15b.ngrok-free.app"  # ← URL de tu frontend en ngrok
+    "https://81ec31ccf44a.ngrok-free.app"  # ← URL de tu frontend en ngrok
 ]
 
 CORS(app, origins=origins, supports_credentials=True)

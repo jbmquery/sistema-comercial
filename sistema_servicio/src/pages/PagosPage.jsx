@@ -760,7 +760,7 @@ const imprimirVoucherPDF = () => {
                 <div className="flex flex-row justify-between gap-4 mb-15">
                     <button className='btn btn-neutral'>Cancelar</button>
                     <button
-                    className='btn btn-success text-white'
+                    className='btn btn-primary text-white'
                     onClick={() => {
                         if (!selectedPedido) {
                         alert("Selecciona un pedido");
