@@ -2,16 +2,21 @@
 
 CREATE TABLE IF NOT EXISTS public.categorias
 (
-    id_categoria bigint NOT NULL,
+    id_categoria bigint NOT NULL DEFAULT nextval('categorias_id_categoria_seq'::regclass),
     nombre_cat character varying(15) COLLATE pg_catalog."default" NOT NULL,
     descripcion character varying(50) COLLATE pg_catalog."default",
     CONSTRAINT categorias_pkey PRIMARY KEY (id_categoria)
 )
 
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.categorias
+    OWNER to postgres;
+
 -- Tabla: sub_categorias
 CREATE TABLE IF NOT EXISTS public.sub_categorias
 (
-    id_subcat bigint NOT NULL,
+    id_subcat bigint NOT NULL DEFAULT nextval('sub_categorias_id_subcat_seq'::regclass),
     nombre_subcat character varying(30) COLLATE pg_catalog."default" NOT NULL,
     descripcion character varying(50) COLLATE pg_catalog."default",
     categoria bigint,
@@ -21,6 +26,11 @@ CREATE TABLE IF NOT EXISTS public.sub_categorias
         ON UPDATE CASCADE
         ON DELETE CASCADE
 )
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.sub_categorias
+    OWNER to postgres;
 
 -- Tabla: carta (menú)
 CREATE TABLE IF NOT EXISTS public.carta

@@ -3,8 +3,10 @@
 import HeaderCom from "../components/header_com";
 import CardsMenu from "../components/cardsmenu";
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useMemo } from "react";
-import React from 'react';
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getCarta } from "../api";
+
 
 function Menues() {
   const location = useLocation();
@@ -12,7 +14,6 @@ function Menues() {
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
-  const [porSubcategoria, setPorSubcategoria] = useState({});
   const [carrito, setCarrito] = useState([]);
 
   const categorias = [
@@ -22,25 +23,24 @@ function Menues() {
     { id: 4, nombre: "Promos" }
   ];
   const [categoria, setCategoria] = useState(categorias[0].nombre);
-
   // Simulación de usuario logueado (deberá venir del login)
   const idUsuario = 1; // Temporal: luego vendrá del contexto o login
 
-  useEffect(() => {
-    const fetchProductos = async () => {
-      try {
-        const url = `/api/carta?categoria=${encodeURIComponent(categoria)}&search=${encodeURIComponent(search)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        setPorSubcategoria(data.por_subcategoria || {});
-      } catch (error) {
-        console.error("Error al obtener productos:", error);
-        setPorSubcategoria({});
-      }
-    };
+  const {
+    data: porSubcategoria = {},
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["carta", categoria, search],
+    queryFn: () => getCarta({ categoria, search }),
+    keepPreviousData: true,
+  });
 
-    fetchProductos();
-  }, [categoria, search]);
+  {isError && (
+  <p className="text-center p-4 text-red-500">
+    Error al cargar productos
+  </p>
+  )}
 
   // Añadir producto al carrito
   const agregarAlCarrito = (producto) => {
@@ -254,7 +254,10 @@ const guardarPedido = async () => {
               className="bg-gray-100 flex w-full flex-col py-2 px-4 m-0 overflow-y-auto"
               style={{ maxHeight: 'calc(100vh - 192px)', minHeight: '0', flex: '1 1 auto' }}
             >
-              {Object.keys(porSubcategoria).length > 0 ? (
+              {isLoading ? (
+                <p className="text-center p-4">Cargando productos...</p>
+              ) : Object.keys(porSubcategoria).length > 0 ? (
+
                 Object.entries(porSubcategoria).map(([subcat, prods]) => (
                   <div key={subcat} className="mb-6">
                     <div className="divider divider-start">

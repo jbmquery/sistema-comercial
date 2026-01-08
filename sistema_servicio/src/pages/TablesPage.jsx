@@ -1,21 +1,30 @@
 import Cards from "../components/cards";
 import HeaderNav from "../components/header_nav";
-import { useEffect, useState } from "react";
-import { API_BASE } from "../config";
+/*import { useEffect, useState } from "react";
+import { API_BASE } from "../config";*/
+import { useQuery } from "@tanstack/react-query";
+import { getMesas } from "../api";
 
 function TablesPage() {
-  const [mesas, setMesas] = useState([]);
+  
+  const {
+    data: mesas = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["mesas"],
+    queryFn: getMesas,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  });
 
-  useEffect(() => {
-    fetch(`${API_BASE}/api/mesas`, {
-      headers: {
-        "ngrok-skip-browser-warning": "true"
-      }
-    })
-      .then((res) => res.json())
-      .then((data) => setMesas(data.mesas))
-      .catch((err) => console.error("Error al obtener mesas:", err));
-  }, []);
+  if (isError) {
+    return (
+      <div className="text-red-500 text-center mt-10">
+        Error al cargar mesas: {error.message}
+      </div>
+    );
+  }
 
   // Filtrar por tipo de mesa
   const mesasFisicas = mesas.filter(mesa => mesa.tipo_mesa === 'mesa');
@@ -28,7 +37,7 @@ function TablesPage() {
       {/* Mesas físicas */}
       <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
         <h2 className="w-full text-center text-xl font-bold mb-4">Mesas en el local</h2>
-        {mesasFisicas.length === 0 ? (
+        {isLoading ? (
           <div className="text-center">
             <span className="loading loading-bars loading-md"></span>
           </div>
