@@ -6,11 +6,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getCarta } from "../api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { crearPedido } from "../api";
+
 
 
 function Menues() {
   const location = useLocation();
-  const { nombreMesa } = location.state || {};
+  const { nombreMesa, idMesa } = location.state || {};
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
@@ -75,29 +78,50 @@ function Menues() {
     return carrito.reduce((total, item) => total + (item.precio * item.cantidad), 0).toFixed(2);
   }, [carrito]);
 
+// Mutacion
+
+  const queryClient = useQueryClient();
+
+  const crearPedidoMutation = useMutation({
+    mutationFn: crearPedido,
+    onSuccess: () => {
+      alert("✅ Pedido guardado y mesa ocupada");
+      setCarrito([]);
+      queryClient.invalidateQueries({ queryKey: ["mesas"] });
+      navigate("/pedidos");
+    },
+    onError: (error) => {
+      console.error(error);
+      alert("❌ Error al guardar el pedido");
+    },
+  });
+
+  // Preparar Detalle pedido para guardar
+
+  const detalles = carrito.flatMap(item =>
+  Array.from({ length: item.cantidad }).map(() => ({
+    id_carta: item.id_carta,
+    cantidad: 1,
+    precio_unitario: item.precio,
+    observacion: "",
+    es_canjeable: false,
+    estado: "pendiente",
+    cuenta: 1
+    }))
+  );
 
 
   // Guardar pedido en backend
-const guardarPedido = async () => {
-  if (carrito.length === 0) {
-    alert("El carrito está vacío");
-    return;
-  }
-  if (!nombreMesa) {
-    alert("No se ha seleccionado una mesa");
-    return;
-  }
-
-  try {
-    const resMesas = await fetch('/api/mesas');
-    const dataMesas = await resMesas.json();
-    const mesa = dataMesas.mesas.find(m => m.nombre === nombreMesa);
-    if (!mesa) {
-      alert("Mesa no encontrada");
+  const guardarPedido = () => {
+    if (carrito.length === 0) {
+      alert("El carrito está vacío");
       return;
     }
 
-    const idMesa = mesa.id_mesas;
+    if (!idMesa) {
+      alert("No se ha seleccionado una mesa");
+      return;
+    }
 
     const pedido = {
       id_mesa: idMesa,
@@ -110,36 +134,13 @@ const guardarPedido = async () => {
       puntos_canjeados_total: 0,
       monto_pagado: 0,
       monto_vuelto: 0,
-      detalles: carrito.map(item => ({
-        id_carta: item.id_carta,
-        cantidad: item.cantidad,
-        precio_unitario: item.precio,
-        observacion: "",
-        es_canjeable: false,
-        estado: "Pendiente"
-      }))
+      detalles
     };
 
-    const response = await fetch('/api/pedidos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(pedido)
-    });
+    crearPedidoMutation.mutate(pedido);
+  };
 
-    const result = await response.json();
 
-    if (response.ok) {
-      alert("✅ Pedido guardado y mesa ocupada");
-      setCarrito([]);
-      navigate('/pedidos'); // ← Redirección a /pedidos
-    } else {
-      alert("Error al guardar: " + result.message);
-    }
-  } catch (error) {
-    console.error("Error al guardar pedido:", error);
-    alert("Error de conexión");
-  }
-};
 
 
 
@@ -337,9 +338,9 @@ const guardarPedido = async () => {
               type="button"
               className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500"
               onClick={guardarPedido}
-              disabled={carrito.length === 0}
+              disabled={carrito.length === 0 || crearPedidoMutation.isLoading}
             >
-              Guardar
+              {crearPedidoMutation.isLoading ? "Guardando..." : "Guardar"}
             </button>
           </div>
         </div>

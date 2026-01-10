@@ -44,12 +44,14 @@ function TablesPage() {
         ) : (
           mesasFisicas.map((mesa) => (
             <Cards 
-              key={mesa.id} 
-              nombre={mesa.nombre} 
-              capacidad={`${mesa.capacidad} personas`} 
+              key={mesa.id_mesas}
+              id_mesas={mesa.id_mesas}
+              nombre={mesa.nombre}
+              capacidad={`${mesa.capacidad} personas`}
               disponibilidad={mesa.disponibilidad}
               tipo_mesa={mesa.tipo_mesa}
             />
+
           ))
         )}
       </div>
@@ -66,12 +68,15 @@ function TablesPage() {
         ) : (
           mesasDelivery.map((mesa) => (
             <Cards 
-              key={mesa.id} 
-              nombre={mesa.nombre} 
-              capacidad={`${mesa.capacidad} personas`} 
-              disponibilidad={mesa.disponibilidad} 
+              key={mesa.id_mesas}
+              id_mesas={mesa.id_mesas}
+              nombre={mesa.nombre}
+              capacidad={`${mesa.capacidad} personas`}
+              disponibilidad={mesa.disponibilidad}
               tipo_mesa={mesa.tipo_mesa}
             />
+
+
           ))
         )}
       </div>

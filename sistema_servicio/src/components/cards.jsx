@@ -1,13 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function Cards({ nombre, capacidad, disponibilidad, tipo_mesa }) {
+function Cards({ id_mesas, nombre, capacidad, disponibilidad, tipo_mesa }) {
   const navigate = useNavigate();
 
   const handleClick = () => {
     if (disponibilidad) {
       navigate('/menues', {
-        state: { nombreMesa: nombre }
+        state: { 
+          nombreMesa: nombre,
+          idMesa: id_mesas
+        }
       });
     }
   };

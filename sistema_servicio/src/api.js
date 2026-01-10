@@ -24,3 +24,9 @@ export const getCarta = async ({ categoria, search }) => {
   });
   return data.por_subcategoria || {};
 };
+
+export const crearPedido = async (pedido) => {
+  const { data } = await api.post("/api/pedidos", pedido);
+  return data;
+};
+

@@ -11,6 +11,7 @@ import GuiaPages from './pages/GuiaPage.jsx';
 import CartaPage from './pages/CartaPage.jsx';
 import EditTablesPage from './pages/EditTablesPage.jsx';
 import EditCartaPage from './pages/EditCartaPage.jsx';
+import OrdenPage from './pages/OrdenPage.jsx';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="*" element={<ErrorPage />} />
         <Route path="/edit-tables" element={<EditTablesPage/>} />
         <Route path="/edit-carta" element={<EditCartaPage/>} />
+        <Route path="/orden" element={<OrdenPage/>} />
       </Routes>
     </div>
   );
