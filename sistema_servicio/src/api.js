@@ -38,13 +38,12 @@ export const pagarCuenta = async ({ idPedido, cuenta, detalles, pagos }) => {
   return data
 }
 
-
-export const getPedidoDetalle = async (idPedido) => {
-  const { data } = await api.get(`/api/pedidos/${idPedido}`)
+export const getPedidos = async () => {
+  const { data } = await api.get('/api/pedidos')
   return data
 }
 
-export const getPedidos = async () => {
-  const { data } = await api.get('/api/pedidos')
+export const getPedidoDetalle = async (idPedido) => {
+  const { data } = await api.get(`/api/pedidos/${idPedido}`)
   return data
 }

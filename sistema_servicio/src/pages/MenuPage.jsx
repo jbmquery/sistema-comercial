@@ -88,7 +88,7 @@ function Menues() {
       alert("✅ Pedido guardado y mesa ocupada");
       setCarrito([]);
       queryClient.invalidateQueries({ queryKey: ["mesas"] });
-      navigate("/pedidos");
+      navigate("/orden");
     },
     onError: (error) => {
       console.error(error);
@@ -127,7 +127,7 @@ function Menues() {
       id_mesa: idMesa,
       id_usuario: idUsuario,
       id_cliente: null,
-      estado: "Sin iniciar",
+      estado: "abierto",
       cantidad_clientes: 1,
       observacion: "",
       forma_pago: "",

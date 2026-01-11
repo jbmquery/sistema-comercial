@@ -26,6 +26,7 @@ function App() {
         <Route path="/edit-tables" element={<EditTablesPage/>} />
         <Route path="/edit-carta" element={<EditCartaPage/>} />
         <Route path="/orden" element={<OrdenPage/>} />
+        <Route path="/orden/:idPedido" element={<OrdenPage />} />
       </Routes>
     </div>
   );
