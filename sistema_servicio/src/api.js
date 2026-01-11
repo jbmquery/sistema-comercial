@@ -30,3 +30,16 @@ export const crearPedido = async (pedido) => {
   return data;
 };
 
+export const pagarCuenta = async ({ idPedido, cuenta, detalles, pagos }) => {
+  const { data } = await api.post(
+    `/api/pedidos/${idPedido}/pagar`,
+    { cuenta, detalles, pagos }
+  )
+  return data
+}
+
+
+export const getPedidoDetalle = async (idPedido) => {
+  const { data } = await api.get(`/api/pedidos/${idPedido}`)
+  return data
+}

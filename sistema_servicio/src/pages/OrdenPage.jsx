@@ -1,9 +1,68 @@
-import React from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import HeaderNav from '../components/header_nav.jsx'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { pagarCuenta, getPedidoDetalle } from '../api'
+import { useParams } from 'react-router-dom'
+
+
 
 
 function OrdenPage() {
+
+const [cuentaActual, setCuentaActual] = useState(1)
+const [seleccionados, setSeleccionados] = useState([])
+const { idPedido } = useParams()
+//CheckBox Logic
+
+const toggleDetalle = (id) => {
+  setSeleccionados(prev =>
+    prev.includes(id)
+      ? prev.filter(x => x !== id)
+      : [...prev, id]
+  )
+}
+
+// Resumen de cuenta
+
+
+
+// useMutation para actualizar estado del detalle
+const queryClient = useQueryClient()
+
+
+const pagarMutation = useMutation({
+  mutationFn: pagarCuenta,
+  onSuccess: () => {
+    setSeleccionados([])
+    setCuentaActual(c => c + 1)
+    queryClient.invalidateQueries(['pedido', idPedido])
+  }
+})
+
+const { data: detalles = [], isLoading } = useQuery({
+  queryKey: ['pedido', idPedido],
+  queryFn: () => getPedidoDetalle(idPedido)
+})
+
+const detallesCuenta = detalles.filter(d =>
+  d.cuenta === cuentaActual &&
+  seleccionados.includes(d.id_detalle)
+)
+// Estado de modal de pago
+
+const [pagos, setPagos] = useState([
+  { metodo: 'efectivo', monto: '' }
+])
+
+// Agregar metodo de pago   
+
+const agregarPago = () => {
+  setPagos([...pagos, { metodo: '', monto: '' }])
+}
+
+
+
 return (
     <div className="w-full shadow-md">
       <HeaderNav />
@@ -44,55 +103,37 @@ return (
                             <th>acción</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="checkbox" defaultChecked className="checkbox" /></td>
-                            <td>Latte matcha frio (12 Oz)</td>
-                            <td>9.50</td>
-                            <td></td>
-                            <td className="flex gap-2">
+                        <tbody>
+                        {detalles
+                            .filter(d => d.estado === 'pendiente')
+                            .map(d => (
+                            <tr key={d.id_detalle}>
+                                <td>
+                                <input
+                                    type="checkbox"
+                                    checked={seleccionados.includes(d.id_detalle)}
+                                    onChange={() => toggleDetalle(d.id_detalle)}
+                                    className="checkbox"
+                                />
+                                </td>
+                                <td>{d.nombre}</td>
+                                <td>{d.precio.toFixed(2)}</td>
+                                <td>{d.observacion}</td>
+                                <td>
                                 <button className="btn btn-xs">Editar</button>
-                                <button className="btn btn-xs">Borrar</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" defaultChecked className="checkbox" /></td>
-                            <td>Latte matcha frio (12 Oz)</td>
-                            <td>9.50</td>
-                            <td></td>
-                            <td className="flex gap-2">
-                                <button className="btn btn-xs">Editar</button>
-                                <button className="btn btn-xs">Borrar</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" defaultChecked className="checkbox" /></td>
-                            <td>Americano Frio (12 Oz)</td>
-                            <td>5.50</td>
-                            <td></td>
-                            <td className="flex gap-2">
-                                <button className="btn btn-xs">Editar</button>
-                                <button className="btn btn-xs">Borrar</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" defaultChecked className="checkbox" /></td>
-                            <td>Cafe moka frio (12 Oz)</td>
-                            <td>10.50</td>
-                            <td></td>
-                            <td className="flex gap-2">
-                                <button className="btn btn-xs">Editar</button>
-                                <button className="btn btn-xs">Borrar</button>
-                            </td>
-                        </tr>
-                    </tbody>
+                                <button className="btn btn-xs btn-error">Borrar</button>
+                                </td>
+                            </tr>
+                            ))}
+                        </tbody>
+
                 </table>
                 </div>
             </div>
             {/* Total a pagar */}
             <div className="divider divider-horizontal"></div>
             <div className='bg-white p-4 rounded-lg shadow-md'>
-                <p className="text-xl">Cuenta 1</p>
+                <p className="text-xl">Cuenta {cuentaActual}</p>
               <div className="divider"></div>
               {/**Tabla resumen a pagar por cuenta */}
               <div className="flex flex-col overflow-x-auto">
@@ -130,7 +171,21 @@ return (
                 </div>
                 <div className="flex justify-between p-4">
                     <button className='btn btn-primary btn-sm'>Imprimir</button>
-                    <button className='btn btn-success btn-sm'>Pagar</button>
+                    <button
+                        className='btn btn-success btn-sm'
+                        onClick={() => {
+                            pagarMutation.mutate({
+                            idPedido,
+                            cuenta: cuentaActual,
+                            detalles: seleccionados,
+                            pagos
+                            })
+                        }}
+                        disabled={seleccionados.length === 0}
+                        >
+                        Pagar
+                        </button>
+
                 </div>
             </div>
           </div>
