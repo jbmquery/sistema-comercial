@@ -43,3 +43,8 @@ export const getPedidoDetalle = async (idPedido) => {
   const { data } = await api.get(`/api/pedidos/${idPedido}`)
   return data
 }
+
+export const getPedidos = async () => {
+  const { data } = await api.get('/api/pedidos')
+  return data
+}

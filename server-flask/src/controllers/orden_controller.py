@@ -1,5 +1,7 @@
 from flask import request, jsonify
-from db import get_db
+from conexion_postgresql import get_connection
+
+
 
 def pagar_cuenta(id_pedido):
     data = request.json
@@ -7,7 +9,7 @@ def pagar_cuenta(id_pedido):
     detalles = data['detalles']
     pagos = data['pagos']
 
-    conn = get_db()
+    conn = get_connection()
     cur = conn.cursor()
 
     try:
@@ -94,3 +96,31 @@ def get_pedido_detalle(id_pedido):
     } for r in rows]
 
     return jsonify(detalles)
+
+def get_pedidos_activos():
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+            p.id_pedido,
+            p.id_mesa,
+            m.nombre AS mesa
+        FROM pedidos p
+        JOIN mesas m ON m.id_mesa = p.id_mesa
+        WHERE p.estado = 'abierto'
+        ORDER BY p.id_pedido DESC
+    """)
+
+    rows = cur.fetchall()
+
+    pedidos = [{
+        "id_pedido": r[0],
+        "id_mesa": r[1],
+        "mesa": r[2]
+    } for r in rows]
+
+    cur.close()
+    conn.close()
+
+    return jsonify(pedidos)

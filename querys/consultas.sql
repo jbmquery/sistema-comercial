@@ -247,3 +247,26 @@ CREATE INDEX IF NOT EXISTS idx_pedidos_cliente ON pedidos(id_cliente);
 CREATE INDEX IF NOT EXISTS idx_detalle_pedido ON detalle_pedido(id_pedido);
 CREATE INDEX IF NOT EXISTS idx_historial_puntos ON historial_puntos(id_cliente, fecha);
 CREATE INDEX IF NOT EXISTS idx_clientes_dni ON clientes (dni);
+
+--Tabla Pagos
+
+CREATE TABLE IF NOT EXISTS public.pagos
+(
+    id_pago integer NOT NULL DEFAULT nextval('pagos_id_pago_seq'::regclass),
+    id_pedido bigint NOT NULL,
+    cuenta integer NOT NULL,
+    monto_total numeric(10,2) NOT NULL,
+    metodo_pago character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    fecha_pago timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    observacion text COLLATE pg_catalog."default",
+    CONSTRAINT pagos_pkey PRIMARY KEY (id_pago),
+    CONSTRAINT fk_pago_pedido FOREIGN KEY (id_pedido)
+        REFERENCES public.pedidos (id_pedido) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.pagos
+    OWNER to postgres;

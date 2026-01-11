@@ -4,6 +4,7 @@ import HeaderNav from '../components/header_nav.jsx'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { pagarCuenta, getPedidoDetalle } from '../api'
 import { useParams } from 'react-router-dom'
+import { getPedidos } from '../api'
 
 
 
@@ -42,7 +43,8 @@ const pagarMutation = useMutation({
 
 const { data: detalles = [], isLoading } = useQuery({
   queryKey: ['pedido', idPedido],
-  queryFn: () => getPedidoDetalle(idPedido)
+  queryFn: () => getPedidoDetalle(idPedido),
+  enabled: !!idPedido
 })
 
 const detallesCuenta = detalles.filter(d =>
@@ -61,6 +63,10 @@ const agregarPago = () => {
   setPagos([...pagos, { metodo: '', monto: '' }])
 }
 
+const { data: pedidos = [] } = useQuery({
+  queryKey: ['pedidos'],
+  queryFn: getPedidos
+})
 
 
 return (
@@ -193,21 +199,27 @@ return (
           {/* SIDEBAR */}
           <div className="drawer-side">
             <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
-            <ul className="menu bg-base-200 min-h-full w-80 p-4">
-              <p className="text-xl">Pedidos</p>
-              <div className="divider"></div>
+                <ul className="menu bg-base-200 min-h-full w-80 p-4">
+                <p className="text-xl font-bold">Pedidos</p>
+                <div className="divider"></div>
 
-              <li>
-                <div className="active bg-secondary text-secondary-content flex justify-between mb-2 ">
-                <span className='font-bold'>#109</span><span>Mesa 4</span>
-                </div>
-              </li>
-              <li>
-                <div className="active bg-white flex justify-between mb-2 text-black">
-                <span className='font-bold'>#110</span><span>Mesa 2</span>
-                </div>
-              </li>
-            </ul>
+                {pedidos.map(p => (
+                    <li key={p.id_pedido}>
+                    <Link
+                        to={`/orden/${p.id_pedido}`}
+                        className={`flex justify-between mb-2 ${
+                        Number(idPedido) === p.id_pedido
+                            ? 'bg-secondary text-secondary-content'
+                            : 'bg-white text-black'
+                        }`}
+                    >
+                        <span className="font-bold">#{p.id_pedido}</span>
+                        <span>{p.mesa}</span>
+                    </Link>
+                    </li>
+                ))}
+                </ul>
+
           </div>
 
         </div>
