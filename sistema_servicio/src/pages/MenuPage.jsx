@@ -87,7 +87,11 @@ function Menues() {
     onSuccess: () => {
       alert("✅ Pedido guardado y mesa ocupada");
       setCarrito([]);
+
+      // 🔄 INVALIDAR CACHE CORRECTO
+      queryClient.invalidateQueries({ queryKey: ["pedidos"] });
       queryClient.invalidateQueries({ queryKey: ["mesas"] });
+
       navigate("/orden");
     },
     onError: (error) => {
