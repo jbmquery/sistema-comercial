@@ -2,7 +2,6 @@ from flask import request, jsonify
 from conexion_postgresql import get_connection
 
 
-
 def pagar_cuenta(id_pedido):
     data = request.json
     cuenta = data['cuenta']
@@ -66,39 +65,6 @@ def pagar_cuenta(id_pedido):
         cur.close()
         conn.close()
 
-def get_pedido_detalle(id_pedido):
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT
-            d.id_detalle,
-            d.cuenta,
-            d.estado,
-            d.precio_unitario,
-            d.observacion,
-            c.nombre
-        FROM detalle_pedido d
-        JOIN carta c ON c.id_carta = d.id_carta
-        WHERE d.id_pedido = %s
-        ORDER BY d.id_detalle
-    """, (id_pedido,))
-
-    rows = cur.fetchall()
-
-    detalles = [{
-        "id_detalle": r[0],
-        "cuenta": r[1],
-        "estado": r[2],
-        "precio": float(r[3]),
-        "observacion": r[4],
-        "nombre": r[5]
-    } for r in rows]
-
-    return jsonify(detalles)
-
-from conexion_postgresql import get_connection
-from flask import jsonify
 
 def get_pedidos_activos():
     conn = get_connection()
@@ -141,6 +107,7 @@ def get_pedido_detalle(id_pedido):
         FROM detalle_pedido d
         JOIN carta c ON c.id_carta = d.id_carta
         WHERE d.id_pedido = %s
+            AND d.estado = 'pendiente'
         ORDER BY d.id_detalle
     """, (id_pedido,))
 
