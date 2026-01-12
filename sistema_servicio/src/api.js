@@ -30,10 +30,10 @@ export const crearPedido = async (pedido) => {
   return data;
 };
 
-export const pagarCuenta = async ({ idPedido, cuenta, detalles, pagos }) => {
-  const { data } = await api.post(
+export const pagarCuenta = async ({ idPedido, payload }) => {
+  const { data } = await axios.post(
     `/api/pedidos/${idPedido}/pagar`,
-    { cuenta, detalles, pagos }
+    payload
   )
   return data
 }

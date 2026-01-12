@@ -6,18 +6,43 @@ from conexion_postgresql import get_connection
 def pagar_cuenta(id_pedido):
     data = request.json
 
-    cuenta = data['cuenta']
-    detalles_ids = data['detalles']      # ids de detalle_pedido seleccionados
-    pagos = data['pagos']                # pagos compuestos [{metodo, monto}]
+    detalles_ids = data.get('detalles', [])
+    pagos = data.get('pagos', [])
     vuelto = float(data.get('vuelto', 0))
+
+    if not detalles_ids or not pagos:
+        return jsonify({"error": "Datos incompletos"}), 400
 
     conn = get_connection()
     cur = conn.cursor()
 
     try:
-        # 1️⃣ Calcular total real desde BD
+        # 🔒 Iniciar transacción
+        cur.execute("BEGIN")
+
+        # 1️⃣ Calcular CUENTA UNA SOLA VEZ (desde pagos)
         cur.execute("""
-            SELECT COALESCE(SUM(precio_unitario), 0)
+            SELECT COALESCE(MAX(cuenta), 0) + 1
+            FROM pagos
+            WHERE id_pedido = %s
+        """, (id_pedido,))
+        cuenta = cur.fetchone()[0]
+
+        # 2️⃣ Validar que los detalles sigan pendientes
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM detalle_pedido
+            WHERE id_detalle = ANY(%s)
+              AND id_pedido = %s
+              AND estado = 'pendiente'
+        """, (detalles_ids, id_pedido))
+
+        if cur.fetchone()[0] != len(detalles_ids):
+            raise Exception("Uno o más productos ya fueron pagados")
+
+        # 3️⃣ Calcular total real desde BD
+        cur.execute("""
+            SELECT COALESCE(SUM(cantidad * precio_unitario), 0)
             FROM detalle_pedido
             WHERE id_detalle = ANY(%s)
               AND estado = 'pendiente'
@@ -28,9 +53,9 @@ def pagar_cuenta(id_pedido):
         total_pagado = sum(float(p['monto']) for p in pagos)
 
         if total_pagado < total_db:
-            return jsonify({"error": "Pago incompleto"}), 400
+            raise Exception("El monto ingresado no cubre el total")
 
-        # 2️⃣ Registrar pagos (uno por método)
+        # 4️⃣ Registrar pagos (MISMA cuenta)
         for pago in pagos:
             cur.execute("""
                 INSERT INTO pagos (
@@ -46,22 +71,24 @@ def pagar_cuenta(id_pedido):
                 pago['metodo']
             ))
 
-        # 3️⃣ Marcar productos como pagados
+        # 5️⃣ Marcar productos como pagados (MISMA cuenta)
         cur.execute("""
             UPDATE detalle_pedido
-            SET estado = 'pagado',
+            SET
+                estado = 'pagado',
                 cuenta = %s
             WHERE id_detalle = ANY(%s)
-        """, (cuenta, detalles_ids))
+              AND id_pedido = %s
+        """, (cuenta, detalles_ids, id_pedido))
 
-        # 4️⃣ Evaluar estado final del pedido
+        # 6️⃣ Determinar estado final del pedido
         cur.execute("""
             SELECT estado
             FROM detalle_pedido
             WHERE id_pedido = %s
         """, (id_pedido,))
 
-        estados = [r[0] for r in cur.fetchall()]
+        estados = [e[0] for e in cur.fetchall()]
 
         if all(e == 'pagado' for e in estados):
             estado_pedido = 'completado'
@@ -70,7 +97,7 @@ def pagar_cuenta(id_pedido):
         else:
             estado_pedido = 'abierto'
 
-        # 5️⃣ Actualizar pedido
+        # 7️⃣ Actualizar pedido
         forma_pago = 'mixto' if len(pagos) > 1 else 'unico'
 
         cur.execute("""
@@ -84,24 +111,42 @@ def pagar_cuenta(id_pedido):
             WHERE id_pedido = %s
         """, (
             estado_pedido,
-            datetime.now(),
+            datetime.now().time(),
             forma_pago,
             total_pagado,
             vuelto,
             id_pedido
         ))
 
+        # 8️⃣ Liberar mesa si corresponde
+        if estado_pedido in ('completado', 'inconcluso'):
+            cur.execute("""
+                UPDATE mesas
+                SET disponibilidad = true
+                WHERE id_mesas = (
+                    SELECT id_mesa
+                    FROM pedidos
+                    WHERE id_pedido = %s
+                )
+            """, (id_pedido,))
+
         conn.commit()
 
         return jsonify({
             "ok": True,
+            "mensaje": "Pago registrado correctamente",
+            "cuenta": cuenta,
             "estado_pedido": estado_pedido,
-            "cuenta_pagada": cuenta
+            "total_pagado": total_pagado,
+            "vuelto": vuelto
         })
 
     except Exception as e:
         conn.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "ok": False,
+            "error": str(e)
+        }), 400
 
     finally:
         cur.close()

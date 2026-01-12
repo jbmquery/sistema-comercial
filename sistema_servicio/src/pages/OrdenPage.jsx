@@ -1,17 +1,17 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import HeaderNav from '../components/header_nav.jsx'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { pagarCuenta, getPedidoDetalle } from '../api'
 import { useParams } from 'react-router-dom'
 import { getPedidos } from '../api'
+import { useState, useEffect } from 'react'
+
 
 
 
 
 function OrdenPage() {
 
-const [cuentaActual, setCuentaActual] = useState(1)
 const [seleccionados, setSeleccionados] = useState([])
 const { idPedido } = useParams()
 const [showModal, setShowModal] = useState(false)
@@ -19,6 +19,10 @@ const [mostrarModalPago, setMostrarModalPago] = useState(false)
 const [pagos, setPagos] = useState([
   { metodo: 'efectivo', monto: '' }
 ])
+const [mensajeOk, setMensajeOk] = useState('')
+const [cuentaActual, setCuentaActual] = useState(1)
+
+
 
 
 //CheckBox Logic
@@ -31,6 +35,7 @@ const toggleDetalle = (id) => {
   )
 }
 
+
 // Resumen de cuenta
 
 
@@ -41,10 +46,26 @@ const queryClient = useQueryClient()
 
 const pagarMutation = useMutation({
   mutationFn: pagarCuenta,
-  onSuccess: () => {
-    setSeleccionados([])
-    setCuentaActual(c => c + 1)
+  onSuccess: (res) => {
+    // 🟢 Mensaje de confirmación
+    setMensajeOk(`Pago registrado correctamente. Cuenta ${res.cuenta}`)
+
+
+    // 🔄 Refrescar datos
     queryClient.invalidateQueries(['pedido', idPedido])
+    queryClient.invalidateQueries(['pedidos'])
+
+    // 🧹 Reset UI
+    setSeleccionados([])
+    setPagos([{ metodo: 'efectivo', monto: '' }])
+    setMostrarModalPago(false)
+    setTimeout(() => setMensajeOk(''), 3000)
+  },
+  onError: (err) => {
+    alert(
+      err.response?.data?.error ||
+      '❌ Error al procesar el pago'
+    )
   }
 })
 
@@ -54,10 +75,31 @@ const { data: detalles = [], isLoading } = useQuery({
   enabled: !!idPedido
 })
 
+
+useEffect(() => {
+  if (!detalles.length) {
+    setCuentaActual(1)
+    return
+  }
+
+  // obtener la mayor cuenta ya usada en el pedido
+  const maxCuenta = Math.max(
+    0,
+    ...detalles
+      .filter(d => d.estado === 'pagado' && d.cuenta != null)
+      .map(d => d.cuenta)
+  )
+
+  setCuentaActual(maxCuenta + 1)
+}, [detalles])
+
+
+
 const detallesCuenta = detalles.filter(d =>
-  d.cuenta === cuentaActual &&
+  d.estado === 'pendiente' &&
   seleccionados.includes(d.id_detalle)
 )
+
 
 const totalCuenta = detallesCuenta.reduce(
   (acc, d) => acc + d.precio,
@@ -75,9 +117,9 @@ const { data: pedidos = [] } = useQuery({
 
 const detallesSeleccionados = detalles.filter(d =>
   d.estado === 'pendiente' &&
-  d.cuenta === cuentaActual &&
   seleccionados.includes(d.id_detalle)
 )
+
 
 // Resumen de la cuenta
 
@@ -145,6 +187,14 @@ const agregarPago = () => {
 
 return (
     <div className="w-full shadow-md">
+      {mensajeOk && (
+        <div className="toast toast-top toast-end z-50">
+          <div className="alert alert-success">
+            <span>{mensajeOk}</span>
+          </div>
+        </div>
+      )}
+
       <HeaderNav />
 
       <div className="flex flex-col md:flex-row w-full">
@@ -415,25 +465,24 @@ return (
 
                     <button
                       className="btn btn-success"
-                      disabled={!pagoValido}
+                      disabled={!pagoValido || pagarMutation.isLoading}
                       onClick={() => {
                         pagarMutation.mutate({
                           idPedido,
-                          cuenta: cuentaActual,
-                          detalles: seleccionados,
-                          pagos: pagos.map(p => ({
-                            metodo: p.metodo,
-                            monto: parseFloat(p.monto)
-                          })),
-                          vuelto
+                          payload: {
+                            detalles: seleccionados,
+                            pagos: pagos.map(p => ({
+                              metodo: p.metodo,
+                              monto: parseFloat(p.monto)
+                            })),
+                            vuelto
+                          }
                         })
-
-                        setMostrarModalPago(false)
-                        setPagos([{ metodo: 'efectivo', monto: '' }])
                       }}
                     >
-                      Confirmar Pago
+                      {pagarMutation.isLoading ? 'Procesando...' : 'Confirmar Pago'}
                     </button>
+
                   </div>
                 </>
               )
