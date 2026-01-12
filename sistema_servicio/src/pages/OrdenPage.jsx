@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
 import HeaderNav from '../components/header_nav.jsx'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { pagarCuenta, getPedidoDetalle } from '../api'
+import { pagarCuenta, getPedidoDetalle, getCuentaActual } from '../api'
 import { useParams } from 'react-router-dom'
 import { getPedidos } from '../api'
 import { useState, useEffect } from 'react'
+
 
 
 
@@ -20,7 +21,6 @@ const [pagos, setPagos] = useState([
   { metodo: 'efectivo', monto: '' }
 ])
 const [mensajeOk, setMensajeOk] = useState('')
-const [cuentaActual, setCuentaActual] = useState(1)
 
 
 
@@ -54,6 +54,8 @@ const pagarMutation = useMutation({
     // 🔄 Refrescar datos
     queryClient.invalidateQueries(['pedido', idPedido])
     queryClient.invalidateQueries(['pedidos'])
+    queryClient.invalidateQueries(['cuentaActual', idPedido])
+
 
     // 🧹 Reset UI
     setSeleccionados([])
@@ -75,24 +77,13 @@ const { data: detalles = [], isLoading } = useQuery({
   enabled: !!idPedido
 })
 
+const { data: cuentaData } = useQuery({
+  queryKey: ['cuentaActual', idPedido],
+  queryFn: () => getCuentaActual(idPedido),
+  enabled: !!idPedido
+})
 
-useEffect(() => {
-  if (!detalles.length) {
-    setCuentaActual(1)
-    return
-  }
-
-  // obtener la mayor cuenta ya usada en el pedido
-  const maxCuenta = Math.max(
-    0,
-    ...detalles
-      .filter(d => d.estado === 'pagado' && d.cuenta != null)
-      .map(d => d.cuenta)
-  )
-
-  setCuentaActual(maxCuenta + 1)
-}, [detalles])
-
+const cuentaActual = cuentaData?.cuenta_actual ?? 1
 
 
 const detallesCuenta = detalles.filter(d =>
@@ -270,7 +261,15 @@ return (
             {/* Total a pagar */}
             <div className="divider divider-horizontal"></div>
             <div className='bg-white p-4 rounded-lg shadow-md'>
-                <p className="text-xl">Cuenta {cuentaActual}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xl font-bold">
+                    Cuenta {cuentaActual}
+                  </p>
+                  <span className="badge badge-primary badge-outline">
+                    actual
+                  </span>
+                </div>
+
               <div className="divider"></div>
               {/**Tabla resumen a pagar por cuenta */}
               <div className="flex flex-col overflow-x-auto">
@@ -351,9 +350,16 @@ return (
         <dialog className="modal modal-open">
           <div className="modal-box max-w-lg">
             {/* HEADER */}
-            <h3 className="font-bold text-lg">
-              CUENTA {cuentaActual} – Mesa {pedidos.find(p => p.id_pedido == idPedido)?.mesa}
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <span>CUENTA {cuentaActual}</span>
+              <span className="badge badge-success badge-outline">
+                en curso
+              </span>
+              <span className="opacity-70">
+                – Mesa {pedidos.find(p => p.id_pedido == idPedido)?.mesa}
+              </span>
             </h3>
+
 
             <div className="divider"></div>
 

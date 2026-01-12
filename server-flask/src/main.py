@@ -26,7 +26,7 @@ from routes.clientes_routes import clientes_bp
 from routes.orden_routes import orden_bp
 from routes.pedidos_routes import pedidos_bp
 from routes.pagos_routes import pagos_bp
-
+from routes.cuenta_routes import cuenta_routes
 
 app.register_blueprint(login_bp)
 app.register_blueprint(tables_bp)
@@ -37,6 +37,7 @@ app.register_blueprint(clientes_bp)
 app.register_blueprint(orden_bp)
 app.register_blueprint(pedidos_bp)
 app.register_blueprint(pagos_bp)
+app.register_blueprint(cuenta_routes, url_prefix='/api')
 
 if __name__ == '__main__':
     app.run(debug=True)

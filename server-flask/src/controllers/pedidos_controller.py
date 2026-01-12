@@ -62,10 +62,9 @@ def crear_pedido(data):
                     precio_unitario,
                     observacion,
                     es_canjeable,
-                    estado,
-                    cuenta
+                    estado
                 )
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                VALUES (%s,%s,%s,%s,%s,%s,%s)
             """, (
                 id_pedido,
                 det["id_carta"],
@@ -73,8 +72,7 @@ def crear_pedido(data):
                 det.get("precio_unitario"),
                 det.get("observacion", ""),
                 det.get("es_canjeable", False),
-                det.get("estado", "pendiente"),
-                det.get("cuenta", 1)
+                det.get("estado", "pendiente")
             ))
 
         # =========================
