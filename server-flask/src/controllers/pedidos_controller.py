@@ -109,3 +109,68 @@ def crear_pedido(data):
             cursor.close()
         if conn:
             conn.close()
+
+def agregar_detalle_pedido(id_pedido, data):
+    conn = None
+    cursor = None
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Validaciones básicas
+        if not data.get("id_carta"):
+            return {"success": False, "error": "Producto no válido"}
+
+        cursor.execute("""
+            INSERT INTO detalle_pedido (
+                id_pedido,
+                id_carta,
+                cantidad,
+                precio_unitario,
+                observacion,
+                es_canjeable,
+                estado,
+                canjeado_por,
+                cuenta
+            )
+            SELECT
+                %s,
+                c.id_carta,
+                1,
+                c.precio,
+                %s,
+                false,
+                'pendiente',
+                NULL,
+                NULL
+            FROM carta c
+            WHERE c.id_carta = %s
+            RETURNING id_detalle
+        """, (
+            id_pedido,
+            data.get("observacion", ""),
+            data["id_carta"]
+        ))
+
+        id_detalle = cursor.fetchone()[0]
+        conn.commit()
+
+        return {
+            "success": True,
+            "id_detalle": id_detalle
+        }
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

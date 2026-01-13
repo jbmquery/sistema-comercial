@@ -18,11 +18,17 @@ export const getMesas = async () => {
   return data.mesas;
 };
 
-export const getCarta = async ({ categoria, search }) => {
+export const getCarta = async ({ categoria, sub_categoria, search }) => {
   const { data } = await api.get("/api/carta", {
-    params: { categoria, search },
-  });
-  return data.por_subcategoria || {};
+    params: { categoria, sub_categoria, search },
+  })
+
+  const porSubcat = data.por_subcategoria || {}
+
+  // 🔥 Convertir objeto → array plano
+  const productos = Object.values(porSubcat).flat()
+
+  return productos
 };
 
 export const crearPedido = async (pedido) => {
@@ -58,4 +64,12 @@ export const getCuentaActual = async (idPedido) => {
   }
 
   return res.json()
+}
+
+export const agregarDetallePedido = async ({ idPedido, payload }) => {
+  const { data } = await api.post(
+    `/api/pedidos/${idPedido}/detalle`,
+    payload
+  )
+  return data
 }

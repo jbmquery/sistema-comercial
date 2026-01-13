@@ -1,14 +1,17 @@
 import { Link } from 'react-router-dom'
 import HeaderNav from '../components/header_nav.jsx'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { pagarCuenta, getPedidoDetalle, getCuentaActual } from '../api'
+import api from '../api'
+import {
+  pagarCuenta,
+  getPedidoDetalle,
+  getCuentaActual,
+  agregarDetallePedido,getCarta
+} from '../api'
+
 import { useParams } from 'react-router-dom'
 import { getPedidos } from '../api'
 import { useState, useEffect } from 'react'
-
-
-
-
 
 
 function OrdenPage() {
@@ -22,6 +25,12 @@ const [pagos, setPagos] = useState([
 ])
 const [mensajeOk, setMensajeOk] = useState('')
 
+// Estados para el modal de Agregar Producto
+const [mostrarModalProducto, setMostrarModalProducto] = useState(false)
+const [categoriaSel, setCategoriaSel] = useState('')
+const [subcategoriaSel, setSubcategoriaSel] = useState('')
+const [productoSel, setProductoSel] = useState(null)
+const [observacion, setObservacion] = useState('')
 
 
 
@@ -167,13 +176,54 @@ const toggleTodos = () => {
   }
 }
 
-/* ----------- Modal Pagos-----------*/
 
 // Agregar Pago compuesto
 
 const agregarPago = () => {
   setPagos([...pagos, { metodo: 'efectivo', monto: '' }])
 }
+
+/* ----------- Modal Agregar Productos-----------*/
+
+const { data: categorias = [] } = useQuery({
+  queryKey: ['categorias'],
+  queryFn: () => api.get('/api/categorias').then(r => r.data.categorias)
+})
+
+const { data: subcategorias = [] } = useQuery({
+  queryKey: ['subcategorias', categoriaSel],
+  queryFn: () =>
+    api.get('/api/subcategorias', {
+      params: { categoria: categoriaSel }
+    }).then(r => r.data.subcategorias),
+  enabled: !!categoriaSel
+})
+
+const { data: productos = [] } = useQuery({
+  queryKey: ['productos', categoriaSel, subcategoriaSel],
+  queryFn: () =>
+    getCarta({
+      categoria: categoriaSel,
+      sub_categoria: subcategoriaSel
+    }),
+  enabled: !!categoriaSel && !!subcategoriaSel
+})
+
+
+
+const agregarProductoMutation = useMutation({
+  mutationFn: agregarDetallePedido,
+  onSuccess: () => {
+    queryClient.invalidateQueries(['pedido', idPedido])
+    setMostrarModalProducto(false)
+    setProductoSel(null)
+    setObservacion('')
+  },
+  onError: () => {
+    alert('❌ Error al agregar producto')
+  }
+})
+
 
 
 return (
@@ -210,7 +260,13 @@ return (
                     <button className="btn btn-sm btn-outline btn-secondary mr-2 mb-2">Voucher</button>
                     <button className="btn btn-sm btn-outline btn-secondary mr-2 mb-2">Cocina</button>
                    </div>
-                   <button className="btn btn-sm btn-primary mr-2 mb-2">+<span className="hidden md:inline">Agregar Producto</span></button>
+                   <button
+                      className="btn btn-sm btn-primary mr-2 mb-2"
+                      onClick={() => setMostrarModalProducto(true)}
+                    >
+                      +<span className="hidden md:inline">Agregar Producto</span>
+                    </button>
+
                 </div>
                 {/* Tabla de productos individuales para escoger*/ }
                 <div className="flex flex-col overflow-x-auto">
@@ -499,6 +555,99 @@ return (
 
 
       {/*Fin Modal de Pago */}
+
+      {/*Modal de Agregar Producto */}
+
+      {mostrarModalProducto && (
+        <dialog className="modal modal-open">
+          <div className="modal-box max-w-lg">
+            <h3 className="font-bold text-lg">Agregar Producto</h3>
+            <div className="divider"></div>
+
+            <select
+              className="select select-bordered w-full mb-2"
+              onChange={e => setCategoriaSel(e.target.value)}
+            >
+              <option value="">Seleccionar categoría</option>
+              {categorias.map(c => (
+                <option key={c.id_categoria} value={c.id_categoria}>
+                  {c.nombre_cat}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className="select select-bordered w-full mb-2"
+              disabled={!categoriaSel}
+              onChange={e => setSubcategoriaSel(e.target.value)}
+            >
+              <option value="">Seleccionar subcategoría</option>
+              {subcategorias.map((s, index) => (
+                <option
+                  key={`${s.id_subcat}-${index}`}
+                  value={s.id_subcat}
+                >
+                  {s.nombre_subcat}
+                </option>
+              ))}
+
+
+            </select>
+
+            <select
+              className="select select-bordered w-full mb-2"
+              disabled={!subcategoriaSel}
+              onChange={e => {
+                const prod = productos.find(p => p.id_carta == e.target.value)
+                setProductoSel(prod)
+              }}
+            >
+              <option value="">Seleccionar producto</option>
+              {productos.map(p => (
+                <option key={p.id_carta} value={p.id_carta}>
+                  {p.nombre}
+                  {p.porcion ? ` (${p.porcion} ${p.unidad_medida})` : ''}
+                  {' - S/ '}
+                  {p.precio}
+                </option>
+              ))}
+            </select>
+
+            <textarea
+              className="textarea textarea-bordered w-full"
+              placeholder="Observación"
+              value={observacion}
+              onChange={e => setObservacion(e.target.value)}
+            />
+
+            <div className="modal-action">
+              <button
+                className="btn"
+                onClick={() => setMostrarModalProducto(false)}
+              >
+                Cancelar
+              </button>
+
+              <button
+                className="btn btn-success"
+                disabled={!productoSel}
+                onClick={() =>
+                  agregarProductoMutation.mutate({
+                    idPedido,
+                    payload: {
+                      id_carta: productoSel.id_carta,
+                      observacion
+                    }
+                  })
+                }
+              >
+                Agregar
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
+      {/*FIN Modal de Agregar Producto */}
 
     </div>
   );
