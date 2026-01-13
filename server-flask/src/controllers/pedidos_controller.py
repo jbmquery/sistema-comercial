@@ -174,3 +174,55 @@ def agregar_detalle_pedido(id_pedido, data):
             cursor.close()
         if conn:
             conn.close()
+
+
+def actualizar_estado_detalle(id_detalle, nuevo_estado):
+    if nuevo_estado not in ('cancelado', 'perdida'):
+        return {"success": False, "error": "Estado no válido"}
+
+    conn = None
+    cursor = None
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Validar que el detalle exista y esté pendiente
+        cursor.execute("""
+            SELECT estado
+            FROM detalle_pedido
+            WHERE id_detalle = %s
+        """, (id_detalle,))
+
+        row = cursor.fetchone()
+
+        if not row:
+            return {"success": False, "error": "Detalle no encontrado"}
+
+        if row[0] != 'pendiente':
+            return {"success": False, "error": "El producto ya no está pendiente"}
+
+        # Actualizar estado
+        cursor.execute("""
+            UPDATE detalle_pedido
+            SET estado = %s
+            WHERE id_detalle = %s
+        """, (nuevo_estado, id_detalle))
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "mensaje": f"Producto marcado como {nuevo_estado}"
+        }
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return {"success": False, "error": str(e)}
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

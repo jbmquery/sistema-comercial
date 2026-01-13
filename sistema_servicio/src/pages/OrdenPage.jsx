@@ -6,7 +6,9 @@ import {
   pagarCuenta,
   getPedidoDetalle,
   getCuentaActual,
-  agregarDetallePedido,getCarta
+  agregarDetallePedido,
+  getCarta,
+  actualizarEstadoDetalle
 } from '../api'
 
 import { useParams } from 'react-router-dom'
@@ -31,6 +33,9 @@ const [categoriaSel, setCategoriaSel] = useState('')
 const [subcategoriaSel, setSubcategoriaSel] = useState('')
 const [productoSel, setProductoSel] = useState(null)
 const [observacion, setObservacion] = useState('')
+// Estdados para el modal de eliminar productos
+const [mostrarModalBorrar, setMostrarModalBorrar] = useState(false)
+const [detalleABorrar, setDetalleABorrar] = useState(null)
 
 
 
@@ -224,6 +229,21 @@ const agregarProductoMutation = useMutation({
   }
 })
 
+// Borrar Detalle Mutation
+
+const borrarDetalleMutation = useMutation({
+  mutationFn: actualizarEstadoDetalle,
+  onSuccess: (res) => {
+    setMensajeOk(res.mensaje)
+    queryClient.invalidateQueries(['pedido', idPedido])
+    setMostrarModalBorrar(false)
+    setDetalleABorrar(null)
+    setTimeout(() => setMensajeOk(''), 3000)
+  },
+  onError: (err) => {
+    alert(err.response?.data?.error || 'Error al actualizar producto')
+  }
+})
 
 
 return (
@@ -305,7 +325,15 @@ return (
                                 <td>{d.observacion}</td>
                                 <td>
                                 <button className="btn btn-xs">Editar</button>
-                                <button className="btn btn-xs btn-error">Borrar</button>
+                                <button
+                                  className="btn btn-xs btn-error"
+                                  onClick={() => {
+                                    setDetalleABorrar(d)
+                                    setMostrarModalBorrar(true)
+                                  }}
+                                >
+                                  Borrar
+                                </button>
                                 </td>
                             </tr>
                             ))}
@@ -648,6 +676,71 @@ return (
         </dialog>
       )}
       {/*FIN Modal de Agregar Producto */}
+
+      {/*Modal de eliminar Producto */}
+
+      {mostrarModalBorrar && detalleABorrar && (
+        <dialog className="modal modal-open">
+          <div className="modal-box max-w-md">
+            <h3 className="font-bold text-lg">Borrar Producto</h3>
+            <div className="divider"></div>
+
+            <p className="mb-4 text-sm opacity-80">
+              Selecciona el motivo para quitar el producto:
+            </p>
+
+            <ul className="list-disc pl-5 text-sm space-y-2 mb-6">
+              <li>
+                <b>Cancelado:</b> Quitar producto antes de ser preparado
+              </li>
+              <li>
+                <b>Pérdida:</b> Producto preparado o dañado por accidente
+              </li>
+            </ul>
+
+            <div className="modal-action flex justify-between">
+              <button
+                className="btn btn-outline"
+                onClick={() => {
+                  setMostrarModalBorrar(false)
+                  setDetalleABorrar(null)
+                }}
+              >
+                Atrás
+              </button>
+
+              <div className="flex gap-2">
+                <button
+                  className="btn btn-warning"
+                  onClick={() =>
+                    borrarDetalleMutation.mutate({
+                      idDetalle: detalleABorrar.id_detalle,
+                      estado: 'cancelado'
+                    })
+                  }
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className="btn btn-error"
+                  onClick={() =>
+                    borrarDetalleMutation.mutate({
+                      idDetalle: detalleABorrar.id_detalle,
+                      estado: 'perdida'
+                    })
+                  }
+                >
+                  Pérdida
+                </button>
+              </div>
+            </div>
+          </div>
+        </dialog>
+      )}
+      
+
+      {/*FIN Modal de eliminar Producto */}
 
     </div>
   );

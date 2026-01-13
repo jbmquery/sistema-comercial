@@ -1,7 +1,11 @@
 # routes/pedidos_routes.py
 
 from flask import Blueprint, request, jsonify
-from controllers.pedidos_controller import (crear_pedido, agregar_detalle_pedido)
+from controllers.pedidos_controller import (
+    crear_pedido,
+    agregar_detalle_pedido,
+    actualizar_estado_detalle
+)
 from controllers.orden_controller import get_pedidos_activos
 
 pedidos_bp = Blueprint("pedidos_bp", __name__)
@@ -27,5 +31,18 @@ def agregar_detalle_route(id_pedido):
 
     if resultado.get("success"):
         return jsonify(resultado), 201
+
+    return jsonify(resultado), 400
+
+
+@pedidos_bp.route("/api/detalle/<int:id_detalle>/estado", methods=["PUT"])
+def actualizar_estado_detalle_route(id_detalle):
+    data = request.get_json()
+    estado = data.get("estado")
+
+    resultado = actualizar_estado_detalle(id_detalle, estado)
+
+    if resultado.get("success"):
+        return jsonify(resultado), 200
 
     return jsonify(resultado), 400

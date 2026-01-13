@@ -73,3 +73,11 @@ export const agregarDetallePedido = async ({ idPedido, payload }) => {
   )
   return data
 }
+
+export const actualizarEstadoDetalle = async ({ idDetalle, estado }) => {
+  const { data } = await api.put(
+    `/api/detalle/${idDetalle}/estado`,
+    { estado }
+  )
+  return data
+}
