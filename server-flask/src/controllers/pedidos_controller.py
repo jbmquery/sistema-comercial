@@ -226,3 +226,42 @@ def actualizar_estado_detalle(id_detalle, nuevo_estado):
             cursor.close()
         if conn:
             conn.close()
+
+def actualizar_observacion_detalle(id_detalle, observacion):
+    conn = None
+    cursor = None
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE detalle_pedido
+            SET observacion = %s
+            WHERE id_detalle = %s
+              AND estado = 'pendiente'
+        """, (observacion, id_detalle))
+
+        if cursor.rowcount == 0:
+            return {
+                "success": False,
+                "error": "No se pudo actualizar (detalle no existe o no está pendiente)"
+            }
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "mensaje": "Observación actualizada correctamente"
+        }
+
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        return {"success": False, "error": str(e)}
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

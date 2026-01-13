@@ -8,7 +8,8 @@ import {
   getCuentaActual,
   agregarDetallePedido,
   getCartaOrden,
-  actualizarEstadoDetalle
+  actualizarEstadoDetalle,
+  actualizarObservacionDetalle
 } from '../api'
 
 import { useParams } from 'react-router-dom'
@@ -36,6 +37,11 @@ const [observacion, setObservacion] = useState('')
 // Estdados para el modal de eliminar productos
 const [mostrarModalBorrar, setMostrarModalBorrar] = useState(false)
 const [detalleABorrar, setDetalleABorrar] = useState(null)
+// Estados de Actualizar Observacion de Detalle_pedido
+const [mostrarModalEditar, setMostrarModalEditar] = useState(false)
+const [detalleEditar, setDetalleEditar] = useState(null)
+const [obsEditar, setObsEditar] = useState('')
+
 
 
 
@@ -245,6 +251,24 @@ const borrarDetalleMutation = useMutation({
   }
 })
 
+// Actualizar Observacion Mutation
+
+const editarObservacionMutation = useMutation({
+  mutationFn: actualizarObservacionDetalle,
+  onSuccess: (res) => {
+    setMensajeOk(res.mensaje)
+    queryClient.invalidateQueries(['pedido', idPedido])
+    setMostrarModalEditar(false)
+    setDetalleEditar(null)
+    setObsEditar('')
+    setTimeout(() => setMensajeOk(''), 3000)
+  },
+  onError: (err) => {
+    alert(err.response?.data?.error || 'Error al actualizar observación')
+  }
+})
+
+
 
 return (
     <div className="w-full shadow-md">
@@ -324,7 +348,17 @@ return (
                                 <td>{d.precio.toFixed(2)}</td>
                                 <td>{d.observacion}</td>
                                 <td>
-                                <button className="btn btn-xs">Editar</button>
+                                <button
+                                  className="btn btn-xs btn-warning"
+                                  onClick={() => {
+                                    setDetalleEditar(d)
+                                    setObsEditar(d.observacion || '')
+                                    setMostrarModalEditar(true)
+                                  }}
+                                >
+                                  Editar
+                                </button>
+
                                 <button
                                   className="btn btn-xs btn-error"
                                   onClick={() => {
@@ -741,6 +775,51 @@ return (
       
 
       {/*FIN Modal de eliminar Producto */}
+
+      {/*Modal de actualizar observacion de detalle_pedido */}
+
+      {mostrarModalEditar && detalleEditar && (
+        <dialog className="modal modal-open">
+          <div className="modal-box max-w-md">
+            <h3 className="font-bold text-lg">Actualizar Producto</h3>
+            <div className="divider"></div>
+
+            <textarea
+              className="textarea textarea-bordered w-full"
+              placeholder="Observación"
+              value={obsEditar}
+              onChange={e => setObsEditar(e.target.value)}
+            />
+
+            <div className="modal-action flex justify-between">
+              <button
+                className="btn btn-outline"
+                onClick={() => {
+                  setMostrarModalEditar(false)
+                  setDetalleEditar(null)
+                }}
+              >
+                Atrás
+              </button>
+
+              <button
+                className="btn btn-success"
+                onClick={() =>
+                  editarObservacionMutation.mutate({
+                    idDetalle: detalleEditar.id_detalle,
+                    observacion: obsEditar
+                  })
+                }
+              >
+                Actualizar
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
+
+
+      {/*FIN Modal de actualizar observacion de detalle_pedido */}
 
     </div>
   );

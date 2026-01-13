@@ -89,3 +89,11 @@ export const actualizarEstadoDetalle = async ({ idDetalle, estado }) => {
   )
   return data
 }
+
+export const actualizarObservacionDetalle = async ({ idDetalle, observacion }) => {
+  const { data } = await api.put(
+    `/api/detalle/${idDetalle}/observacion`,
+    { observacion }
+  )
+  return data
+}
