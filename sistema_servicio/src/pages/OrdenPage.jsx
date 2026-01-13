@@ -7,7 +7,7 @@ import {
   getPedidoDetalle,
   getCuentaActual,
   agregarDetallePedido,
-  getCarta,
+  getCartaOrden,
   actualizarEstadoDetalle
 } from '../api'
 
@@ -207,7 +207,7 @@ const { data: subcategorias = [] } = useQuery({
 const { data: productos = [] } = useQuery({
   queryKey: ['productos', categoriaSel, subcategoriaSel],
   queryFn: () =>
-    getCarta({
+    getCartaOrden({
       categoria: categoriaSel,
       sub_categoria: subcategoriaSel
     }),

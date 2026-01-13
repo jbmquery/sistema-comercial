@@ -18,18 +18,26 @@ export const getMesas = async () => {
   return data.mesas;
 };
 
-export const getCarta = async ({ categoria, sub_categoria, search }) => {
-  const { data } = await api.get("/api/carta", {
-    params: { categoria, sub_categoria, search },
+// 👉 Para MenuPage (por subcategoría)
+export const getCartaMenu = async ({ categoria, search }) => {
+  const { data } = await api.get('/api/carta', {
+    params: { categoria, search }
+  })
+
+  return data.por_subcategoria || {}
+};
+
+// 👉 Para OrdenPage (array plano)
+export const getCartaOrden = async ({ categoria, sub_categoria }) => {
+  const { data } = await api.get('/api/carta', {
+    params: { categoria, sub_categoria }
   })
 
   const porSubcat = data.por_subcategoria || {}
 
-  // 🔥 Convertir objeto → array plano
-  const productos = Object.values(porSubcat).flat()
-
-  return productos
+  return Object.values(porSubcat).flat()
 };
+
 
 export const crearPedido = async (pedido) => {
   const { data } = await api.post("/api/pedidos", pedido);

@@ -5,7 +5,7 @@ import CardsMenu from "../components/cardsmenu";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getCarta } from "../api";
+import { getCartaMenu } from "../api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { crearPedido } from "../api";
 
@@ -35,7 +35,7 @@ function Menues() {
     isError,
   } = useQuery({
     queryKey: ["carta", categoria, search],
-    queryFn: () => getCarta({ categoria, search }),
+    queryFn: () => getCartaMenu({ categoria, search }),
     keepPreviousData: true,
   });
 
