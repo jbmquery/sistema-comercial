@@ -9,7 +9,8 @@ import {
   agregarDetallePedido,
   getCartaOrden,
   actualizarEstadoDetalle,
-  actualizarObservacionDetalle
+  actualizarObservacionDetalle,
+  imprimirCocina
 } from '../api'
 
 import { useParams } from 'react-router-dom'
@@ -301,8 +302,24 @@ return (
                 {/* Botones de accion */}
                 <div className='flex flex-row justify-between'>
                    <div>
-                    <button className="btn btn-sm btn-outline btn-secondary mr-2 mb-2">Voucher</button>
-                    <button className="btn btn-sm btn-outline btn-secondary mr-2 mb-2">Cocina</button>
+                    <button
+                      className="btn btn-sm btn-outline btn-secondary mr-2 mb-2"
+                      onClick={() => {
+                        if (seleccionados.length === 0) {
+                          setMensajeOk("❌ No se seleccionó ningún producto")
+                          setTimeout(() => setMensajeOk(''), 2500)
+                          return
+                        }
+
+                        imprimirCocina({
+                          idPedido,
+                          detalles: seleccionados
+                        })
+                      }}
+                    >
+                      Cocina
+                    </button>
+
                    </div>
                    <button
                       className="btn btn-sm btn-primary mr-2 mb-2"

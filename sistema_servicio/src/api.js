@@ -45,12 +45,13 @@ export const crearPedido = async (pedido) => {
 };
 
 export const pagarCuenta = async ({ idPedido, payload }) => {
-  const { data } = await axios.post(
+  const { data } = await api.post(
     `/api/pedidos/${idPedido}/pagar`,
     payload
   )
   return data
 }
+
 
 export const getPedidos = async () => {
   const { data } = await api.get('/api/pedidos')
@@ -96,4 +97,16 @@ export const actualizarObservacionDetalle = async ({ idDetalle, observacion }) =
     { observacion }
   )
   return data
+}
+
+
+export const imprimirCocina = async ({ idPedido, detalles }) => {
+  const res = await api.post(
+    `/api/impresiones/cocina/${idPedido}`,
+    { detalles },
+    { responseType: 'blob' }
+  )
+
+  const url = window.URL.createObjectURL(res.data)
+  window.open(url)
 }

@@ -127,55 +127,59 @@ def get_pedido_detalle(id_pedido):
 
     return jsonify(detalles)
 
-def pagar_cuenta(id_pedido):
-    data = request.json
-    cuenta = data['cuenta']
-    detalles = data['detalles']
-    pagos = data['pagos']
 
-    conn = get_connection()
-    cur = conn.cursor()
 
-    try:
-        cur.execute("""
-            SELECT COALESCE(SUM(precio_unitario),0)
-            FROM detalle_pedido
-            WHERE id_detalle = ANY(%s)
-              AND estado = 'pendiente'
-              AND id_pedido = %s
-        """, (detalles, id_pedido))
+# def pagar_cuenta(id_pedido):
+#     data = request.json
+#     cuenta = data['cuenta']
+#     detalles = data['detalles']
+#     pagos = data['pagos']
 
-        total_db = float(cur.fetchone()[0])
-        total_pagado = sum(float(p['monto']) for p in pagos)
+#     conn = get_connection()
+#     cur = conn.cursor()
 
-        if total_db != total_pagado:
-            return jsonify({"error": "Monto incorrecto"}), 400
+#     try:
+#         cur.execute("""
+#             SELECT COALESCE(SUM(precio_unitario),0)
+#             FROM detalle_pedido
+#             WHERE id_detalle = ANY(%s)
+#               AND estado = 'pendiente'
+#               AND id_pedido = %s
+#         """, (detalles, id_pedido))
 
-        for pago in pagos:
-            cur.execute("""
-                INSERT INTO pagos (id_pedido, cuenta, monto_total, metodo_pago)
-                VALUES (%s,%s,%s,%s)
-            """, (
-                id_pedido,
-                cuenta,
-                pago['monto'],
-                pago['metodo']
-            ))
+#         total_db = float(cur.fetchone()[0])
+#         total_pagado = sum(float(p['monto']) for p in pagos)
 
-        cur.execute("""
-            UPDATE detalle_pedido
-            SET estado = 'pagado', cuenta = %s
-            WHERE id_detalle = ANY(%s)
-        """, (cuenta, detalles))
+#         if total_db != total_pagado:
+#             return jsonify({"error": "Monto incorrecto"}), 400
 
-        conn.commit()
-        return jsonify({"ok": True})
+#         for pago in pagos:
+#             cur.execute("""
+#                 INSERT INTO pagos (id_pedido, cuenta, monto_total, metodo_pago)
+#                 VALUES (%s,%s,%s,%s)
+#             """, (
+#                 id_pedido,
+#                 cuenta,
+#                 pago['monto'],
+#                 pago['metodo']
+#             ))
 
-    except Exception as e:
-        conn.rollback()
-        return jsonify({"error": str(e)}), 500
+#         cur.execute("""
+#             UPDATE detalle_pedido
+#             SET estado = 'pagado', cuenta = %s
+#             WHERE id_detalle = ANY(%s)
+#         """, (cuenta, detalles))
 
-    finally:
-        cur.close()
-        conn.close()
+#         conn.commit()
+#         return jsonify({"ok": True})
+
+#     except Exception as e:
+#         conn.rollback()
+#         return jsonify({"error": str(e)}), 500
+
+#     finally:
+#         cur.close()
+#         conn.close()
+
+
 
