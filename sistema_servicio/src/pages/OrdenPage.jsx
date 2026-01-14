@@ -10,7 +10,8 @@ import {
   getCartaOrden,
   actualizarEstadoDetalle,
   actualizarObservacionDetalle,
-  imprimirCocina
+  imprimirCocina,
+  imprimirVoucher
 } from '../api'
 
 import { useParams } from 'react-router-dom'
@@ -436,7 +437,24 @@ return (
 
                 </div>
                 <div className="flex justify-between p-4">
-                    <button className='btn btn-primary btn-sm'>Imprimir</button>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => {
+                        if (seleccionados.length === 0) {
+                          setMensajeOk("❌ No hay productos seleccionados")
+                          setTimeout(() => setMensajeOk(''), 2500)
+                          return
+                        }
+
+                        imprimirVoucher({
+                          idPedido,
+                          detalles: seleccionados
+                        })
+                      }}
+                    >
+                      Imprimir
+                    </button>
+
                     <button
                       className="btn btn-success btn-sm"
                       disabled={seleccionados.length === 0}

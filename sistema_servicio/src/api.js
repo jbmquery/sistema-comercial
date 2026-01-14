@@ -110,3 +110,14 @@ export const imprimirCocina = async ({ idPedido, detalles }) => {
   const url = window.URL.createObjectURL(res.data)
   window.open(url)
 }
+
+export const imprimirVoucher = async ({ idPedido, detalles }) => {
+  const res = await api.post(
+    `/api/impresiones/voucher/${idPedido}`,
+    { detalles },
+    { responseType: 'blob' }
+  )
+
+  const url = window.URL.createObjectURL(res.data)
+  window.open(url)
+}
