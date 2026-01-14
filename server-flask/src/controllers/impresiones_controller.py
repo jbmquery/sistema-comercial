@@ -1,5 +1,6 @@
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
 from io import BytesIO
 from datetime import datetime
 from conexion_postgresql import get_connection
@@ -83,7 +84,7 @@ def imprimir_cocina(id_pedido, detalles_ids):
     y -= line_height
 
     pdf.setFont("Helvetica-Oblique", 9)
-    pdf.drawCentredString(width / 2, y, "café amor y barrio")
+    pdf.drawCentredString(width / 2, y, "Café amor y barrio")
     y -= line_height * 1.5
 
     mesa, pedido = rows[0][0], rows[0][1]
@@ -106,7 +107,7 @@ def imprimir_cocina(id_pedido, detalles_ids):
     # PRODUCTOS
     # =========================
     for _, _, producto, obs, porcion, unidad_medida in rows:
-        pdf.setFont("Helvetica-Bold", 9)
+        pdf.setFont("Helvetica-Bold", 10)
 
         texto_producto = f"- {producto}"
         if porcion is not None:
@@ -116,7 +117,7 @@ def imprimir_cocina(id_pedido, detalles_ids):
         y -= line_height
 
         if obs:
-            pdf.setFont("Helvetica", 8)
+            pdf.setFont("Helvetica-Oblique", 8)
             pdf.drawString(10, y, obs)
             y -= line_height
 
@@ -170,7 +171,7 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     LINE = 12
     HEADER_HEIGHT = 140
     ITEM_HEIGHT = 12
-    BOTTOM_MARGIN = 30
+    BOTTOM_MARGIN = 70
     TOP_PADDING = 20
 
     total_items = len(rows)
@@ -189,27 +190,33 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     # =========================
     # LOGO (opcional)
     # =========================
-    logo_path = "../src/img/loguito.png"  # cambia si deseas
-    if os.path.exists(logo_path):
-        pdf.drawImage(
-            logo_path,
-            (width - 40) / 2,
-            y - 40,
-            width=40,
-            height=40,
-            preserveAspectRatio=True,
-            mask='auto'
-        )
-        y -= 45
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    logo_path = os.path.normpath(
+        os.path.join(BASE_DIR, "..", "img", "loguito2.jpg")
+    )
+
+
+    img = ImageReader(logo_path)
+    pdf.drawImage(
+        img,
+        (width - 50) / 2,
+        y - 50,
+        width=50,
+        height=50,
+        preserveAspectRatio=True,
+        mask='auto'
+    )
+    y -= 45
+
 
     # =========================
     # HEADER
     # =========================
-    pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawCentredString(width / 2, y, "PLUVIA CAFÉ")
-    y -= LINE
+    #pdf.setFont("Helvetica-Bold", 12)
+    #pdf.drawCentredString(width / 2, y, "PLUVIA CAFÉ")
+    y -= LINE *1.5
 
-    pdf.setFont("Helvetica-Oblique", 9)
+    pdf.setFont("Helvetica-Oblique", 8)
     pdf.drawCentredString(width / 2, y, "Café, amor y barrio")
     y -= LINE * 1.5
 
@@ -276,8 +283,10 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     )
     y -= LINE * 1.5
 
-    pdf.setFont("Helvetica-Bold", 9)
+    pdf.setFont("Helvetica-Oblique", 8)
     pdf.drawCentredString(width / 2, y, "¡Esperamos verte pronto!")
+
+    y -= LINE * 1.5
 
     pdf.showPage()
     pdf.save()
