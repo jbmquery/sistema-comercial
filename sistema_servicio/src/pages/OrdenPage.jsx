@@ -143,6 +143,8 @@ const resumenCuenta = Object.values(
     if (!acc[key]) {
       acc[key] = {
         nombre: item.nombre,
+        porcion: item.porcion,
+        unidad_medida: item.unidad_medida,
         cantidad: 1,
         precioTotal: item.precio
       }
@@ -362,7 +364,14 @@ return (
                                     className="checkbox"
                                 />
                                 </td>
-                                <td>{d.nombre}</td>
+                                <td>
+                                  {d.nombre}
+                                  {d.porcion && (
+                                    <span className="opacity-70">
+                                      {" "}({d.porcion} {d.unidad_medida})
+                                    </span>
+                                  )}
+                                </td>
                                 <td>{d.precio.toFixed(2)}</td>
                                 <td>{d.observacion}</td>
                                 <td>
@@ -421,7 +430,14 @@ return (
                       {resumenCuenta.map((item, i) => (
                         <tr key={i}>
                           <td>{item.cantidad}</td>
-                          <td>{item.nombre}</td>
+                          <td>
+                            {item.nombre}
+                            {item.porcion && (
+                              <span className="opacity-70">
+                                {" "}({item.porcion} {item.unidad_medida})
+                              </span>
+                            )}
+                          </td>
                           <td>{item.precioTotal.toFixed(2)}</td>
                         </tr>
                       ))}
