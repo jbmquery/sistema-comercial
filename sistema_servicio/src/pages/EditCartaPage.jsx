@@ -217,6 +217,9 @@ const handleSaveCarta = async () => {
   fetchCartas(filtroCategoria);
 };
 
+
+
+
 const handleDeleteCarta = async (id) => {
   if (!confirm("¿Eliminar producto?")) return;
 

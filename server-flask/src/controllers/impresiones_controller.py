@@ -20,7 +20,9 @@ def imprimir_cocina(id_pedido, detalles_ids):
             m.nombre AS mesa,
             p.id_pedido,
             c.nombre,
-            d.observacion
+            d.observacion,
+            c.porcion,
+            c.unidad_medida
         FROM detalle_pedido d
         JOIN pedidos p ON p.id_pedido = d.id_pedido
         JOIN mesas m ON m.id_mesas = p.id_mesa
@@ -49,7 +51,7 @@ def imprimir_cocina(id_pedido, detalles_ids):
     header_lines = 7  # título, slogan, mesa/pedido, fecha, separador
     product_lines = 0
 
-    for _, _, _, obs in rows:
+    for _, _, _, obs, _, _ in rows:
         product_lines += 1          # nombre producto
         if obs:
             product_lines += 1      # observación
@@ -103,9 +105,14 @@ def imprimir_cocina(id_pedido, detalles_ids):
     # =========================
     # PRODUCTOS
     # =========================
-    for _, _, producto, obs in rows:
+    for _, _, producto, obs, porcion, unidad_medida in rows:
         pdf.setFont("Helvetica-Bold", 9)
-        pdf.drawString(5, y, f"- {producto}")
+
+        texto_producto = f"- {producto}"
+        if porcion is not None:
+            texto_producto += f" ({porcion} {unidad_medida})"
+
+        pdf.drawString(5, y, texto_producto)
         y -= line_height
 
         if obs:
@@ -113,7 +120,8 @@ def imprimir_cocina(id_pedido, detalles_ids):
             pdf.drawString(10, y, obs)
             y -= line_height
 
-        y -= 4  # separación visual (no cuenta como línea)
+        y -= 4
+
 
     pdf.showPage()
     pdf.save()
@@ -134,15 +142,17 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     cur.execute("""
         SELECT
             p.numero_orden,
-            c.nombre,
+            c.abreviado,
             d.precio_unitario,
-            COUNT(*) as cantidad
+            COUNT(*) as cantidad,
+            c.porcion,
+            c.unidad_medida
         FROM detalle_pedido d
         JOIN pedidos p ON p.id_pedido = d.id_pedido
         JOIN carta c ON c.id_carta = d.id_carta
         WHERE d.id_detalle IN %s
-        GROUP BY p.numero_orden, c.nombre, d.precio_unitario
-        ORDER BY c.nombre
+        GROUP BY p.numero_orden, c.abreviado, d.precio_unitario, c.porcion, c.unidad_medida
+        ORDER BY c.abreviado
     """, (detalles_tuple,))
 
     rows = cur.fetchall()
@@ -208,7 +218,7 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     hora = datetime.now().strftime("%I:%M:%S %p")
 
     pdf.setFont("Helvetica", 8)
-    pdf.drawString(5, y, f"N° de pedido: {pedido}")
+    pdf.drawString(5, y, f"Código de pedido: {pedido}")
     y -= LINE
 
     pdf.drawString(5, y, f"F: {fecha} - H: {hora}")
@@ -228,13 +238,31 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
 
     pdf.setFont("Helvetica", 8)
 
-    for _, nombre, precio, cantidad in rows:
+    for _, abreviado, precio, cantidad, porcion, unidad_medida in rows:
         subtotal = precio * cantidad
         total_pagar += subtotal
 
-        texto = f"{cantidad} x {nombre} - S/ {subtotal:.2f}"
-        pdf.drawString(5, y, texto)
+        # 1️⃣ Construir texto izquierdo
+        texto_izq = f"{cantidad} x {abreviado}"
+
+        if porcion is not None:
+            texto_izq += f" ({porcion} {unidad_medida})"
+
+        # 2️⃣ LIMITE DE CARACTERES (AQUÍ VA EL FIX)
+        MAX_CHARS = 28
+        if len(texto_izq) > MAX_CHARS:
+            texto_izq = texto_izq[:MAX_CHARS - 3] + "..."
+
+        # 3️⃣ Texto derecho (subtotal)
+        texto_der = f"S/ {subtotal:.2f}"
+
+        # 4️⃣ Dibujo en el PDF
+        pdf.drawString(5, y, texto_izq)
+        pdf.drawRightString(width - 5, y, texto_der)
+
         y -= ITEM_HEIGHT
+
+
 
     y -= 5
     pdf.line(5, y, width - 5, y)
