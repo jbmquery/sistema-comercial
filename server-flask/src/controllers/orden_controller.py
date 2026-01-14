@@ -49,7 +49,7 @@ def pagar_cuenta(id_pedido):
                 cuenta = %s
             WHERE id_detalle = ANY(%s)
         """, (cuenta, detalles))
-
+    
         conn.commit()
 
         return jsonify({

@@ -2,6 +2,8 @@
 
 from conexion_postgresql import get_connection
 from datetime import datetime
+from services.pedidos_service import recalcular_estado_pedido
+
 
 def crear_pedido(data):
     conn = None
@@ -207,8 +209,12 @@ def actualizar_estado_detalle(id_detalle, nuevo_estado):
             UPDATE detalle_pedido
             SET estado = %s
             WHERE id_detalle = %s
+            RETURNING id_pedido
         """, (nuevo_estado, id_detalle))
 
+        id_pedido = cursor.fetchone()[0]
+
+        recalcular_estado_pedido(conn, id_pedido)
         conn.commit()
 
         return {

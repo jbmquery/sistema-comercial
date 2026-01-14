@@ -179,7 +179,7 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     # =========================
     # LOGO (opcional)
     # =========================
-    logo_path = "../src/img/logo_pluvia_blanco.webp"  # cambia si deseas
+    logo_path = "../src/img/loguito.png"  # cambia si deseas
     if os.path.exists(logo_path):
         pdf.drawImage(
             logo_path,
