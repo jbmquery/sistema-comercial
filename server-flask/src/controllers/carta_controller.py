@@ -2,6 +2,17 @@ from flask import jsonify
 from conexion_postgresql import get_connection
 from decimal import Decimal
 
+def normalizar_carta_data(data):
+    """
+    Convierte strings vacíos a None para campos opcionales
+    """
+    for campo in ['porcion', 'unidad_medida', 'observacion', 'url_imagen']:
+        if campo in data and (data[campo] == "" or data[campo] is None):
+            data[campo] = None
+
+    return data
+
+
 def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None, search=None):
     conn = None
     cursor = None
@@ -108,6 +119,9 @@ def obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria=None
 def crear_carta(data):
     conn = cursor = None
     try:
+        
+        data = normalizar_carta_data(data)
+        
         conn = get_connection()
         cursor = conn.cursor()
 
@@ -149,6 +163,8 @@ def crear_carta(data):
 def actualizar_carta(id_carta, data):
     conn = cursor = None
     try:
+        data = normalizar_carta_data(data)
+        
         conn = get_connection()
         cursor = conn.cursor()
 
