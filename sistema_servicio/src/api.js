@@ -141,3 +141,12 @@ export const imprimirVoucher = async ({ idPedido, detalles }) => {
   document.body.removeChild(a);
   window.URL.revokeObjectURL(url);
 };
+
+export const generarVoucherWhatsapp = async ({ idPedido, detalles }) => {
+  const { data } = await api.post(
+    `/api/impresiones/voucher-whatsapp/${idPedido}`,
+    { detalles }
+  );
+
+  return data.texto;
+};

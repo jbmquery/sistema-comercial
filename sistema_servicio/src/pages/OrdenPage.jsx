@@ -11,7 +11,8 @@ import {
   actualizarEstadoDetalle,
   actualizarObservacionDetalle,
   imprimirCocina,
-  imprimirVoucher
+  imprimirVoucher,
+  generarVoucherWhatsapp
 } from '../api'
 
 import { useParams } from 'react-router-dom'
@@ -24,6 +25,8 @@ const [seleccionados, setSeleccionados] = useState([])
 const { idPedido } = useParams()
 const [showModal, setShowModal] = useState(false)
 const [mostrarModalPago, setMostrarModalPago] = useState(false)
+const [mostrarModalWhatsapp, setMostrarModalWhatsapp] = useState(false)
+const [telefonoWhatsapp, setTelefonoWhatsapp] = useState("")
 const [pagos, setPagos] = useState([
   { metodo: 'efectivo', monto: '' }
 ])
@@ -522,7 +525,17 @@ return (
                       
                       <span className="hidden md:inline">Imprimir</span>
                     </button>
-                    <button className='btn btn-success text-white btn-sm'>
+                    <button
+                      className='btn btn-success text-white btn-sm'
+                      onClick={() => {
+                        if (seleccionados.length === 0) {
+                          setMensajeOk("❌ No hay productos seleccionados")
+                          setTimeout(() => setMensajeOk(''), 2500)
+                          return
+                        }
+                        setMostrarModalWhatsapp(true)
+                      }}
+                    >
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
                       </svg>
@@ -927,6 +940,65 @@ return (
 
 
       {/*FIN Modal de actualizar observacion de detalle_pedido */}
+
+      {/*Modal de enviar Voucher por Whatsapp */}
+
+      {mostrarModalWhatsapp && (
+        <dialog className="modal modal-open">
+          <div className="modal-box max-w-md">
+            <h3 className="font-bold text-lg">Enviar Voucher por WhatsApp</h3>
+            <div className="divider"></div>
+
+            <p className="mb-2">Número de celular (9 dígitos):</p>
+
+            <input
+              type="text"
+              maxLength={9}
+              placeholder="956228708"
+              className="input input-bordered w-full"
+              value={telefonoWhatsapp}
+              onChange={e => setTelefonoWhatsapp(e.target.value.replace(/\D/g, ""))}
+            />
+
+            <div className="modal-action flex justify-between mt-4">
+              <button
+                className="btn"
+                onClick={() => {
+                  setMostrarModalWhatsapp(false)
+                  setTelefonoWhatsapp("")
+                }}
+              >
+                Cancelar
+              </button>
+
+              <button
+                className="btn btn-success text-white"
+                disabled={telefonoWhatsapp.length !== 9}
+                onClick={async () => {
+                  const texto = await generarVoucherWhatsapp({
+                    idPedido,
+                    detalles: seleccionados
+                  })
+
+                  const numeroFinal = `+51${telefonoWhatsapp}`
+
+                  const whatsappURL = `https://wa.me/${numeroFinal}?text=${encodeURIComponent(texto)}`
+
+                  window.open(whatsappURL, "_blank")
+
+                  setMostrarModalWhatsapp(false)
+                  setTelefonoWhatsapp("")
+                }}
+              >
+                Enviar
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
+
+
+      {/*FIN Modal de enviar Voucher por Whatsapp*/}
 
     </div>
   );

@@ -328,3 +328,66 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
 
     buffer.seek(0)
     return buffer
+
+
+def generar_voucher_whatsapp(id_pedido, detalles_ids):
+
+    detalles_tuple = tuple(detalles_ids)
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT
+            p.numero_orden,
+            c.abreviado,
+            d.precio_unitario,
+            COUNT(*) as cantidad,
+            c.porcion,
+            c.unidad_medida
+        FROM detalle_pedido d
+        JOIN pedidos p ON p.id_pedido = d.id_pedido
+        JOIN carta c ON c.id_carta = d.id_carta
+        WHERE d.id_detalle IN %s
+        GROUP BY p.numero_orden, c.abreviado, d.precio_unitario, c.porcion, c.unidad_medida
+        ORDER BY c.abreviado
+    """, (detalles_tuple,))
+
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    if not rows:
+        return None
+
+    pedido = rows[0][0]
+    fecha = datetime.now().strftime("%d/%m/%Y")
+    hora = datetime.now().strftime("%I:%M %p")
+
+    texto = f"""Pluvia Café  -  _Café, amor y barrio_
+------------------------------------
+¡Gracias por tu visita!
+Cod. de pedido: {pedido}
+F: {fecha} - H: {hora}
+------------- Detalle --------------
+"""
+
+    total = 0
+
+    for _, abreviado, precio, cantidad, porcion, unidad in rows:
+        subtotal = precio * cantidad
+        total += subtotal
+
+        linea = f"{cantidad} x {abreviado}"
+        if porcion:
+            linea += f" ({porcion} {unidad})"
+
+        linea += f" - S/ {subtotal:.2f}\n"
+        texto += linea
+
+    texto += """----------- Sub-Total -------------
+"""
+    texto += f"*Total a pagar: S/ {total:.2f}*\n\n"
+    texto += "_¡Esperamos verte pronto!_ ☕"
+
+    return texto
