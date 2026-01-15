@@ -4,10 +4,57 @@ from reportlab.lib.utils import ImageReader
 from io import BytesIO
 from datetime import datetime
 from conexion_postgresql import get_connection
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 import os
 
 
+# =====================================================
+# ============ UTILIDAD PARA SALTO DE LÍNEA ===========
+# =====================================================
+
+def wrap_text(pdf, texto, max_width, font_name, font_size):
+    """
+    Divide un texto en varias líneas para que no se salga del ancho del ticket.
+    """
+    pdf.setFont(font_name, font_size)
+
+    palabras = texto.split(" ")
+    lineas = []
+    linea_actual = ""
+
+    for palabra in palabras:
+        prueba = linea_actual + (" " if linea_actual else "") + palabra
+
+        if pdf.stringWidth(prueba, font_name, font_size) <= max_width:
+            linea_actual = prueba
+        else:
+            lineas.append(linea_actual)
+            linea_actual = palabra
+
+    if linea_actual:
+        lineas.append(linea_actual)
+
+    return lineas
+
+
+# =====================================================
+# ================ IMPRESIÓN COCINA ===================
+# =====================================================
+
 def imprimir_cocina(id_pedido, detalles_ids):
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    # ---------- REGISTRO DE FUENTES COURIER ----------
+    font_regular = os.path.join(BASE_DIR, "..", "fonts", "cour.ttf")
+    font_bold = os.path.join(BASE_DIR, "..", "fonts", "courbd.ttf")
+    font_italic = os.path.join(BASE_DIR, "..", "fonts", "couri.ttf")
+
+    pdfmetrics.registerFont(TTFont("CourierNew", font_regular))
+    pdfmetrics.registerFont(TTFont("CourierNew-Bold", font_bold))
+    pdfmetrics.registerFont(TTFont("CourierNew-Italic", font_italic))
+
     if not detalles_ids:
         return None
 
@@ -39,46 +86,31 @@ def imprimir_cocina(id_pedido, detalles_ids):
     if not rows:
         return None
 
-    # =========================
-    # 📐 CONFIGURACIÓN BASE
-    # =========================
     width = 57 * mm
     line_height = 12
 
-    # =========================
-    # 📊 CÁLCULO REAL DE ALTURA
-    # =========================
-
-    header_lines = 7  # título, slogan, mesa/pedido, fecha, separador
+    header_lines = 7
     product_lines = 0
 
     for _, _, _, obs, _, _ in rows:
-        product_lines += 1          # nombre producto
+        product_lines += 1
         if obs:
-            product_lines += 1      # observación
+            product_lines += 1
 
     total_lines = header_lines + product_lines
-
     top_margin = 20
-    bottom_margin = ((total_lines - 1)*2)+5
+    bottom_margin = ((total_lines - 1) * 3) + 5
 
     height = (
         top_margin +
         total_lines * line_height +
         bottom_margin
     )
-    print("Altura del PDF:", height)
-    # =========================
-    # 🧾 CREACIÓN PDF
-    # =========================
+
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=(width, height))
-
     y = height - top_margin
 
-    # =========================
-    # HEADER
-    # =========================
     pdf.setFont("Helvetica-Bold", 12)
     pdf.drawCentredString(width / 2, y, "PLUVIA CAFÉ")
     y -= line_height
@@ -103,26 +135,45 @@ def imprimir_cocina(id_pedido, detalles_ids):
     pdf.line(5, y, width - 5, y)
     y -= line_height
 
-    # =========================
-    # PRODUCTOS
-    # =========================
+    # ============ AQUÍ ESTÁ EL CAMBIO IMPORTANTE ============
     for _, _, producto, obs, porcion, unidad_medida in rows:
-        pdf.setFont("Helvetica-Bold", 10)
+
+        pdf.setFont("Helvetica-Bold", 11)
 
         texto_producto = f"- {producto}"
         if porcion is not None:
             texto_producto += f" ({porcion} {unidad_medida})"
 
-        pdf.drawString(5, y, texto_producto)
-        y -= line_height
+        # ----- SALTO DE LÍNEA AUTOMÁTICO -----
+        lineas_producto = wrap_text(
+            pdf,
+            texto_producto,
+            width - 10,
+            "Helvetica-Bold",
+            10
+        )
 
-        if obs:
-            pdf.setFont("Helvetica-Oblique", 8)
-            pdf.drawString(10, y, obs)
+        for linea in lineas_producto:
+            pdf.drawString(5, y, linea)
             y -= line_height
 
-        y -= 4
+        if obs:
+            pdf.setFont("Helvetica-Oblique", 9)
 
+            lineas_obs = wrap_text(
+                pdf,
+                obs,
+                width - 15,
+                "Helvetica-Oblique",
+                8
+            )
+
+            for linea in lineas_obs:
+                pdf.drawString(10, y, linea)
+                y -= line_height
+
+        y -= 4
+    # =======================================================
 
     pdf.showPage()
     pdf.save()
@@ -131,7 +182,22 @@ def imprimir_cocina(id_pedido, detalles_ids):
     return buffer
 
 
+# =====================================================
+# =============== VOUCHER DE PAGO =====================
+# =====================================================
+
 def imprimir_voucher_pago(id_pedido, detalles_ids):
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    font_regular = os.path.join(BASE_DIR, "..", "fonts", "cour.ttf")
+    font_bold = os.path.join(BASE_DIR, "..", "fonts", "courbd.ttf")
+    font_italic = os.path.join(BASE_DIR, "..", "fonts", "couri.ttf")
+
+    pdfmetrics.registerFont(TTFont("CourierNew", font_regular))
+    pdfmetrics.registerFont(TTFont("CourierNew-Bold", font_bold))
+    pdfmetrics.registerFont(TTFont("CourierNew-Italic", font_italic))
+
     if not detalles_ids:
         return None
 
@@ -163,9 +229,6 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     if not rows:
         return None
 
-    # =========================
-    # 📐 CONFIGURACIÓN
-    # =========================
     width = 57 * mm
 
     LINE = 12
@@ -174,29 +237,19 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     BOTTOM_MARGIN = 70
     TOP_PADDING = 20
 
-    total_items = len(rows)
-
     height = (
         HEADER_HEIGHT +
-        total_items * ITEM_HEIGHT +
+        len(rows) * ITEM_HEIGHT +
         BOTTOM_MARGIN
     )
 
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=(width, height))
-
     y = height - TOP_PADDING
 
-    # =========================
-    # LOGO (opcional)
-    # =========================
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    logo_path = os.path.normpath(
-        os.path.join(BASE_DIR, "..", "img", "loguito2.jpg")
-    )
-
-
+    logo_path = os.path.join(BASE_DIR, "..", "img", "loguito2.jpg")
     img = ImageReader(logo_path)
+
     pdf.drawImage(
         img,
         (width - 50) / 2,
@@ -208,13 +261,7 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     )
     y -= 45
 
-
-    # =========================
-    # HEADER
-    # =========================
-    #pdf.setFont("Helvetica-Bold", 12)
-    #pdf.drawCentredString(width / 2, y, "PLUVIA CAFÉ")
-    y -= LINE *1.5
+    y -= LINE * 1.5
 
     pdf.setFont("Helvetica-Oblique", 8)
     pdf.drawCentredString(width / 2, y, "Café, amor y barrio")
@@ -238,44 +285,34 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     pdf.drawString(5, y, "Detalle del Pedido")
     y -= LINE
 
-    # =========================
-    # DETALLE
-    # =========================
     total_pagar = 0
-
     pdf.setFont("Helvetica", 8)
 
     for _, abreviado, precio, cantidad, porcion, unidad_medida in rows:
         subtotal = precio * cantidad
         total_pagar += subtotal
 
-        # 1️⃣ Construir texto izquierdo
         texto_izq = f"{cantidad} x {abreviado}"
 
         if porcion is not None:
             texto_izq += f" ({porcion} {unidad_medida})"
 
-        # 2️⃣ LIMITE DE CARACTERES (AQUÍ VA EL FIX)
         MAX_CHARS = 28
         if len(texto_izq) > MAX_CHARS:
             texto_izq = texto_izq[:MAX_CHARS - 3] + "..."
 
-        # 3️⃣ Texto derecho (subtotal)
         texto_der = f"S/ {subtotal:.2f}"
 
-        # 4️⃣ Dibujo en el PDF
         pdf.drawString(5, y, texto_izq)
         pdf.drawRightString(width - 5, y, texto_der)
 
         y -= ITEM_HEIGHT
 
-
-
     y -= 5
     pdf.line(5, y, width - 5, y)
     y -= LINE
 
-    pdf.setFont("Helvetica-Bold", 9)
+    pdf.setFont("Helvetica-Bold", 12)
     pdf.drawRightString(
         width - 5,
         y,
@@ -286,11 +323,8 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     pdf.setFont("Helvetica-Oblique", 8)
     pdf.drawCentredString(width / 2, y, "¡Esperamos verte pronto!")
 
-    y -= LINE * 1.5
-
     pdf.showPage()
     pdf.save()
 
     buffer.seek(0)
     return buffer
-
