@@ -18,7 +18,6 @@ import { useParams } from 'react-router-dom'
 import { getPedidos } from '../api'
 import { useState, useEffect } from 'react'
 
-
 function OrdenPage() {
 
 const [seleccionados, setSeleccionados] = useState([])
@@ -272,6 +271,14 @@ const editarObservacionMutation = useMutation({
   }
 })
 
+/*--cerrar DrawerMobile---*/
+
+const cerrarDrawerMobile = () => {
+  const drawer = document.getElementById('my-drawer-3')
+  if (drawer && window.innerWidth < 1024) {
+    drawer.checked = false
+  }
+}
 
 
 return (
@@ -328,7 +335,22 @@ return (
                       className="btn btn-sm btn-primary mr-2 mb-2"
                       onClick={() => setMostrarModalProducto(true)}
                     >
-                      +<span className="hidden md:inline">Agregar Producto</span>
+                      <svg
+                                width="18"
+                                height="18"
+                                fill="none"
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                        <path d="M12 8v8" />
+                        <path d="M8 12h8" />
+                      </svg>
+                      <span className="hidden md:inline">Agregar Producto</span>
                     </button>
 
                 </div>
@@ -374,26 +396,54 @@ return (
                                 </td>
                                 <td>{d.precio.toFixed(2)}</td>
                                 <td>{d.observacion}</td>
-                                <td>
+                                <td className="flex gap-2">
                                 <button
-                                  className="btn btn-xs btn-warning"
+                                  className="btn btn-sm btn-square"
                                   onClick={() => {
                                     setDetalleEditar(d)
                                     setObsEditar(d.observacion || '')
                                     setMostrarModalEditar(true)
                                   }}
                                 >
-                                  Editar
+                                  {/* Boton Editar */}
+                                  <svg
+                                    width="16"
+                                    height="16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                  </svg>
                                 </button>
 
                                 <button
-                                  className="btn btn-xs btn-error"
+                                  className="btn btn-sm btn-error btn-square"
                                   onClick={() => {
                                     setDetalleABorrar(d)
                                     setMostrarModalBorrar(true)
                                   }}
                                 >
-                                  Borrar
+                                  {/* Boton Borrar */}
+                                  <svg
+                                            width="18"
+                                            height="18"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                          >
+                                            <path d="M3 6h18" />
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                    </svg>
                                 </button>
                                 </td>
                             </tr>
@@ -410,9 +460,6 @@ return (
                   <p className="text-xl font-bold">
                     Cuenta {cuentaActual}
                   </p>
-                  <span className="badge badge-primary badge-outline">
-                    actual
-                  </span>
                 </div>
 
               <div className="divider"></div>
@@ -452,9 +499,10 @@ return (
                     </span>
 
                 </div>
-                <div className="flex justify-between p-4">
+                <div className="flex justify-between p-4 gap-2">
+                    <div className='flex flex-row gap-1'>
                     <button
-                      className="btn btn-primary btn-sm"
+                      className="btn btn-sm"
                       onClick={() => {
                         if (seleccionados.length === 0) {
                           setMensajeOk("❌ No hay productos seleccionados")
@@ -468,11 +516,21 @@ return (
                         })
                       }}
                     >
-                      Imprimir
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5">
+                        <path fillRule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v11.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 1 1 1.06-1.06l3.22 3.22V3a.75.75 0 0 1 .75-.75Zm-9 13.5a.75.75 0 0 1 .75.75v2.25a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5V16.5a.75.75 0 0 1 1.5 0v2.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V16.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+                      </svg>
+                      
+                      <span className="hidden md:inline">Imprimir</span>
                     </button>
-
+                    <button className='btn btn-success text-white btn-sm'>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
+                      </svg>
+                      <span className="hidden md:inline">whatsapp</span>
+                    </button>
+                    </div>
                     <button
-                      className="btn btn-success btn-sm"
+                      className="btn btn-primary btn-sm text-white"
                       disabled={seleccionados.length === 0}
                       onClick={() => setMostrarModalPago(true)}
                     >
@@ -495,6 +553,7 @@ return (
                     <li key={p.id_pedido}>
                     <Link
                         to={`/orden/${p.id_pedido}`}
+                        onClick={cerrarDrawerMobile}
                         className={`flex justify-between mb-2 ${
                         Number(idPedido) === p.id_pedido
                             ? 'bg-secondary text-secondary-content'
@@ -521,11 +580,8 @@ return (
             {/* HEADER */}
             <h3 className="font-bold text-lg flex items-center gap-2">
               <span>CUENTA {cuentaActual}</span>
-              <span className="badge badge-success badge-outline">
-                en curso
-              </span>
               <span className="opacity-70">
-                – Mesa {pedidos.find(p => p.id_pedido == idPedido)?.mesa}
+                – {pedidos.find(p => p.id_pedido == idPedido)?.mesa}
               </span>
             </h3>
 

@@ -196,6 +196,7 @@ function EditTablesPage() {
                           className="btn btn-sm btn-error btn-square"
                           onClick={() => handleDelete(mesa.id_mesas)}
                         >
+                          {/* Boton Borrar */}
                           <svg
                                     width="18"
                                     height="18"

@@ -312,7 +312,7 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
     pdf.line(5, y, width - 5, y)
     y -= LINE
 
-    pdf.setFont("Helvetica-Bold", 12)
+    pdf.setFont("Helvetica-Bold", 13)
     pdf.drawRightString(
         width - 5,
         y,

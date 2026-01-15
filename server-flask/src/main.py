@@ -6,7 +6,7 @@ app = Flask(__name__)
 # Define los orígenes permitidos
 origins = [
     "http://localhost:5173",           # ← Frontend en desarrollo
-    "https://81ec31ccf44a.ngrok-free.app"  # ← URL de tu frontend en ngrok
+    "https://climbable-mason-uneroded.ngrok-free.dev"  # ← URL de tu frontend en ngrok
 ]
 
 ##CORS(app, origins=origins, supports_credentials=True)
@@ -30,7 +30,7 @@ from routes.cuenta_routes import cuenta_routes
 from routes.impresiones_routes import impresiones_bp
 
 
-app.register_blueprint(login_bp)
+app.register_blueprint(login_bp, url_prefix='/api')
 app.register_blueprint(tables_bp)
 app.register_blueprint(carta_bp)
 app.register_blueprint(categorias_bp)

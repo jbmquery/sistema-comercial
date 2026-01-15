@@ -5,7 +5,7 @@ const isLocalhost = window.location.hostname === "localhost";
 const api = axios.create({
   baseURL: isLocalhost
     ? "http://localhost:5000"
-    : "https://abd6ac201af5.ngrok-free.app",
+    : "https://lucienne-preadministrative-odelia.ngrok-free.dev",
   headers: {
     "ngrok-skip-browser-warning": "true",
   },
@@ -105,19 +105,39 @@ export const imprimirCocina = async ({ idPedido, detalles }) => {
     `/api/impresiones/cocina/${idPedido}`,
     { detalles },
     { responseType: 'blob' }
-  )
+  );
 
-  const url = window.URL.createObjectURL(res.data)
-  window.open(url)
-}
+  const blob = new Blob([res.data], { type: "application/pdf" });
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `cocina_pedido_${idPedido}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+};
+
+
 
 export const imprimirVoucher = async ({ idPedido, detalles }) => {
   const res = await api.post(
     `/api/impresiones/voucher/${idPedido}`,
     { detalles },
     { responseType: 'blob' }
-  )
+  );
 
-  const url = window.URL.createObjectURL(res.data)
-  window.open(url)
-}
+  const blob = new Blob([res.data], { type: "application/pdf" });
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `voucher_pago_${idPedido}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+};

@@ -21,14 +21,17 @@ Find the corresponding instructions under:
 
 # autentificador de NGROK
 
-.\ngrok.exe config add-authtoken 31icpQPSQHJpmZOUnbFraTGndI9_7dFER9USoAefi7G7BWhGQ
+.\ngrok.exe config add-authtoken 38GwZTO3JSyzvG6tmUbDVLO9xF5_7Yo1VJwk6pMhqSXkd3xLL --FRONTEND
+.\ngrok.exe config add-authtoken 38IZfR8PbmDnSJGtRjIK1F0sbLf_4GGF6nZB3THqKNcM6wiG8 --BACKEND
 
 # Ejecutar el ngrok
 
-.\ngrok.exe start --all --config "C:\Users\santi\.ngrok2\ngrok.yml"
+.\ngrok.exe start --all --config "C:\Users\santi\.ngrok2\ngrok.yml" --FRONTEND
+.\ngrok.exe start --all --config "C:\Users\santi\.ngrok2\ngrok2.yml" --BACKEND
 
 # Lugares donde actualizar NGROK en el codigo------
 
 - server-flask/src/main.py ----------   FRONTEND
 - SISTEMA_SERVICIO/src/config.js ----   BACKEND
 - SISTEMA_SERVICIO/src/api.js -------   backend
+- Colocar los subdominios en vite.config.js ejemplo '.ngrok-free.dev' del FRONTEND

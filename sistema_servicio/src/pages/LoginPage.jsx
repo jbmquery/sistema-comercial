@@ -23,15 +23,17 @@ function LoginPage() {
     e.preventDefault();
 
     try {
-      const response = await fetch( `${API_BASE}/login `, {
+      const response = await fetch(`${API_BASE}/api/login`, {
         method: 'POST',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
 
       const data = await response.json();
+      console.log("Respuesta del backend:", data); // ← importante para depurar
+
       if (response.ok) {
-        navigate('/tables'); // Redirige a la página de tablas
+        navigate('/tables');
       } else {
         alert(data.message);
       }
@@ -39,6 +41,7 @@ function LoginPage() {
       console.error("Error al iniciar sesión:", error);
     }
   };
+
 
   
   return (
