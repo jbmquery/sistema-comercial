@@ -1,140 +1,237 @@
-# controllers/ventas_dia_controller.py
+#ventas_dia_controller.py
+
 from conexion_postgresql import get_connection
 
-def obtener_ventas_del_dia():
+def get_productos_vendidos_por_dia(fecha):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    query = """
+    SELECT 
+        c.id_carta,
+        c.nombre,
+        c.porcion,
+        c.unidad_medida,
+        COUNT(dp.id_detalle) AS cantidad,
+        SUM(dp.precio_unitario) AS monto
+    FROM detalle_pedido dp
+    INNER JOIN pedidos p 
+    ON dp.id_pedido = p.id_pedido
+    INNER JOIN carta c
+    ON dp.id_carta = c.id_carta
+    WHERE p.fecha = %s
+    AND dp.estado = 'pagado'
+    GROUP BY c.id_carta, c.nombre, c.porcion, c.unidad_medida
+    ORDER BY monto DESC;
+
     """
-    Obtiene todos los pedidos pagados del día actual, con sus detalles.
+
+    cur.execute(query, (fecha,))
+    rows = cur.fetchall()
+
+    resultado = []
+    for r in rows:
+        resultado.append({
+            "id_carta": r[0],
+            "nombre": r[1],
+            "porcion": r[2],
+            "unidad_medida": r[3],
+            "cantidad": int(r[4]),
+            "monto": float(r[5] or 0)
+        })
+
+
+    cur.close()
+    conn.close()
+    return resultado
+
+
+def get_productos_perdida_por_dia(fecha):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    query = """
+    SELECT 
+        c.id_carta,
+        c.nombre,
+        c.porcion,
+        c.unidad_medida,
+        COUNT(dp.id_detalle) AS cantidad,
+        SUM(dp.precio_unitario) AS monto
+    FROM detalle_pedido dp
+    INNER JOIN pedidos p 
+      ON dp.id_pedido = p.id_pedido
+    INNER JOIN carta c
+      ON dp.id_carta = c.id_carta
+    WHERE p.fecha = %s
+      AND dp.estado = 'perdida'
+    GROUP BY c.id_carta, c.nombre, c.porcion, c.unidad_medida
+    ORDER BY monto DESC;
     """
-    conn = None
-    cursor = None
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        
-        # Consulta principal para obtener los pedidos del día
-        query_pedidos = """
-        SELECT 
-            p.id_pedido,
-            p.numero_orden,
-            m.nombre AS nombre_mesa,
-            p.forma_pago,
-            p.monto_pagado
-        FROM pedidos p
-        JOIN mesas m ON p.id_mesa = m.id_mesas
-        WHERE p.fecha = CURRENT_DATE 
-          AND p.estado = 'Pagado'
-        ORDER BY p.id_pedido DESC
-        """
-        cursor.execute(query_pedidos)
-        pedidos_rows = cursor.fetchall()
-        
-        # Preparar la estructura de respuesta
-        pedidos = []
-        for row in pedidos_rows:
-            id_pedido = row[0]
-            
-            # Obtener detalles del pedido
-            query_detalle = """
-            SELECT 
-                dp.id_detalle,
-                c.nombre,
-                dp.cantidad,
-                dp.precio_unitario,
-                dp.estado
-            FROM detalle_pedido dp
-            JOIN carta c ON dp.id_carta = c.id_carta
-            WHERE dp.id_pedido = %s
-            ORDER BY dp.id_detalle
-            """
-            cursor.execute(query_detalle, (id_pedido,))
-            detalle_rows = cursor.fetchall()
-            
-            # Procesar los detalles
-            detalle = []
-            for d_row in detalle_rows:
-                detalle.append({
-                    "id_detalle": d_row[0],
-                    "nombre": d_row[1],
-                    "cantidad": d_row[2],
-                    "precio_total": float(d_row[3]) * d_row[2],
-                    "canjeado": d_row[4] == 'Canjeado'
-                })
-            
-            # ✅ CORRECCIÓN: Calcular total del pedido (solo productos NO canjeados)
-            total = sum(item["precio_total"] for item in detalle if not item["canjeado"])
-            
-            pedidos.append({
-                "id_pedido": row[0],
-                "numero_orden": row[1],
-                "nombre_mesa": row[2],
-                "forma_pago": row[3],
-                "total": float(total),
-                "detalle": detalle
-            })
-        
-        # ✅ CONSULTA CORREGIDA: Resumen de pagos (excluye productos canjeados)
-        query_resumen = """
-        WITH metodos_pago AS (
-            SELECT 'efectivo' AS forma_pago
-            UNION ALL
-            SELECT 'yape'
-            UNION ALL
-            SELECT 'plin'
-            UNION ALL
-            SELECT 'transferencia'
-        )
-        SELECT 
-            mp.forma_pago,
-            COALESCE(SUM(ventas.precio_unitario * ventas.cantidad), 0) AS total
-        FROM metodos_pago mp
-        LEFT JOIN (
-            SELECT 
-                dp.precio_unitario,
-                dp.cantidad,
-                p.forma_pago
-            FROM detalle_pedido dp
-            INNER JOIN pedidos p ON dp.id_pedido = p.id_pedido
-            WHERE 
-                dp.estado != 'Canjeado' 
-                AND p.estado = 'Pagado'
-                AND p.fecha = CURRENT_DATE
-        ) ventas ON mp.forma_pago = ventas.forma_pago
-        GROUP BY mp.forma_pago
-        ORDER BY mp.forma_pago
-        """
-        cursor.execute(query_resumen)
-        resumen_rows = cursor.fetchall()
-        
-        # Preparar resumen de pagos
-        resumen_pagos = {
-            "efectivo": 0.0,
-            "yape": 0.0,
-            "plin": 0.0,
-            "transferencia": 0.0
-        }
-        
-        for row in resumen_rows:
-            metodo = row[0].lower()
-            resumen_pagos[metodo] = float(row[1])
-        
-        return {
-            "pedidos": pedidos,
-            "resumen_pagos": resumen_pagos
-        }
-    
-    except Exception as e:
-        print(f"Error obteniendo ventas del día: {e}")
-        return {
-            "pedidos": [],
-            "resumen_pagos": {
-                "efectivo": 0.0,
-                "yape": 0.0,
-                "plin": 0.0,
-                "transferencia": 0.0
-            }
-        }
-    finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
+
+    cur.execute(query, (fecha,))
+    rows = cur.fetchall()
+
+    resultado = []
+    for r in rows:
+        resultado.append({
+            "id_carta": r[0],
+            "nombre": r[1],
+            "porcion": r[2],
+            "unidad_medida": r[3],
+            "cantidad": int(r[4]),
+            "monto": float(r[5] or 0)
+        })
+
+    cur.close()
+    conn.close()
+    return resultado
+
+def get_tipos_venta_por_dia(fecha):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    query = """
+    SELECT 
+        m.tipo_mesa,
+        COUNT(DISTINCT p.id_pedido) AS cantidad_pedidos,
+        COALESCE(SUM(dp.precio_unitario), 0) AS monto_total
+    FROM pedidos p
+    INNER JOIN mesas m 
+      ON p.id_mesa = m.id_mesas
+    INNER JOIN detalle_pedido dp
+      ON dp.id_pedido = p.id_pedido
+    WHERE p.fecha = %s
+      AND dp.estado = 'pagado'
+    GROUP BY m.tipo_mesa
+    ORDER BY monto_total DESC;
+    """
+
+    cur.execute(query, (fecha,))
+    rows = cur.fetchall()
+
+    resultado = []
+    for r in rows:
+        resultado.append({
+            "tipo_mesa": r[0],
+            "cantidad": int(r[1]),
+            "monto": float(r[2] or 0)
+        })
+
+    cur.close()
+    conn.close()
+    return resultado
+
+
+def get_ventas_por_mesa_dia(fecha):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    query = """
+    SELECT 
+        m.nombre,
+        COUNT(DISTINCT p.id_pedido) AS cantidad_pedidos,
+        COALESCE(SUM(dp.precio_unitario), 0) AS monto_total
+    FROM pedidos p
+    INNER JOIN mesas m 
+      ON p.id_mesa = m.id_mesas
+    INNER JOIN detalle_pedido dp
+      ON dp.id_pedido = p.id_pedido
+    WHERE p.fecha = %s
+      AND dp.estado = 'pagado'
+    GROUP BY m.nombre
+    ORDER BY monto_total DESC;
+    """
+
+    cur.execute(query, (fecha,))
+    rows = cur.fetchall()
+
+    resultado = []
+    for r in rows:
+        resultado.append({
+            "mesa": r[0],
+            "pedidos": int(r[1]),
+            "monto": float(r[2] or 0)
+        })
+
+    cur.close()
+    conn.close()
+    return resultado
+
+def get_resumen_pedidos_por_dia(fecha):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    query = """
+    SELECT 
+        p.id_pedido,
+        m.nombre AS mesa,
+        p.fecha,
+        p.hora_pedido,
+        p.hora_pago,
+        p.estado,
+        p.forma_pago,
+
+        -- 👉 Consumo real del pedido
+        COALESCE(d.total_detalle, 0) AS monto_pedido,
+
+        -- 👉 Dinero realmente recibido
+        COALESCE(pg.total_pago, 0) AS monto_pagado,
+
+        -- 👉 Vuelto correcto
+        COALESCE(pg.total_pago, 0) - COALESCE(d.total_detalle, 0) AS vuelto
+
+    FROM pedidos p
+    LEFT JOIN mesas m 
+    ON p.id_mesa = m.id_mesas
+
+    -- 🔹 Subconsulta para detalle_pedido (sin duplicaciones)
+    LEFT JOIN (
+    SELECT 
+        id_pedido,
+        SUM(precio_unitario) AS total_detalle
+    FROM detalle_pedido WHERE estado ='pagado'
+    GROUP BY id_pedido
+    ) d
+    ON p.id_pedido = d.id_pedido
+
+    -- 🔹 Subconsulta para pagos (sin duplicaciones)
+    LEFT JOIN (
+    SELECT 
+        id_pedido,
+        SUM(monto_total) AS total_pago
+    FROM pagos
+    GROUP BY id_pedido
+    ) pg
+    ON p.id_pedido = pg.id_pedido
+
+    WHERE p.fecha = %s
+
+    ORDER BY p.hora_pedido DESC;
+
+
+
+    """
+
+    cur.execute(query, (fecha,))
+    rows = cur.fetchall()
+
+    resultado = []
+    for r in rows:
+        resultado.append({
+            "id_pedido": r[0],
+            "mesa": r[1] or "SIN MESA",
+            "fecha": str(r[2]),
+            "hora_pedido": str(r[3]),
+            "hora_pago": str(r[4]) if r[4] else "-",
+            "estado": r[5],
+            "forma_pago": r[6] or "-",
+            "monto_pedido": float(r[7] or 0),
+            "monto_pagado": float(r[8] or 0),
+            "vuelto": float(r[9] or 0)
+        })
+
+
+    cur.close()
+    conn.close()
+    return resultado

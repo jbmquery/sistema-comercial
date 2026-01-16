@@ -1,3 +1,5 @@
+// api.js
+
 import axios from "axios";
 
 const isLocalhost = window.location.hostname === "localhost";
@@ -149,4 +151,45 @@ export const generarVoucherWhatsapp = async ({ idPedido, detalles }) => {
   );
 
   return data.texto;
+};
+
+
+export const getProductosVendidosDia = async (fecha) => {
+  const { data } = await api.get("/api/ventas-dia/productos", {
+    params: { fecha }
+  });
+
+  return data.productos_vendidos;
+};
+
+export const getProductosPerdidaDia = async (fecha) => {
+  const { data } = await api.get("/api/ventas-dia/perdidas", {
+    params: { fecha }
+  });
+
+  return data.productos_perdida;
+};
+
+export const getTiposVentaDia = async (fecha) => {
+  const { data } = await api.get("/api/ventas-dia/tipos-venta", {
+    params: { fecha }
+  });
+
+  return data.tipos_venta;
+};
+
+export const getVentasMesasDia = async (fecha) => {
+  const { data } = await api.get("/api/ventas-dia/mesas", {
+    params: { fecha }
+  });
+
+  return data.ventas_mesas;
+};
+
+export const getResumenPedidosDia = async (fecha) => {
+  const { data } = await api.get("/api/ventas-dia/resumen-pedidos", {
+    params: { fecha }
+  });
+
+  return data.resumen_pedidos;
 };

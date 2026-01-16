@@ -1,13 +1,60 @@
-# routes/ventas_dia_routes.py
-from flask import Blueprint, jsonify
-from controllers.ventas_dia_controller import obtener_ventas_del_dia
+from flask import Blueprint, request, jsonify
+from controllers.ventas_dia_controller import (
+    get_productos_vendidos_por_dia,
+    get_productos_perdida_por_dia,
+    get_tipos_venta_por_dia,
+    get_ventas_por_mesa_dia,
+    get_resumen_pedidos_por_dia
+    )
 
-ventas_dia_bp = Blueprint('ventas_dia_bp', __name__)
+ventas_dia_bp = Blueprint('ventas_dia', __name__)
 
-@ventas_dia_bp.route('/api/ventas/dia', methods=['GET'])
-def get_ventas_dia():
-    """
-    Endpoint para obtener todas las ventas del día actual.
-    """
-    resultado = obtener_ventas_del_dia()
-    return jsonify(resultado), 200
+@ventas_dia_bp.route('/api/ventas-dia/productos', methods=['GET'])
+def productos_vendidos():
+    fecha = request.args.get('fecha')
+
+    if not fecha:
+        return jsonify({"error": "Falta parámetro fecha (YYYY-MM-DD)"}), 400
+
+    data = get_productos_vendidos_por_dia(fecha)
+    return jsonify({"productos_vendidos": data})
+
+@ventas_dia_bp.route('/api/ventas-dia/perdidas', methods=['GET'])
+def productos_perdida():
+    fecha = request.args.get('fecha')
+
+    if not fecha:
+        return jsonify({"error": "Falta parámetro fecha (YYYY-MM-DD)"}), 400
+
+    data = get_productos_perdida_por_dia(fecha)
+    return jsonify({"productos_perdida": data})
+
+@ventas_dia_bp.route('/api/ventas-dia/tipos-venta', methods=['GET'])
+def tipos_venta_dia():
+    fecha = request.args.get('fecha')
+
+    if not fecha:
+        return jsonify({"error": "Falta parámetro fecha (YYYY-MM-DD)"}), 400
+
+    data = get_tipos_venta_por_dia(fecha)
+    return jsonify({"tipos_venta": data})
+
+@ventas_dia_bp.route('/api/ventas-dia/mesas', methods=['GET'])
+def ventas_por_mesa_dia():
+    fecha = request.args.get('fecha')
+
+    if not fecha:
+        return jsonify({"error": "Falta parámetro fecha (YYYY-MM-DD)"}), 400
+
+    data = get_ventas_por_mesa_dia(fecha)
+    return jsonify({"ventas_mesas": data})
+
+@ventas_dia_bp.route('/api/ventas-dia/resumen-pedidos', methods=['GET'])
+def resumen_pedidos_dia():
+    fecha = request.args.get('fecha')
+
+    if not fecha:
+        return jsonify({"error": "Falta parámetro fecha (YYYY-MM-DD)"}), 400
+
+    data = get_resumen_pedidos_por_dia(fecha)
+    return jsonify({"resumen_pedidos": data})
