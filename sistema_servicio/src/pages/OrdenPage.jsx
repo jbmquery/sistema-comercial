@@ -505,7 +505,7 @@ return (
                 <div className="flex justify-between p-4 gap-2">
                     <div className='flex flex-row gap-1'>
                     <button
-                      className="btn btn-sm"
+                      className="btn btn-md lg:btn-sm"
                       onClick={() => {
                         if (seleccionados.length === 0) {
                           setMensajeOk("❌ No hay productos seleccionados")
@@ -526,7 +526,7 @@ return (
                       <span className="hidden md:inline">Imprimir</span>
                     </button>
                     <button
-                      className='btn btn-success text-white btn-sm'
+                      className='btn btn-success btn-md lg:btn-sm text-white'
                       onClick={() => {
                         if (seleccionados.length === 0) {
                           setMensajeOk("❌ No hay productos seleccionados")
@@ -543,7 +543,7 @@ return (
                     </button>
                     </div>
                     <button
-                      className="btn btn-primary btn-sm text-white"
+                      className="btn btn-primary btn-md lg:btn-sm text-white"
                       disabled={seleccionados.length === 0}
                       onClick={() => setMostrarModalPago(true)}
                     >

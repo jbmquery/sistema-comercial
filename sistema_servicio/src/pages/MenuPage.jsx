@@ -225,12 +225,12 @@ function Menues() {
       </div>
 
       {/* Sección pedido */}
-      <div className="flex flex-col md:flex-row justify-center bg-purple-500">
+      <div className="flex flex-col md:flex-row justify-center bg-gray-500">
         
         {/* Sección menú */}
         <div className="md:w-250">
           {/* Categorías */}
-          <div className="flex flex-wrap bg-red-500 justify-center items-center gap-2 py-2">
+          <div className="flex flex-wrap bg-secondary justify-center items-center gap-2 py-2">
             {categorias.map((cat) => (
               <button
                 key={cat.id}
@@ -330,17 +330,17 @@ function Menues() {
           </div>
 
           {/* Confirmación */}
-          <div className="flex flex-row justify-center items-center p-4 md:p-6 lg:p-8 bg-cyan-200 w-full gap-4">
+          <div className="flex flex-row justify-between gap-4">
             <button
               type="button"
-              className="flex w-full justify-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-500"
+              className="btn btn-md btn-error text-white"
               onClick={() => setCarrito([])}
             >
               Cancelar
             </button>
             <button
               type="button"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-indigo-500"
+              className="btn btn-md btn-primary"
               onClick={guardarPedido}
               disabled={carrito.length === 0 || crearPedidoMutation.isLoading}
             >
