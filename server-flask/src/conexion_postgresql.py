@@ -1,5 +1,4 @@
 #conexion_postgresql.py
-
 import psycopg2
 
 DB_CONFIG = {

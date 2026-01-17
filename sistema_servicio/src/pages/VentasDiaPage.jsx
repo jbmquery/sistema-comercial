@@ -13,7 +13,13 @@ import {
 
 function VentasDiaPage() {
   
-  const hoy = new Date().toISOString().split("T")[0];
+  const hoy = new Date(
+  new Date().getTime() - new Date().getTimezoneOffset() * 60000
+  )
+    .toISOString()
+    .split("T")[0];
+
+  console.log("FECHA QUE ENVÍO A LA API:", hoy);
 
   const { data: productosVendidos = [], isLoading } = useQuery({
   queryKey: ["productosVendidos", hoy],
@@ -53,6 +59,15 @@ function VentasDiaPage() {
   });
 
 
+  //pruebas log
+
+  // console.log("Productos vendidos:", productosVendidos);
+  // console.log("Productos perdida:", productosPerdida);
+  // console.log("tipo de ventas:", tiposVenta);
+  // console.log("ventas por mesa:", ventasMesas);
+  // console.log("Resumen de pedidos:", resumenPedidos);
+
+  
   return (
     <div className="flex flex-col justify-center items-center">
       <HeaderNav />
