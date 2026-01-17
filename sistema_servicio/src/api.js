@@ -201,3 +201,10 @@ export const getCajaDia = async (fecha) => {
 
   return data.caja;
 };
+
+export const getDetallePedidoVentasDia = async (idPedido) => {
+  const { data } = await api.get(
+    `/api/ventas-dia/pedido-detalle/${idPedido}`
+  );
+  return data; 
+};

@@ -2,13 +2,15 @@
 
 import HeaderNav from "../components/header_nav.jsx";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react"; 
 import { 
   getProductosVendidosDia, 
   getProductosPerdidaDia,
   getTiposVentaDia,
   getVentasMesasDia,
   getResumenPedidosDia,
-  getCajaDia
+  getCajaDia,
+  getDetallePedidoVentasDia
 } from "../api";
 
 
@@ -87,6 +89,27 @@ function VentasDiaPage() {
 
   const dineroEnCaja =
     APERTURA + sumaIngresos - sumaEgresos - vuelto;
+  
+  // ----*-------Apagartado para el modal VER DETALLLE PEDIDO -----------*----
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [detallePedido, setDetallePedido] = useState(null);
+  const [pedidoActual, setPedidoActual] = useState(null);
+
+  const verPedido = async (pedido) => {
+    const data = await getDetallePedidoVentasDia(pedido.id_pedido);
+
+    setPedidoActual({
+      id_pedido: pedido.id_pedido,
+      mesa: pedido.mesa
+    });
+
+    setDetallePedido(data);
+    setModalAbierto(true);
+  };
+
+
+
+
 
 
   //pruebas log
@@ -426,7 +449,13 @@ function VentasDiaPage() {
                       <td>S/. {p.monto_pagado.toFixed(2)}</td>
                       <td>S/. {p.vuelto.toFixed(2)}</td>
                       <td>
-                        <button className="btn btn-sm">Ver</button>
+                        <button 
+                          className="btn btn-sm"
+                          onClick={() => verPedido(p)}
+                        >
+                          Ver
+                        </button>
+
                       </td>
                     </tr>
 
@@ -438,6 +467,73 @@ function VentasDiaPage() {
           </div>
         </div>
       </div>
+      {/* Modal Detalle Pedido */}
+      {modalAbierto && detallePedido && (
+        <dialog className="modal modal-open">
+          <div className="modal-box max-w-2xl">
+
+            <h3 className="font-bold text-lg">
+              Pedido {pedidoActual.id_pedido} - {pedidoActual.mesa}
+            </h3>
+
+            <div className="divider"></div>
+
+            <div className="overflow-x-auto">
+              <table className="table table-sm w-full">
+                <thead>
+                  <tr>
+                    <th>Cant.</th>
+                    <th>Nombre</th>
+                    <th>Precio Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detallePedido.detalles.map((item, i) => (
+                    <tr key={i}>
+                      <td>{item.cantidad}</td>
+                      <td>
+                        {item.nombre}
+                        {item.porcion && (
+                          <span className="opacity-70">
+                            {" "}({item.porcion} {item.unidad_medida})
+                          </span>
+                        )}
+                      </td>
+                      <td>{item.precio_total.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="divider"></div>
+
+            <div className="text-right font-bold text-lg">
+              Total: S/ {detallePedido.total.toFixed(2)}
+            </div>
+
+            <div className="modal-action flex justify-between mt-4">
+
+              <button
+                className="btn"
+                onClick={() => setModalAbierto(false)}
+              >
+                Cerrar
+              </button>
+
+              <div className="flex gap-2">
+                <button className="btn btn-info">Imprimir</button>
+                <button className="btn btn-success text-white">
+                  Whatsapp
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </dialog>
+      )}
+
+
     </div>
   );
 }

@@ -5,7 +5,8 @@ from controllers.ventas_dia_controller import (
     get_tipos_venta_por_dia,
     get_ventas_por_mesa_dia,
     get_resumen_pedidos_por_dia,
-    get_caja_dia
+    get_caja_dia,
+    get_detalle_pedido_ventas_page
     )
 
 ventas_dia_bp = Blueprint('ventas_dia', __name__)
@@ -69,3 +70,10 @@ def caja_dia():
 
     data = get_caja_dia(fecha)
     return jsonify({"caja": data})
+
+@ventas_dia_bp.route('/api/ventas-dia/pedido-detalle/<int:id_pedido>', methods=['GET'])
+def pedido_detalle(id_pedido):
+    data = get_detalle_pedido_ventas_page(id_pedido)
+    return jsonify(data)
+
+

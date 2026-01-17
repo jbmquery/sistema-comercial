@@ -286,3 +286,51 @@ def get_caja_dia(fecha):
     cur.close()
     conn.close()
     return resultado
+
+def get_detalle_pedido_ventas_page(id_pedido):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    query = """
+    SELECT 
+        p.id_pedido,
+        m.nombre AS mesa,
+        c.nombre,
+        c.porcion,
+        c.unidad_medida,
+        dp.cantidad,
+        dp.precio_unitario,
+        (dp.cantidad * dp.precio_unitario) AS precio_total
+    FROM detalle_pedido dp
+    INNER JOIN pedidos p ON dp.id_pedido = p.id_pedido
+    LEFT JOIN mesas m ON p.id_mesa = m.id_mesas
+    INNER JOIN carta c ON dp.id_carta = c.id_carta
+    WHERE dp.id_pedido = %s
+      AND dp.estado = 'pagado';
+    """
+
+    cur.execute(query, (id_pedido,))
+    rows = cur.fetchall()
+
+    detalles = []
+    total = 0
+
+    for r in rows:
+        precio_total = float(r[7] or 0)
+        total += precio_total
+
+        detalles.append({
+            "id_pedido": r[0],
+            "mesa": r[1] or "SIN MESA",
+            "nombre": r[2],
+            "porcion": r[3],
+            "unidad_medida": r[4],
+            "cantidad": int(r[5]),
+            "precio_unitario": float(r[6] or 0),
+            "precio_total": precio_total
+        })
+
+    cur.close()
+    conn.close()
+
+    return {"detalles": detalles, "total": round(total, 2)}
