@@ -193,3 +193,11 @@ export const getResumenPedidosDia = async (fecha) => {
 
   return data.resumen_pedidos;
 };
+
+export const getCajaDia = async (fecha) => {
+  const { data } = await api.get("/api/ventas-dia/caja", {
+    params: { fecha }
+  });
+
+  return data.caja;
+};

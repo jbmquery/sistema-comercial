@@ -235,3 +235,54 @@ def get_resumen_pedidos_por_dia(fecha):
     cur.close()
     conn.close()
     return resultado
+
+
+def get_caja_dia(fecha):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    query = """
+    SELECT 
+        COALESCE(SUM(pg.monto_total) FILTER (WHERE pg.metodo_pago = 'efectivo'), 0.00) AS efectivo,
+        COALESCE(SUM(pg.monto_total) FILTER (WHERE pg.metodo_pago = 'yape'), 0.00) AS yape,
+        COALESCE(SUM(pg.monto_total) FILTER (WHERE pg.metodo_pago = 'plin'), 0.00) AS plin,
+        COALESCE(SUM(pg.monto_total) FILTER (WHERE pg.metodo_pago = 'agora'), 0.00) AS agora,
+        COALESCE(SUM(pg.monto_total) FILTER (WHERE pg.metodo_pago = 'transferencia'), 0.00) AS transferencia,
+
+        COALESCE((
+            SELECT SUM(dp.precio_unitario)
+            FROM detalle_pedido dp
+            INNER JOIN pedidos pd2 ON dp.id_pedido = pd2.id_pedido
+            WHERE pd2.fecha = %s 
+              AND dp.estado = 'pagado'
+        ), 0.00) AS total_ingresos,
+
+        COALESCE((
+            SELECT SUM(dp.precio_unitario)
+            FROM detalle_pedido dp
+            INNER JOIN pedidos pd3 ON dp.id_pedido = pd3.id_pedido
+            WHERE pd3.fecha = %s 
+              AND dp.estado = 'perdida'
+        ), 0.00) AS perdidas
+
+    FROM pagos pg
+    INNER JOIN pedidos pd ON pg.id_pedido = pd.id_pedido
+    WHERE pd.fecha = %s;
+    """
+
+    cur.execute(query, (fecha, fecha, fecha))
+    r = cur.fetchone()
+
+    resultado = {
+        "efectivo": float(r[0] or 0),
+        "yape": float(r[1] or 0),
+        "plin": float(r[2] or 0),
+        "agora": float(r[3] or 0),
+        "transferencia": float(r[4] or 0),
+        "total_ingresos": float(r[5] or 0),
+        "perdidas": float(r[6] or 0)
+    }
+
+    cur.close()
+    conn.close()
+    return resultado

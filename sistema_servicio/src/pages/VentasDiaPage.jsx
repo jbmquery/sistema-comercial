@@ -7,7 +7,8 @@ import {
   getProductosPerdidaDia,
   getTiposVentaDia,
   getVentasMesasDia,
-  getResumenPedidosDia
+  getResumenPedidosDia,
+  getCajaDia
 } from "../api";
 
 
@@ -58,6 +59,35 @@ function VentasDiaPage() {
     queryFn: () => getResumenPedidosDia(hoy)
   });
 
+  const { 
+    data: caja = null, 
+    isLoading: loadingCaja 
+  } = useQuery({
+    queryKey: ["cajaDia", hoy],
+    queryFn: () => getCajaDia(hoy)
+  });
+
+  const APERTURA = 0;
+  const GASTOS = 0;
+
+  const efectivo = caja?.efectivo || 0;
+  const yape = caja?.yape || 0;
+  const plin = caja?.plin || 0;
+  const agora = caja?.agora || 0;
+  const transferencia = caja?.transferencia || 0;
+  const totalIngresos = caja?.total_ingresos || 0;
+  const perdidas = caja?.perdidas || 0;
+
+  const sumaIngresos =
+    efectivo + yape + plin + agora + transferencia;
+
+  const sumaEgresos = GASTOS;
+
+  const vuelto = sumaIngresos - totalIngresos;
+
+  const dineroEnCaja =
+    APERTURA + sumaIngresos - sumaEgresos - vuelto;
+
 
   //pruebas log
 
@@ -92,7 +122,8 @@ function VentasDiaPage() {
             {/* Resumen Ingresos Totales Dia */}
             <div className="flex flex-col gap-5 p-5 bg-white rounded shadow py-5">
               <span className="text-3xl font-bold text-center">
-                Total Ingresos: S/150
+                Total Ingresos: S/{totalIngresos.toFixed(2)}
+
               </span>
               <div className="overflow-x-auto">
                 <table className="table table-sm">
@@ -103,51 +134,75 @@ function VentasDiaPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="font-bold">
-                      <td>APERTURA</td>
-                      <td>S/. 50.00</td>
-                    </tr>
-                    <tr>
-                      <td>EFECTIVO</td>
-                      <td>S/. 135.20</td>
-                    </tr>
-                    <tr>
-                      <td>YAPE</td>
-                      <td>S/. 52.10</td>
-                    </tr>
-                    <tr>
-                      <td>PLIN</td>
-                      <td>S/. 00.00</td>
-                    </tr>
-                    <tr>
-                      <td>AGORA</td>
-                      <td>S/. 00.00</td>
-                    </tr>
-                    <tr>
-                      <td>TRANSFERENCIA</td>
-                      <td>S/. 00.00</td>
-                    </tr>
-                    <tr>
-                      <td>GASTOS</td>
-                      <td>S/. 35.00</td>
-                    </tr>
-                    <tr>
-                      <td>PERDIDAS</td>
-                      <td>S/. 00.00</td>
-                    </tr>
-                    <tr className="font-bold">
-                      <td>SUMA INGRESOS</td>
-                      <td>S/. 00.00</td>
-                    </tr>
-                    <tr  className="font-bold">
-                      <td>SUMA EGRESOS</td>
-                      <td>S/. 00.00</td>
-                    </tr>
-                    <tr  className="font-bold">
-                      <td>DINERO EN CAJA</td>
-                      <td>S/. 00.00</td>
-                    </tr>
+                    {loadingCaja ? (
+                      <tr>
+                        <td colSpan={2} className="text-center">Cargando...</td>
+                      </tr>
+                    ) : (
+                      <>
+                        <tr className="font-bold">
+                          <td>APERTURA</td>
+                          <td>S/. {APERTURA.toFixed(2)}</td>
+                        </tr>
+
+                        <tr>
+                          <td>EFECTIVO</td>
+                          <td>S/. {efectivo.toFixed(2)}</td>
+                        </tr>
+
+                        <tr>
+                          <td>YAPE</td>
+                          <td>S/. {yape.toFixed(2)}</td>
+                        </tr>
+
+                        <tr>
+                          <td>PLIN</td>
+                          <td>S/. {plin.toFixed(2)}</td>
+                        </tr>
+
+                        <tr>
+                          <td>AGORA</td>
+                          <td>S/. {agora.toFixed(2)}</td>
+                        </tr>
+
+                        <tr>
+                          <td>TRANSFERENCIA</td>
+                          <td>S/. {transferencia.toFixed(2)}</td>
+                        </tr>
+
+                        <tr>
+                          <td>GASTOS</td>
+                          <td>S/. {GASTOS.toFixed(2)}</td>
+                        </tr>
+
+                        <tr>
+                          <td>PERDIDAS</td>
+                          <td>S/. {perdidas.toFixed(2)}</td>
+                        </tr>
+
+                        <tr className="font-bold">
+                          <td>SUMA INGRESOS</td>
+                          <td>S/. {sumaIngresos.toFixed(2)}</td>
+                        </tr>
+
+                        <tr className="font-bold">
+                          <td>SUMA EGRESOS</td>
+                          <td>S/. {sumaEgresos.toFixed(2)}</td>
+                        </tr>
+
+                        <tr className="font-bold">
+                          <td>VUELTO</td>
+                          <td>S/. {vuelto.toFixed(2)}</td>
+                        </tr>
+
+                        <tr className="font-bold">
+                          <td>DINERO EN CAJA</td>
+                          <td>S/. {dineroEnCaja.toFixed(2)}</td>
+                        </tr>
+                      </>
+                    )}
                   </tbody>
+
                 </table>
               </div>
             </div>
@@ -163,7 +218,7 @@ function VentasDiaPage() {
                   <thead>
                     <tr>
                       <th>Tipo de mesa</th>
-                      <th>Cantidad pedidos</th>
+                      <th>Cantidad</th>
                       <th>Monto total</th>
                     </tr>
                   </thead>
