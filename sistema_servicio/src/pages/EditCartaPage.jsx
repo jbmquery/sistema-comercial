@@ -268,13 +268,13 @@ const editarCarta = async (c) => {
     <div className="w-full shadow-md">
       <HeaderCom />
 
-      <div className="drawer lg:drawer-open">
+      <div className="drawer lg:drawer-open bg-neutral-800">
         <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
 
         {/* ================= CONTENIDO ================= */}
         <div className="drawer-content p-4">
 
-          <label htmlFor="my-drawer-3" className="btn drawer-button lg:hidden mb-4">☰</label>
+          <label htmlFor="my-drawer-3" className="btn drawer-button btn-outline lg:hidden mb-4">☰</label>
 
           <h1 className="text-2xl font-bold mb-6">Gestión de Carta</h1>
 
@@ -282,7 +282,7 @@ const editarCarta = async (c) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* CATEGORIAS */}
-            <div className="overflow-x-auto bg-white rounded shadow">
+            <div className="overflow-x-auto bg-black rounded shadow">
               <div className="flex flex-row justify-between items-center">
                 <h2 className="font-bold p-3">Categorías</h2>
                 <label htmlFor="modal_categoria" className="btn btn-sm btn-primary mx-2">
@@ -321,7 +321,7 @@ const editarCarta = async (c) => {
                       <td>{c.descripcion}</td>
                       <td className="flex gap-1">
                         <button
-                          className="btn btn-sm btn-square"
+                          className="btn btn-sm btn-square btn-info"
                           onClick={() => {
                             setCategoriaForm(c);
                             document.getElementById("modal_categoria").checked = true;
@@ -343,7 +343,7 @@ const editarCarta = async (c) => {
                           </svg>        
                         </button>
                         <button
-                          className="btn btn-sm btn-square btn-error"
+                          className="btn btn-sm btn-square btn-secondary"
                           onClick={() => handleDeleteCategoria(c.id_categoria)}
                         >
                           <svg
@@ -370,7 +370,7 @@ const editarCarta = async (c) => {
             </div>
 
             {/* SUBCATEGORIAS */}
-            <div className="overflow-x-auto bg-white rounded shadow">
+            <div className="overflow-x-auto bg-black rounded shadow">
               <div className="flex flex-row justify-between items-center mx-2">
                 <h2 className="font-bold p-3">Subcategorías</h2>
                 <label htmlFor="modal_subcategoria" className="btn btn-sm btn-primary">
@@ -426,7 +426,7 @@ const editarCarta = async (c) => {
                       <td className="flex gap-1">
                         {/* Botón de editar subcategorias*/}
                         <button
-                          className="btn btn-sm btn-square"
+                          className="btn btn-sm btn-square btn-info"
                           onClick={() => {
                             setSubcategoriaForm(s);
                             document.getElementById("modal_subcategoria").checked = true;
@@ -449,7 +449,7 @@ const editarCarta = async (c) => {
                         </button>
                         {/* Botón de Eliminar subcategorias*/}
                         <button
-                          className="btn btn-sm btn-square btn-error"
+                          className="btn btn-sm btn-square btn-secondary"
                           onClick={() => handleDeleteSubcategoria(s.id_subcat)}
                         >
                           <svg
@@ -497,7 +497,7 @@ const editarCarta = async (c) => {
             </select>
             <div className="flex flex-row justify-between items-center gap-2">
               {/* Boton descargar CSV*/}
-              <button className="btn btn-outline btn-sm" onClick={descargarCSV}>
+              <button className="btn btn-dash btn-warning btn-sm" onClick={descargarCSV}>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5">
                   <path fillRule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v11.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 1 1 1.06-1.06l3.22 3.22V3a.75.75 0 0 1 .75-.75Zm-9 13.5a.75.75 0 0 1 .75.75v2.25a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5V16.5a.75.75 0 0 1 1.5 0v2.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V16.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
                 </svg>
@@ -526,7 +526,7 @@ const editarCarta = async (c) => {
           </div>
 
           {/* ================= TABLA CARTA ================= */}
-          <div className="overflow-x-auto bg-white rounded shadow">
+          <div className="overflow-x-auto bg-black rounded shadow">
             <table className="table table-sm">
               <thead>
                 <tr>
@@ -563,13 +563,13 @@ const editarCarta = async (c) => {
                     {/* <td className="truncate max-w-[120px]">{c.url_imagen}</td>*/}
                     <td>{c.estado ? "Activo" : "Inactivo"}</td>
                     <td>
-                      <span className={`badge ${c.disponible ? 'badge-success' : 'badge-error'}`}>
+                      <span className={`badge ${c.disponible ? 'badge-accent' : 'badge-secondary'}`}>
                         {c.disponible ? "Sí" : "No"}
                       </span>
                     </td>
                     <td className="flex gap-1">
                       <button
-                        className="btn btn-sm btn-square"
+                        className="btn btn-sm btn-square btn-info"
                         onClick={() => editarCarta(c)}
                       >
                         <svg
@@ -589,7 +589,7 @@ const editarCarta = async (c) => {
                       </button>
 
                       <button
-                        className="btn btn-sm btn-error btn-square"
+                        className="btn btn-sm btn-secondary btn-square"
                         onClick={() => handleDeleteCarta(c.id_carta)}
                       >
                         <svg
@@ -633,7 +633,7 @@ const editarCarta = async (c) => {
                 </Link>
               </li>
               <li>
-                <Link className="active bg-secondary text-secondary-content" to='/edit-carta'>
+                <Link className="active bg-primary text-secondary-content" to='/edit-carta'>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
                         <path d="M11.25 4.533A9.707 9.707 0 0 0 6 3a9.735 9.735 0 0 0-3.25.555.75.75 0 0 0-.5.707v14.25a.75.75 0 0 0 1 .707A8.237 8.237 0 0 1 6 18.75c1.995 0 3.823.707 5.25 1.886V4.533ZM12.75 20.636A8.214 8.214 0 0 1 18 18.75c.966 0 1.89.166 2.75.47a.75.75 0 0 0 1-.708V4.262a.75.75 0 0 0-.5-.707A9.735 9.735 0 0 0 18 3a9.707 9.707 0 0 0-5.25 1.533v16.103Z" />
                     </svg>
@@ -742,14 +742,14 @@ const editarCarta = async (c) => {
           <div className="modal-action">
             <label
               htmlFor="modal_categoria"
-              className="btn btn-outline"
+              className="btn btn-secondary"
               onClick={() =>
                 setCategoriaForm({ id_categoria: "", nombre_cat: "", descripcion: "" })
               }
             >
               Cancelar
             </label>
-            <button className="btn btn-primary" onClick={handleSaveCategoria}>
+            <button className="btn btn-success" onClick={handleSaveCategoria}>
               Guardar
             </button>
           </div>
@@ -801,7 +801,7 @@ const editarCarta = async (c) => {
           <div className="modal-action">
             <label
               htmlFor="modal_subcategoria"
-              className="btn btn-outline"
+              className="btn btn-secondary"
               onClick={() =>
                 setSubcategoriaForm({
                   id_subcat: "",
@@ -813,7 +813,7 @@ const editarCarta = async (c) => {
             >
               Cancelar
             </label>
-            <button className="btn btn-primary" onClick={handleSaveSubcategoria}>
+            <button className="btn btn-success" onClick={handleSaveSubcategoria}>
               Guardar
             </button>
           </div>
@@ -973,7 +973,7 @@ const editarCarta = async (c) => {
           <div className="modal-action">
             <label
               htmlFor="modal_carta"
-              className="btn btn-outline"
+              className="btn btn-secondary"
               onClick={() =>
                 setCartaForm({
                   id_carta: "",
@@ -995,7 +995,7 @@ const editarCarta = async (c) => {
             >
               Cancelar
             </label>
-            <button className="btn btn-primary" onClick={handleSaveCarta}>
+            <button className="btn btn-success" onClick={handleSaveCarta}>
               Guardar
             </button>
           </div>

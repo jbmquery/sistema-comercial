@@ -219,19 +219,19 @@ function Menues() {
         <HeaderCom />
       </div>
 
-      <div className="flex-1 flex flex-col md:flex-row justify-center bg-gray-500">
+      <div className="flex-1 flex flex-col md:flex-row justify-start lg:justify-center bg-neutral-800">
 
         <div className="md:w-250">
 
           {/* CATEGORÍAS (ahora limpian buscador) */}
-          <div className="flex flex-wrap bg-secondary justify-center items-center gap-2 py-2">
+          <div className="flex flex-wrap bg-success justify-center items-center gap-2 py-2">
             {categorias.map((cat) => (
               <button
                 key={cat.id}
-                className={`btn md:btn-md btn-outline w-20 md:w-40 ${
+                className={`btn md:btn-md btn-outline w-20 md:w-40 shadow-md ${
                   categoria === cat.nombre
-                    ? "bg-blue-500 text-white"
-                    : "bg-secondary text-white"
+                    ? "bg-black text-success"
+                    : "bg-success text-black"
                 }`}
                 onClick={() => {
                   setCategoria(cat.nombre);
@@ -244,11 +244,11 @@ function Menues() {
           </div>
 
           {/* BUSCADOR VISUAL (SIN REQUEST) */}
-          <div className="bg-yellow-200 flex flex-row justify-between py-2 px-4 items-center">
+          <div className="bg-neutral-600 flex flex-row justify-between py-2 px-4 items-center">
             <p>Pedido para: <b>{nombreMesa}</b></p>
             <input
               type="text"
-              className="input w-35 md:w-60 lg:w-80"
+              className="input w-35 md:w-60 lg:w-80 text-gray-200"
               placeholder="Buscar"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -257,7 +257,7 @@ function Menues() {
 
           {/* PRODUCTOS (usa productosFiltrados) */}
           <div
-            className="bg-gray-100 flex w-full flex-col py-2 px-4 m-0 overflow-y-auto"
+            className="bg-neutral-500 flex w-full flex-col py-2 px-4 m-0 overflow-y-auto"
             style={{ maxHeight: 'calc(100vh - 192px)', minHeight: '0', flex: '1 1 auto' }}
           >
             {isLoading ? (
@@ -299,7 +299,7 @@ function Menues() {
         </div>
 
         {/* RESUMEN (SIN CAMBIOS) */}
-        <div className="md:w-100 bg-gray-300 pt-2 pb-10 px-4 flex flex-col justify-between">
+        <div className="md:w-100 bg-black pt-2 pb-10 px-4 flex flex-col justify-between">
           <div>
             <div className="pb-5 pt-3">
               <b>RESUMEN DEL PEDIDO:</b>
@@ -323,7 +323,7 @@ function Menues() {
                     </div>
 
                     <button
-                      className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center"
+                      className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center"
                       onClick={() => eliminarDelCarrito(item.id_carta)}
                     >
                       <img
@@ -350,7 +350,7 @@ function Menues() {
           <div className="flex flex-row justify-between gap-4">
             <button
               type="button"
-              className="btn btn-md btn-error text-white"
+              className="btn btn-md btn-secondary text-white"
               onClick={() => setCarrito([])}
             >
               Cancelar
@@ -358,7 +358,7 @@ function Menues() {
 
             <button
               type="button"
-              className="btn btn-md btn-primary"
+              className="btn btn-md btn-accent"
               onClick={guardarPedido}
               disabled={carrito.length === 0 || crearPedidoMutation.isLoading}
             >

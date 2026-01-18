@@ -29,13 +29,14 @@ function TablesPage() {
   // Filtrar por tipo de mesa
   const mesasFisicas = mesas.filter(mesa => mesa.tipo_mesa === 'mesa');
   const mesasDelivery = mesas.filter(mesa => mesa.tipo_mesa === 'delivery');
+  //const mesasLlevar = mesas.filter(mesa => mesa.tipo_mesa === 'llevar');
 
   return (
-    <div className="flex flex-col justify-center items-center">
+    <div className="flex flex-col justify-center items-center bg-neutral-800">
       <HeaderNav />
 
       {/* Mesas físicas */}
-      <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
+      <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8">
         <h2 className="w-full text-center text-xl font-bold mb-4">Mesas en el local</h2>
         {isLoading ? (
           <div className="text-center">
@@ -59,7 +60,7 @@ function TablesPage() {
       <div className="divider"></div>
 
       {/* Pedidos de delivery */}
-      <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
+      <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8">
         <h2 className="w-full text-center text-xl font-bold mb-4">Delivery o para llevar</h2>
         {mesasDelivery.length === 0 ? (
           <div className="text-center">

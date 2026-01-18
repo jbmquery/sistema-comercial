@@ -20,15 +20,19 @@ function Cards({ id_mesas, nombre, capacidad, disponibilidad, tipo_mesa }) {
     ? '../src/img/delivery_cafe.webp'
     : '../src/img/ico_cafe.webp';
 
+  const imagenSrcBlack = tipo_mesa === 'delivery'
+    ? '../src/img/delivery_cafe_negro.webp'
+    : '../src/img/ico_cafe_negro.webp';
+
   return (
-    <div className={`card ${disponibilidad ? 'bg-red-950' : 'bg-gray-500'} w-30 md:w-35 lg:w-40 shadow-md`}>
+    <div className={`card ${disponibilidad ? 'bg-green-400':'bg-secondary'} w-25 md:w-30 lg:w-35 shadow-md`}>
       <div className="card-body p-3 flex flex-col items-center">
-        <h3 className="card-title justify-center text-white">{nombre}</h3>
-        <img src={imagenSrc} alt="Pluvia Café" className="h-10 w-10 md:h-15 md:w-15" />
+        <h3 className={` card ${disponibilidad ? 'text-black':'text-white'} card-title justify-center text-center text-sm`}>{nombre}</h3>
+        <img src={disponibilidad ? imagenSrcBlack : imagenSrc} alt="Pluvia Café" className="h-8 w-8 md:h-11 md:w-11" />
         <div className="card-actions justify-center">
           <button
             onClick={handleClick}
-            className="btn btn-primary w-27 md:w-30 lg:w-35"
+            className={`card ${disponibilidad ? 'text-black':'text-white'} btn bg-green-400 btn-outline text-black btn-square w-22 md:w-25 lg:w-28`}
             disabled={!disponibilidad}
           >
             {capacidad}

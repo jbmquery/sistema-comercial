@@ -13,12 +13,12 @@ function CardsMenu({ grupo, productos, onAdd }) {
 
 
   return (
-    <div className="card bg-white shadow-md">
+    <div className="card bg-black shadow-md">
       <div className="card-body flex flex-row md:flex-col items-center p-0">
         <div className="card-actions flex flex-row items-center mx-2 min-w-30 w-85 md:w-100">
           
           {/* Nombre del producto */}
-          <p className="card-title text-black text-sm">
+          <p className="card-title text-gray-200 text-sm">
             {grupo}
           </p>
 
@@ -28,7 +28,7 @@ function CardsMenu({ grupo, productos, onAdd }) {
             {/* CASO: UN SOLO PRODUCTO */}
             {unico ? (
               <button
-                className="btn btn-secondary rounded-xl btn-sm min-w-13"
+                className="btn btn-info font-bold rounded-lg btn-sm min-w-13 text-white"
                 disabled={!productoUnico.disponible}
                 onClick={() => onAdd(productoUnico)}
               >
@@ -43,7 +43,7 @@ function CardsMenu({ grupo, productos, onAdd }) {
               productosOrdenados.map((prod) => (
                 <button
                   key={prod.id_carta}
-                  className="btn btn-secondary rounded-xl btn-sm"
+                  className="btn btn-info font-bold rounded-lg btn-sm text-white"
                   disabled={!prod.disponible}
                   onClick={() => onAdd(prod)}
                 >

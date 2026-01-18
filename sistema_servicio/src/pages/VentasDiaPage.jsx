@@ -146,9 +146,9 @@ function VentasDiaPage() {
     <div className="flex flex-col justify-center items-center">
       <HeaderNav />
       {/* Cuerpo Principal */}
-      <div className="flex flex-col m-3 w-[95vw] gap-5">
+      <div className="flex flex-col m-3 w-[95vw] gap-5 bg-neutral-800">
         {/* Encabezado de cierre */}
-        <div className="bg-white rounded shadow p-3 w-full flex flex-col lg:flex-row justify-between gap-6 lg:gap-2">
+        <div className="bg-black rounded shadow p-3 w-full flex flex-col lg:flex-row justify-between gap-6 lg:gap-2">
           <span className="text-lg lg:text-xl">
             Cierre Turno: 16/01/2024 - (16:00 hrs - 23:00 hrs) - Responsable:
             Juan Perez
@@ -164,8 +164,8 @@ function VentasDiaPage() {
           {/* Columna Izquierda */}
           <div className="flex flex-col gap-5">
             {/* Resumen Ingresos Totales Dia */}
-            <div className="flex flex-col gap-5 p-5 bg-white rounded shadow py-5">
-              <span className="text-3xl font-bold text-center">
+            <div className="flex flex-col gap-5 p-5 bg-black rounded shadow py-5">
+              <span className="text-3xl font-bold text-center text-success">
                 Total Ingresos: S/{totalIngresos.toFixed(2)}
 
               </span>
@@ -189,27 +189,27 @@ function VentasDiaPage() {
                           <td>S/. {APERTURA.toFixed(2)}</td>
                         </tr>
 
-                        <tr>
-                          <td>EFECTIVO</td>
+                        <tr className="text-amber-500 font-bold">
+                          <td >EFECTIVO</td>
                           <td>S/. {efectivo.toFixed(2)}</td>
                         </tr>
 
-                        <tr>
+                        <tr className="text-purple-500 font-bold">
                           <td>YAPE</td>
                           <td>S/. {yape.toFixed(2)}</td>
                         </tr>
 
-                        <tr>
+                        <tr className="text-teal-500 font-bold">
                           <td>PLIN</td>
                           <td>S/. {plin.toFixed(2)}</td>
                         </tr>
 
-                        <tr>
+                        <tr className="text-sky-500 font-bold">
                           <td>AGORA</td>
                           <td>S/. {agora.toFixed(2)}</td>
                         </tr>
 
-                        <tr>
+                        <tr className="text-rose-500 font-bold">
                           <td>TRANSFERENCIA</td>
                           <td>S/. {transferencia.toFixed(2)}</td>
                         </tr>
@@ -229,7 +229,7 @@ function VentasDiaPage() {
                           <td>S/. {sumaIngresos.toFixed(2)}</td>
                         </tr>
 
-                        <tr className="font-bold">
+                        <tr className="text-red-500 font-bold">
                           <td>SUMA EGRESOS</td>
                           <td>S/. {sumaEgresos.toFixed(2)}</td>
                         </tr>
@@ -252,14 +252,14 @@ function VentasDiaPage() {
             </div>
 
             {/* Tipos de Ventas */}
-            <div className="bg-white rounded shadow flex flex-col p-5">
+            <div className="bg-black rounded shadow flex flex-col p-5">
               <span className="pl-3 py-3 text-xl font-bold">
                 Tipos de ventas
               </span>
 
               <div className="overflow-x-auto">
                 <table className="table table-sm">
-                  <thead>
+                  <thead className="text-amber-500">
                     <tr>
                       <th>Tipo de mesa</th>
                       <th>Cantidad</th>
@@ -288,14 +288,14 @@ function VentasDiaPage() {
             </div>
 
             {/* Ventas por Mesas */}
-            <div className="bg-white rounded shadow flex flex-col p-5">
+            <div className="bg-black rounded shadow flex flex-col p-5">
               <span className="pl-3 py-3 text-xl font-bold">
                 Ventas por Mesas
               </span>
 
               <div className="overflow-x-auto">
                 <table className="table table-sm">
-                  <thead>
+                  <thead className="text-amber-500">
                     <tr>
                       <th>Mesa</th>
                       <th>Pedidos</th>
@@ -324,11 +324,11 @@ function VentasDiaPage() {
             </div>
 
             {/* Gastos */}
-            <div className="bg-white rounded shadow flex flex-col p-5">
+            <div className="bg-black rounded shadow flex flex-col p-5">
               <span className="pl-3 py-3 text-xl font-bold">Gastos</span>
               <div className="overflow-x-auto">
                 <table className="table table-sm">
-                  <thead>
+                  <thead className="text-amber-500">
                     <tr>
                       <th></th>
                       <th>Monto</th>
@@ -347,7 +347,7 @@ function VentasDiaPage() {
           {/* Columna Derecho */}
           <div className="flex flex-col gap-5">
             {/* Productos vendidos */}
-            <div className="bg-white rounded shadow flex flex-col p-5">
+            <div className="bg-black rounded shadow flex flex-col p-5">
               <span className="pl-3 py-3 text-xl font-bold">
                 Productos vendidos
               </span>
@@ -357,7 +357,7 @@ function VentasDiaPage() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="table table-sm">
-                    <thead>
+                    <thead className="text-amber-500">
                       <tr>
                         <th>Carta</th>
                         <th>Cantidad</th>
@@ -384,13 +384,13 @@ function VentasDiaPage() {
               )}
             </div>
             {/* Productos Perdida */}
-            <div className="bg-white rounded shadow flex flex-col p-5">
+            <div className="bg-black rounded shadow flex flex-col p-5">
               <span className="pl-3 py-3 text-xl font-bold">
                 Productos Perdida
               </span>
               <div className="overflow-x-auto">
                 <table className="table table-sm">
-                  <thead>
+                  <thead className="text-amber-500">
                     <tr>
                       <th>Carta</th>
                       <th>Cantidad</th>
@@ -426,13 +426,13 @@ function VentasDiaPage() {
           </div>
         </div>
         {/* Resumen de Pedidos */}
-        <div className="bg-white rounded shadow p-3 w-full flex flex-col gap-6 lg:gap-2 mb-10">
+        <div className="bg-black rounded shadow p-3 w-full flex flex-col gap-6 lg:gap-2 mb-10">
           <span className="pl-3 py-3 text-xl font-bold">
             Resumen de Pedidos
           </span>
           <div className="overflow-x-auto">
             <table className="table table-sm">
-              <thead>
+              <thead className="text-amber-500">
                 <tr>
                   <th className="min-w-15">id_pedido</th>
                   <th className="min-w-20">Mesa</th>
@@ -471,7 +471,7 @@ function VentasDiaPage() {
                       <td>S/. {p.vuelto.toFixed(2)}</td>
                       <td>
                         <button 
-                          className="btn btn-sm"
+                          className="btn btn-sm btn-info"
                           onClick={() => verPedido(p)}
                         >
                           Ver

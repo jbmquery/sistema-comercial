@@ -4,5 +4,5 @@
 @tailwind utilities;
 
 @plugin "daisyui" {
-  themes: caramellatte --default, caramellatte --prefersdark, cupcake, dracula;
+  themes:  dark --default, dark --prefersdark, cupcake, dracula;
 }

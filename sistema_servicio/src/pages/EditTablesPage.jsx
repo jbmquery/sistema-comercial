@@ -88,21 +88,21 @@ function EditTablesPage() {
     <div className="w-full shadow-md">
       <HeaderCom />
 
-      <div className="flex flex-col md:flex-row w-full">
+      <div className="flex flex-col md:flex-row w-full bg-neutral-800">
         <div className="drawer lg:drawer-open w-full">
           <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
 
           {/* CONTENIDO PRINCIPAL */}
           <div className="drawer-content p-4 w-full">
 
-            <label htmlFor="my-drawer-3" className="btn drawer-button lg:hidden mb-4">
+            <label htmlFor="my-drawer-3" className=" drawer-button btn btn-outline text-primary lg:hidden mb-4">
               ☰
             </label>
 
             <h1 className="text-2xl font-bold mb-4">Gestión de Mesas</h1>
 
             {/* FORMULARIO */}
-            <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow mb-6 w-full">
+            <form onSubmit={handleSubmit} className="bg-black p-4 rounded shadow mb-6 w-full">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <input
                   className="input input-bordered"
@@ -137,22 +137,22 @@ function EditTablesPage() {
               </div>
 
               <div className="mt-4 flex gap-2 justify-end">
-                <button type="button" onClick={resetForm} className="btn btn-outline btn-sm">
+                <button type="button" onClick={resetForm} className="btn btn-secondary btn-sm">
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary btn-sm">
+                <button type="submit" className="btn btn-success btn-sm">
                   {isEditing ? 'Actualizar' : 'Crear'}
                 </button>
               </div>
             </form>
 
             {/* TABLA */}
-            <div className="bg-white rounded shadow overflow-x-auto">
+            <div className="bg-black rounded shadow overflow-x-auto">
               <table className="table">
-                <thead>
+                <thead className='text-warning'>
                   <tr>
                     <th>ID</th>
-                    <th>Nombre</th>
+                    <th className='min-w-30'>Nombre</th>
                     <th>Capacidad</th>
                     <th>Disponible</th>
                     <th>Tipo</th>
@@ -166,14 +166,14 @@ function EditTablesPage() {
                       <td>{mesa.nombre}</td>
                       <td>{mesa.capacidad}</td>
                       <td>
-                        <span className={`badge ${mesa.disponibilidad ? 'badge-success' : 'badge-error'}`}>
+                        <span className={`badge ${mesa.disponibilidad ? 'badge-accent' : 'badge-secondary'}`}>
                           {mesa.disponibilidad ? 'Sí' : 'No'}
                         </span>
                       </td>
                       <td>{mesa.tipo_mesa}</td>
                       <td className="flex gap-2">
                         <button
-                          className="btn btn-sm btn-square"
+                          className="btn btn-sm btn-square btn-info"
                           onClick={() => handleEdit(mesa)}
                         >
                           {/* Boton Editar */}
@@ -193,7 +193,7 @@ function EditTablesPage() {
                           </svg>
                         </button>
                         <button
-                          className="btn btn-sm btn-error btn-square"
+                          className="btn btn-sm btn-secondary btn-square"
                           onClick={() => handleDelete(mesa.id_mesas)}
                         >
                           {/* Boton Borrar */}
@@ -229,7 +229,7 @@ function EditTablesPage() {
               <div className="divider"></div>
 
               <li>
-                <Link className="active bg-secondary text-secondary-content" to='/edit-tables'>
+                <Link className="active bg-primary text-secondary-content" to='/edit-tables'>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
                         <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
                     </svg>

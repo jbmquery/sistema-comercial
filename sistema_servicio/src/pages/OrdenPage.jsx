@@ -297,14 +297,14 @@ return (
 
       <HeaderNav />
 
-      <div className="flex flex-col md:flex-row w-full">
+      <div className="flex flex-col md:flex-row w-full bg-neutral-800">
         <div className="drawer lg:drawer-open w-full">
           <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
 
           {/* CONTENIDO PRINCIPAL */}
           <div className="drawer-content p-4 w-full">
 
-            <label htmlFor="my-drawer-3" className="btn drawer-button lg:hidden mb-4">
+            <label htmlFor="my-drawer-3" className="btn drawer-button lg:hidden mb-4 btn-outline text-primary">
               ☰
             </label>
             <h1 className="text-2xl font-bold mb-4">Detalles del Pedido</h1>
@@ -312,12 +312,12 @@ return (
           {/* PRODUCTOS A PAGAR */}
           <div className="p-4 flex flex-col xl:flex-row gap-3">
             {/*TABLA LISTA DE PRODUCTOS A ELEGIR */}
-            <div className="flex flex-col bg-white p-4 rounded-lg shadow-md">
+            <div className="flex flex-col bg-black p-4 rounded-lg shadow-md">
                 {/* Botones de accion */}
                 <div className='flex flex-row justify-between'>
                    <div>
                     <button
-                      className="btn btn-sm btn-outline btn-secondary mr-2 mb-2"
+                      className="btn btn-sm btn-dash btn-warning mr-2 mb-2"
                       onClick={() => {
                         if (seleccionados.length === 0) {
                           setMensajeOk("❌ No se seleccionó ningún producto")
@@ -366,7 +366,8 @@ return (
                             <th>
                               <input
                                 type="checkbox"
-                                className="checkbox"
+                                defaultChecked
+                                className="checkbox checkbox-primary"
                                 checked={todosSeleccionados}
                                 onChange={toggleTodos}
                               />
@@ -387,7 +388,7 @@ return (
                                     type="checkbox"
                                     checked={seleccionados.includes(d.id_detalle)}
                                     onChange={() => toggleDetalle(d.id_detalle)}
-                                    className="checkbox"
+                                    className="checkbox checkbox-primary"
                                 />
                                 </td>
                                 <td>
@@ -402,7 +403,7 @@ return (
                                 <td>{d.observacion}</td>
                                 <td className="flex gap-2">
                                 <button
-                                  className="btn btn-sm btn-square"
+                                  className="btn btn-sm btn-info btn-square"
                                   onClick={() => {
                                     setDetalleEditar(d)
                                     setObsEditar(d.observacion || '')
@@ -427,7 +428,7 @@ return (
                                 </button>
 
                                 <button
-                                  className="btn btn-sm btn-error btn-square"
+                                  className="btn btn-sm btn-secondary btn-square"
                                   onClick={() => {
                                     setDetalleABorrar(d)
                                     setMostrarModalBorrar(true)
@@ -459,7 +460,7 @@ return (
             </div>
             {/* Total a pagar */}
             <div className="divider divider-horizontal"></div>
-            <div className='bg-white p-4 rounded-lg shadow-md'>
+            <div className='bg-black p-4 rounded-lg shadow-md'>
                 <div className="flex items-center gap-2">
                   <p className="text-xl font-bold">
                     Cuenta {cuentaActual}
@@ -506,7 +507,7 @@ return (
                 <div className="flex justify-between p-4 gap-2">
                     <div className='flex flex-row gap-1'>
                     <button
-                      className="btn btn-md lg:btn-sm"
+                      className="btn btn-md btn-dash btn-warning lg:btn-sm"
                       onClick={() => {
                         if (seleccionados.length === 0) {
                           setMensajeOk("❌ No hay productos seleccionados")
@@ -527,7 +528,7 @@ return (
                       <span className="hidden md:inline">Imprimir</span>
                     </button>
                     <button
-                      className='btn btn-success btn-md lg:btn-sm text-white'
+                      className='btn btn-dash btn-accent btn-md lg:btn-sm text-accent'
                       onClick={() => {
                         if (seleccionados.length === 0) {
                           setMensajeOk("❌ No hay productos seleccionados")
@@ -544,7 +545,7 @@ return (
                     </button>
                     </div>
                     <button
-                      className="btn btn-primary btn-md lg:btn-sm text-white"
+                      className="btn btn-success btn-md lg:btn-sm"
                       disabled={seleccionados.length === 0}
                       onClick={() => setMostrarModalPago(true)}
                     >
@@ -570,8 +571,8 @@ return (
                         onClick={cerrarDrawerMobile}
                         className={`flex justify-between mb-2 ${
                         Number(idPedido) === p.id_pedido
-                            ? 'bg-secondary text-secondary-content'
-                            : 'bg-white text-black'
+                            ? 'btn bg-primary text-white'
+                            : 'btn btn-outline text-primary'
                         }`}
                     >
                         <span className="font-bold">#{p.id_pedido}</span>
@@ -612,7 +613,7 @@ return (
               <div className="flex justify-between items-center mb-2">
                 <span className="font-semibold">Pagos</span>
                 <button
-                  className="btn btn-xs btn-outline"
+                  className="btn btn-xs btn-dash btn-warning"
                   onClick={() =>
                     setPagos([...pagos, { metodo: 'efectivo', monto: '' }])
                   }
@@ -657,7 +658,7 @@ return (
                   />
 
                   <button
-                    className="btn btn-xs btn-error"
+                    className="btn btn-xs btn-secondary"
                     disabled={pagos.length === 1}
                     onClick={() => {
                       if (pagos.length === 1) return
@@ -699,7 +700,7 @@ return (
                   {/* BOTONES */}
                   <div className="modal-action">
                     <button
-                      className="btn"
+                      className="btn btn-secondary"
                       onClick={() => {
                         setMostrarModalPago(false)
                         setPagos([{ metodo: 'efectivo', monto: '' }])
