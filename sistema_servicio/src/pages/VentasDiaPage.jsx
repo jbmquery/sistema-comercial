@@ -89,6 +89,27 @@ function VentasDiaPage() {
 
   const dineroEnCaja =
     APERTURA + sumaIngresos - sumaEgresos - vuelto;
+
+// -----------* Agrupar detalles pedido del modal VER DETALLE PEDIDO *-------------
+
+  const agruparDetalles = (detalles = []) => {
+    const mapa = {};
+
+    detalles.forEach(item => {
+      // Clave única por nombre + porción + unidad
+      const clave = `${item.nombre}|${item.porcion || ""}|${item.unidad_medida || ""}`;
+
+      if (!mapa[clave]) {
+        mapa[clave] = { ...item }; 
+      } else {
+        mapa[clave].cantidad += item.cantidad;
+        mapa[clave].precio_total += item.precio_total;
+      }
+    });
+
+    return Object.values(mapa);
+  };
+
   
   // ----*-------Apagartado para el modal VER DETALLLE PEDIDO -----------*----
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -488,7 +509,7 @@ function VentasDiaPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {detallePedido.detalles.map((item, i) => (
+                  {agruparDetalles(detallePedido.detalles).map((item, i) => (
                     <tr key={i}>
                       <td>{item.cantidad}</td>
                       <td>
@@ -524,7 +545,7 @@ function VentasDiaPage() {
           </div>
         </dialog>
       )}
-
+      {/* FIN Modal Detalle Pedido */}
 
     </div>
   );
