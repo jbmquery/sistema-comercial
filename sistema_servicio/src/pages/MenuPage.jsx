@@ -248,7 +248,7 @@ function Menues() {
             <p>Pedido para: <b>{nombreMesa}</b></p>
             <input
               type="text"
-              className="input w-35 md:w-60 lg:w-80 text-gray-200"
+              className="input w-35 md:w-60 lg:w-80 text-gray-200 bg-neutral-800"
               placeholder="Buscar"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -299,7 +299,7 @@ function Menues() {
         </div>
 
         {/* RESUMEN (SIN CAMBIOS) */}
-        <div className="md:w-100 bg-black pt-2 pb-10 px-4 flex flex-col justify-between">
+        <div className="md:w-100 bg-neutral-800 pt-2 pb-10 px-4 flex flex-col justify-between">
           <div>
             <div className="pb-5 pt-3">
               <b>RESUMEN DEL PEDIDO:</b>

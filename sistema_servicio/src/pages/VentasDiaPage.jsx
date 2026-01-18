@@ -209,7 +209,7 @@ function VentasDiaPage() {
                           <td>S/. {agora.toFixed(2)}</td>
                         </tr>
 
-                        <tr className="text-rose-500 font-bold">
+                        <tr className="text-gray-500 font-bold">
                           <td>TRANSFERENCIA</td>
                           <td>S/. {transferencia.toFixed(2)}</td>
                         </tr>
@@ -259,7 +259,7 @@ function VentasDiaPage() {
 
               <div className="overflow-x-auto">
                 <table className="table table-sm">
-                  <thead className="text-amber-500">
+                  <thead>
                     <tr>
                       <th>Tipo de mesa</th>
                       <th>Cantidad</th>
@@ -295,7 +295,7 @@ function VentasDiaPage() {
 
               <div className="overflow-x-auto">
                 <table className="table table-sm">
-                  <thead className="text-amber-500">
+                  <thead>
                     <tr>
                       <th>Mesa</th>
                       <th>Pedidos</th>
@@ -328,7 +328,7 @@ function VentasDiaPage() {
               <span className="pl-3 py-3 text-xl font-bold">Gastos</span>
               <div className="overflow-x-auto">
                 <table className="table table-sm">
-                  <thead className="text-amber-500">
+                  <thead>
                     <tr>
                       <th></th>
                       <th>Monto</th>
@@ -357,7 +357,7 @@ function VentasDiaPage() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="table table-sm">
-                    <thead className="text-amber-500">
+                    <thead>
                       <tr>
                         <th>Carta</th>
                         <th>Cantidad</th>
@@ -390,7 +390,7 @@ function VentasDiaPage() {
               </span>
               <div className="overflow-x-auto">
                 <table className="table table-sm">
-                  <thead className="text-amber-500">
+                  <thead>
                     <tr>
                       <th>Carta</th>
                       <th>Cantidad</th>
@@ -432,7 +432,7 @@ function VentasDiaPage() {
           </span>
           <div className="overflow-x-auto">
             <table className="table table-sm">
-              <thead className="text-amber-500">
+              <thead>
                 <tr>
                   <th className="min-w-15">id_pedido</th>
                   <th className="min-w-20">Mesa</th>
@@ -536,7 +536,7 @@ function VentasDiaPage() {
             <div className="modal-action flex justify-between mt-4">
 
               <button
-                className="btn"
+                className="btn btn-secondary"
                 onClick={() => setModalAbierto(false)}
               >
                 Cerrar

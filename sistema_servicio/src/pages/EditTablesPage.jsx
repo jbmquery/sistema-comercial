@@ -105,7 +105,7 @@ function EditTablesPage() {
             <form onSubmit={handleSubmit} className="bg-black p-4 rounded shadow mb-6 w-full">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <input
-                  className="input input-bordered"
+                  className="input input-bordered bg-neutral-800"
                   placeholder="Nombre"
                   value={currentMesa.nombre}
                   onChange={e => setCurrentMesa({ ...currentMesa, nombre: e.target.value })}
@@ -113,14 +113,14 @@ function EditTablesPage() {
                 />
                 <input
                   type="number"
-                  className="input input-bordered"
+                  className="input input-bordered bg-neutral-800"
                   placeholder="Capacidad"
                   value={currentMesa.capacidad}
                   onChange={e => setCurrentMesa({ ...currentMesa, capacidad: e.target.value })}
                   required
                 />
                 <input
-                  className="input input-bordered"
+                  className="input input-bordered bg-neutral-800"
                   placeholder="Tipo de mesa"
                   value={currentMesa.tipo_mesa}
                   onChange={e => setCurrentMesa({ ...currentMesa, tipo_mesa: e.target.value })}
@@ -149,7 +149,7 @@ function EditTablesPage() {
             {/* TABLA */}
             <div className="bg-black rounded shadow overflow-x-auto">
               <table className="table">
-                <thead className='text-warning'>
+                <thead>
                   <tr>
                     <th>ID</th>
                     <th className='min-w-30'>Nombre</th>
@@ -224,7 +224,7 @@ function EditTablesPage() {
           {/* SIDEBAR */}
           <div className="drawer-side">
             <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
-            <ul className="menu bg-base-200 min-h-full w-80 p-4">
+            <ul className="menu bg-neutral-900 min-h-full w-80 p-4">
               <p className="text-xl">Configuraciones</p>
               <div className="divider"></div>
 

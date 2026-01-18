@@ -274,7 +274,7 @@ const editarCarta = async (c) => {
         {/* ================= CONTENIDO ================= */}
         <div className="drawer-content p-4">
 
-          <label htmlFor="my-drawer-3" className="btn drawer-button btn-outline lg:hidden mb-4">☰</label>
+          <label htmlFor="my-drawer-3" className="btn drawer-button btn-outline btn-primary lg:hidden mb-4">☰</label>
 
           <h1 className="text-2xl font-bold mb-6">Gestión de Carta</h1>
 
@@ -393,7 +393,7 @@ const editarCarta = async (c) => {
                 </label>
               </div>
               <select
-                  className="select select-bordered my-2 mx-3"
+                  className="select select-bordered my-2 mx-3 bg-neutral-800"
                   value={categoriaSubSeleccionada}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -481,7 +481,7 @@ const editarCarta = async (c) => {
           <div className="mt-8 mb-4 flex flex-row justify-between items-center mx-2">
             {/* Filtro Carta*/}
             <select
-              className="select select-bordered max-w-30"
+              className="select select-bordered max-w-30 bg-neutral-800"
               value={filtroCategoria}
               onChange={(e) => {
                 setFiltroCategoria(e.target.value);
@@ -620,7 +620,7 @@ const editarCarta = async (c) => {
 {/* SIDEBAR */}
           <div className="drawer-side">
             <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
-            <ul className="menu bg-base-200 min-h-full w-80 p-4">
+            <ul className="menu bg-neutral-900 min-h-full w-80 p-4">
               <p className="text-xl">Configuraciones</p>
               <div className="divider"></div>
 
