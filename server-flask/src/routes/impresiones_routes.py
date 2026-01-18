@@ -1,3 +1,4 @@
+#impresiones_routes.py
 from flask import Blueprint, request, abort, send_file
 from controllers.impresiones_controller import (imprimir_cocina, imprimir_voucher_pago, generar_voucher_whatsapp)
 

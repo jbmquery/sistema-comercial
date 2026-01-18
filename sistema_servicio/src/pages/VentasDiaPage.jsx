@@ -22,7 +22,7 @@ function VentasDiaPage() {
     .toISOString()
     .split("T")[0];
 
-  console.log("FECHA QUE ENVÍO A LA API:", hoy);
+  //console.log("FECHA QUE ENVÍO A LA API:", hoy);
 
   const { data: productosVendidos = [], isLoading } = useQuery({
   queryKey: ["productosVendidos", hoy],
@@ -520,14 +520,6 @@ function VentasDiaPage() {
               >
                 Cerrar
               </button>
-
-              <div className="flex gap-2">
-                <button className="btn btn-info">Imprimir</button>
-                <button className="btn btn-success text-white">
-                  Whatsapp
-                </button>
-              </div>
-
             </div>
           </div>
         </dialog>

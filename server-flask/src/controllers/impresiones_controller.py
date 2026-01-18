@@ -1,3 +1,4 @@
+# impresiones_controller.py
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
