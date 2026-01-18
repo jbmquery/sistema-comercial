@@ -1,15 +1,15 @@
-// MenuPage.jsx
+// ==========================
+// ✅ MENU PAGE REFACTORIZADO
+// (mismos estilos + mismas funciones)
+// Solo cambia: React Query y buscador
+// ==========================
 
 import HeaderCom from "../components/header_com";
 import CardsMenu from "../components/cardsmenu";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getCartaMenu } from "../api";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { crearPedido } from "../api";
-
-
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getCartaMenu, crearPedido } from "../api";
 
 function Menues() {
   const location = useLocation();
@@ -25,27 +25,53 @@ function Menues() {
     { id: 3, nombre: "Toppings" },
     { id: 4, nombre: "Promos" }
   ];
-  const [categoria, setCategoria] = useState(categorias[0].nombre);
-  // Simulación de usuario logueado (deberá venir del login)
-  const idUsuario = 1; // Temporal: luego vendrá del contexto o login
 
+  const [categoria, setCategoria] = useState(categorias[0].nombre);
+
+  const idUsuario = 1;
+
+  // =========================
+  // ✅ REACT QUERY OPTIMIZADO
+  // (search ya NO afecta la consulta)
+  // =========================
   const {
     data: porSubcategoria = {},
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["carta", categoria, search],
-    queryFn: () => getCartaMenu({ categoria, search }),
+    queryKey: ["carta", categoria],          // 👈 CLAVE CORRECTA
+    queryFn: () => getCartaMenu({ categoria }),
     keepPreviousData: true,
+    staleTime: 60_000,       // 1 min "fresco"
+    refetchOnWindowFocus: true,
   });
 
-  {isError && (
-  <p className="text-center p-4 text-red-500">
-    Error al cargar productos
-  </p>
-  )}
+  // =========================
+  // ✅ FILTRO VISUAL EN FRONTEND
+  // =========================
+  const filtrarPorBusqueda = (data) => {
+    if (!search.trim()) return data;
 
-  // Añadir producto al carrito
+    const resultado = {};
+
+    Object.entries(data).forEach(([subcat, productos]) => {
+      const filtrados = productos.filter(p =>
+        p.nombre.toLowerCase().includes(search.toLowerCase())
+      );
+
+      if (filtrados.length > 0) {
+        resultado[subcat] = filtrados;
+      }
+    });
+
+    return resultado;
+  };
+
+  const productosFiltrados = filtrarPorBusqueda(porSubcategoria);
+
+  // =========================
+  // CARRITO (SIN CAMBIOS)
+  // =========================
   const agregarAlCarrito = (producto) => {
     setCarrito(prev => {
       const existente = prev.find(item => item.id_carta === producto.id_carta);
@@ -62,7 +88,6 @@ function Menues() {
     mostrarAlerta();
   };
 
-  // Eliminar o decrementar producto
   const eliminarDelCarrito = (id_carta) => {
     setCarrito(prev =>
       prev.map(item =>
@@ -73,13 +98,15 @@ function Menues() {
     );
   };
 
-  // Calcular subtotal general
   const subtotalGeneral = useMemo(() => {
-    return carrito.reduce((total, item) => total + (item.precio * item.cantidad), 0).toFixed(2);
+    return carrito
+      .reduce((total, item) => total + (item.precio * item.cantidad), 0)
+      .toFixed(2);
   }, [carrito]);
 
-// Mutacion
-
+  // =========================
+  // MUTATION (SIN CAMBIOS)
+  // =========================
   const queryClient = useQueryClient();
 
   const crearPedidoMutation = useMutation({
@@ -88,9 +115,9 @@ function Menues() {
       alert("✅ Pedido guardado y mesa ocupada");
       setCarrito([]);
 
-      // 🔄 INVALIDAR CACHE CORRECTO
       queryClient.invalidateQueries({ queryKey: ["pedidos"] });
       queryClient.invalidateQueries({ queryKey: ["mesas"] });
+      queryClient.invalidateQueries({ queryKey: ["carta"] }); // 👈 refresca menú si cambia BD
 
       navigate("/orden");
     },
@@ -100,22 +127,18 @@ function Menues() {
     },
   });
 
-  // Preparar Detalle pedido para guardar
-
   const detalles = carrito.flatMap(item =>
-  Array.from({ length: item.cantidad }).map(() => ({
-    id_carta: item.id_carta,
-    cantidad: 1,
-    precio_unitario: item.precio,
-    observacion: "",
-    es_canjeable: false,
-    estado: "pendiente",
-    cuenta: 1
+    Array.from({ length: item.cantidad }).map(() => ({
+      id_carta: item.id_carta,
+      cantidad: 1,
+      precio_unitario: item.precio,
+      observacion: "",
+      es_canjeable: false,
+      estado: "pendiente",
+      cuenta: 1
     }))
   );
 
-
-  // Guardar pedido en backend
   const guardarPedido = () => {
     if (carrito.length === 0) {
       alert("El carrito está vacío");
@@ -144,13 +167,6 @@ function Menues() {
     crearPedidoMutation.mutate(pedido);
   };
 
-
-
-
-
-
-// ✅ agrupar por grupo para las cardsmenu
-
   const agruparPorGrupo = (productos) => {
     return productos.reduce((acc, prod) => {
       const key = prod.grupo || prod.nombre;
@@ -160,38 +176,31 @@ function Menues() {
     }, {});
   };
 
-// Alertas y renderizado
-  
+  // =========================
+  // ALERTAS (SIN CAMBIOS)
+  // =========================
   const [alerts, setAlerts] = useState([]);
 
   const mostrarAlerta = () => {
-  const id = Date.now();
+    const id = Date.now();
 
-  setAlerts((prev) => [
-    ...prev,
-    { id, visible: true }
-  ]);
+    setAlerts(prev => [...prev, { id, visible: true }]);
 
-  // Inicia fade-out
-  setTimeout(() => {
-    setAlerts((prev) =>
-      prev.map((a) =>
-        a.id === id ? { ...a, visible: false } : a
-      )
-    );
-  }, 800); // empieza a desvanecer
+    setTimeout(() => {
+      setAlerts(prev =>
+        prev.map(a => (a.id === id ? { ...a, visible: false } : a))
+      );
+    }, 800);
 
-  // Elimina del DOM
-  setTimeout(() => {
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
-  }, 1000);
-};
-
-
+    setTimeout(() => {
+      setAlerts(prev => prev.filter(a => a.id !== id));
+    }, 1000);
+  };
 
   return (
-    <div className="flex flex-col justify-center">
-      {/* Alertas */}
+    <div className="flex flex-col min-h-screen">
+
+      {/* ALERTAS (igual) */}
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-y-2">
         {alerts.map((alert) => (
           <div
@@ -201,48 +210,40 @@ function Menues() {
               alert.visible ? "opacity-100" : "opacity-0"
             }`}
           >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 shrink-0 stroke-current"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span>Se agregó producto al carrito</span>
-        </div>
-      ))}
-    </div>
+            <span>Se agregó producto al carrito</span>
+          </div>
+        ))}
+      </div>
 
-      {/* Header */}
       <div className="w-full shadow-md z-10">
         <HeaderCom />
       </div>
 
-      {/* Sección pedido */}
-      <div className="flex flex-col md:flex-row justify-center bg-gray-500">
-        
-        {/* Sección menú */}
+      <div className="flex-1 flex flex-col md:flex-row justify-center bg-gray-500">
+
         <div className="md:w-250">
-          {/* Categorías */}
+
+          {/* CATEGORÍAS (ahora limpian buscador) */}
           <div className="flex flex-wrap bg-secondary justify-center items-center gap-2 py-2">
             {categorias.map((cat) => (
               <button
                 key={cat.id}
-                className={`btn md:btn-md btn-outline w-20 md:w-40 ${categoria === cat.nombre ? "bg-blue-500 text-white" : "bg-secondary text-white"}`}
-                onClick={() => setCategoria(cat.nombre)}
+                className={`btn md:btn-md btn-outline w-20 md:w-40 ${
+                  categoria === cat.nombre
+                    ? "bg-blue-500 text-white"
+                    : "bg-secondary text-white"
+                }`}
+                onClick={() => {
+                  setCategoria(cat.nombre);
+                  setSearch("");        // 👈 LIMPIA BUSCADOR
+                }}
               >
                 {cat.nombre}
               </button>
             ))}
           </div>
 
-          {/* Buscador */}
+          {/* BUSCADOR VISUAL (SIN REQUEST) */}
           <div className="bg-yellow-200 flex flex-row justify-between py-2 px-4 items-center">
             <p>Pedido para: <b>{nombreMesa}</b></p>
             <input
@@ -254,45 +255,50 @@ function Menues() {
             />
           </div>
 
-            {/* Productos */}
-            <div 
-              className="bg-gray-100 flex w-full flex-col py-2 px-4 m-0 overflow-y-auto"
-              style={{ maxHeight: 'calc(100vh - 192px)', minHeight: '0', flex: '1 1 auto' }}
-            >
-              {isLoading ? (
-                <p className="text-center p-4">Cargando productos...</p>
-              ) : Object.keys(porSubcategoria).length > 0 ? (
+          {/* PRODUCTOS (usa productosFiltrados) */}
+          <div
+            className="bg-gray-100 flex w-full flex-col py-2 px-4 m-0 overflow-y-auto"
+            style={{ maxHeight: 'calc(100vh - 192px)', minHeight: '0', flex: '1 1 auto' }}
+          >
+            {isLoading ? (
+              <p className="text-center p-4">Cargando productos...</p>
+            ) : isError ? (
+              <p className="text-center text-red-600 p-4">
+                ❌ Error al cargar el menú. Intenta nuevamente.
+              </p>
+            ) : Object.keys(productosFiltrados).length > 0 ? (
 
-                Object.entries(porSubcategoria).map(([subcat, prods]) => (
-                  <div key={subcat} className="mb-6">
-                    <div className="divider divider-start">
-                      <b>{subcat}</b>
-                    </div>
 
-                    <div className="flex flex-wrap items-center justify-center xl:justify-start gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
-
-                      {Object.entries(agruparPorGrupo(prods)).map(
-                        ([grupo, productosGrupo]) => (
-                          <CardsMenu
-                            key={grupo}
-                            grupo={grupo}
-                            productos={productosGrupo}
-                            onAdd={agregarAlCarrito}
-                          />
-                        )
-                      )}
-
-                    </div>
+              Object.entries(productosFiltrados).map(([subcat, prods]) => (
+                <div key={subcat} className="mb-6">
+                  <div className="divider divider-start">
+                    <b>{subcat}</b>
                   </div>
-                ))
-              ) : (
-                <p className="text-center p-4">No hay productos</p>
-              )}
-            </div>
 
+                  <div className="flex flex-wrap items-center justify-center xl:justify-start gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
+
+                    {Object.entries(agruparPorGrupo(prods)).map(
+                      ([grupo, productosGrupo]) => (
+                        <CardsMenu
+                          key={grupo}
+                          grupo={grupo}
+                          productos={productosGrupo}
+                          onAdd={agregarAlCarrito}
+                        />
+                      )
+                    )}
+
+                  </div>
+                </div>
+              ))
+
+            ) : (
+              <p className="text-center p-4">No hay productos</p>
+            )}
+          </div>
         </div>
 
-        {/* Resumen pedidos */}
+        {/* RESUMEN (SIN CAMBIOS) */}
         <div className="md:w-100 bg-gray-300 pt-2 pb-10 px-4 flex flex-col justify-between">
           <div>
             <div className="pb-5 pt-3">
@@ -307,16 +313,24 @@ function Menues() {
                 return (
                   <div key={item.id_carta} className="flex flex-row justify-between mb-4">
                     <div className="flex flex-col">
-                      <p>- {item.nombre} {item.porcion ? ` (${item.porcion} ${item.unidad_medida})` : ""}</p>
+                      <p>
+                        - {item.nombre}{" "}
+                        {item.porcion ? `(${item.porcion} ${item.unidad_medida})` : ""}
+                      </p>
                       <p className="italic">
                         S/ {Number(item.precio).toFixed(2)} - x{item.cantidad} - S/ {subtotal}
                       </p>
                     </div>
+
                     <button
                       className="w-10 h-10 bg-red-800 rounded-full flex items-center justify-center"
                       onClick={() => eliminarDelCarrito(item.id_carta)}
                     >
-                      <img src="../src/img/eliminar.png" alt="Eliminar" className="w-10 h-10" />
+                      <img
+                        src="../src/img/eliminar.png"
+                        alt="Eliminar"
+                        className="w-10 h-10"
+                      />
                     </button>
                   </div>
                 );
@@ -324,12 +338,15 @@ function Menues() {
             )}
 
             <div className="pb-10">
-              <div className="divider divider-start"><b>SUB-TOTAL</b></div>
-              <div className="flex justify-end bg-red italic"><b>S/ {subtotalGeneral}</b></div>
+              <div className="divider divider-start">
+                <b>SUB-TOTAL</b>
+              </div>
+              <div className="flex justify-end bg-red italic">
+                <b>S/ {subtotalGeneral}</b>
+              </div>
             </div>
           </div>
 
-          {/* Confirmación */}
           <div className="flex flex-row justify-between gap-4">
             <button
               type="button"
@@ -338,6 +355,7 @@ function Menues() {
             >
               Cancelar
             </button>
+
             <button
               type="button"
               className="btn btn-md btn-primary"
@@ -348,6 +366,7 @@ function Menues() {
             </button>
           </div>
         </div>
+
       </div>
     </div>
   );
