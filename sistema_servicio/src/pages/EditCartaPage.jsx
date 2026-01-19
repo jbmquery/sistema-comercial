@@ -283,7 +283,7 @@ const editarCarta = async (c) => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* CATEGORIAS */}
-            <div className="overflow-x-auto bg-black rounded shadow">
+            <div className="bg-black rounded shadow">
               <div className="flex flex-row justify-between items-center">
                 <h2 className="font-bold p-3">Categorías</h2>
                 <label htmlFor="modal_categoria" className="btn btn-sm btn-primary mx-2">
@@ -305,73 +305,36 @@ const editarCarta = async (c) => {
                   <span className="hidden md:inline">Categoría</span>
                 </label>
               </div>
-              <table className="table table-sm">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {categorias.map(c => (
-                    <tr key={c.id_categoria}>
-                      <td>{c.id_categoria}</td>
-                      <td>{c.nombre_cat}</td>
-                      <td>{c.descripcion}</td>
-                      <td className="flex gap-1">
-                        <button
-                          className="btn btn-sm btn-square btn-info"
-                          onClick={() => {
-                            setCategoriaForm(c);
-                            document.getElementById("modal_categoria").checked = true;
-                          }}
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            >
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>        
-                        </button>
-                        <button
-                          className="btn btn-sm btn-square btn-secondary"
-                          onClick={() => handleDeleteCategoria(c.id_categoria)}
-                        >
-                          <svg
-                                    width="18"
-                                    height="18"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                            </svg>
-                        </button>
-
-                      </td>
+              <div className="overflow-x-auto select-none max-h-[215px] overflow-y-auto">
+                <table className="table table-sm">
+                  <thead className="sticky top-0 z-10 bg-black shadow-md">
+                    <tr>
+                      <th>ID</th>
+                      <th>Nombre</th>
+                      <th>Descripción</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {categorias.map(c => (
+                      <tr key={c.id_categoria}
+                        className="hover:bg-neutral-700 cursor-pointer"
+                        onClick={() => {
+                          setCategoriaForm(c);
+                          document.getElementById("modal_categoria").checked = true;
+                        }}
+                      >
+                        <td>{c.id_categoria}</td>
+                        <td>{c.nombre_cat}</td>
+                        <td>{c.descripcion}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {/* SUBCATEGORIAS */}
-            <div className="overflow-x-auto bg-black rounded shadow">
+            <div className="bg-black rounded shadow">
               <div className="flex flex-row justify-between items-center mx-2">
                 <h2 className="font-bold p-3">Subcategorías</h2>
                 <label htmlFor="modal_subcategoria" className="btn btn-sm btn-primary">
@@ -409,71 +372,33 @@ const editarCarta = async (c) => {
                   </option>
                   ))}
                 </select>
-              <table className="table table-sm">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subcategorias.map(s => (
-                    <tr key={s.id_subcat}>
-                      <td>{s.id_subcat}</td>
-                      <td>{s.nombre_subcat}</td>
-                      <td>{s.descripcion}</td>
-                      <td className="flex gap-1">
-                        {/* Botón de editar subcategorias*/}
-                        <button
-                          className="btn btn-sm btn-square btn-info"
-                          onClick={() => {
-                            setSubcategoriaForm(s);
-                            document.getElementById("modal_subcategoria").checked = true;
-                          }}
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            >
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                        </button>
-                        {/* Botón de Eliminar subcategorias*/}
-                        <button
-                          className="btn btn-sm btn-square btn-secondary"
-                          onClick={() => handleDeleteSubcategoria(s.id_subcat)}
-                        >
-                          <svg
-                                    width="18"
-                                    height="18"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                            </svg>
-                        </button>
-
-                      </td>
+              <div className="overflow-x-auto select-none max-h-[215px] overflow-y-auto">
+                <table className="table table-sm">
+                  <thead className="sticky top-0 z-10 bg-black shadow-md">
+                    <tr>
+                      <th>ID</th>
+                      <th>Nombre</th>
+                      <th>Descripción</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {subcategorias.map(s => (
+                      <tr key={s.id_subcat}
+                        className="hover:bg-neutral-700 cursor-pointer"
+                        onClick={() => {
+                          setSubcategoriaForm(s);
+                          document.getElementById("modal_subcategoria").checked = true;
+                        }}                   
+                      >
+                        <td>{s.id_subcat}</td>
+                        <td>{s.nombre_subcat}</td>
+                        <td>{s.descripcion}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+              </div>
             </div>
 
           </div>
@@ -534,9 +459,9 @@ const editarCarta = async (c) => {
                   <th>ID</th>
                   <th>Categoría</th>
                   <th>Subcategoría</th>
-                  <th>Nombre</th>
-                  <th>Grupo</th>
-                  <th>Abreviado</th>
+                  <th className="min-w-40">Nombre</th>
+                  <th className="min-w-40">Grupo</th>
+                  <th className="min-w-30">Abreviado</th>
                   <th>Precio</th>
                   <th>Puntos</th>
                   <th>Porción</th>
@@ -700,19 +625,30 @@ const editarCarta = async (c) => {
             }
           />
 
-          <div className="modal-action">
+          <div className="modal-action flex justify-between w-full">
             <label
-              htmlFor="modal_categoria"
-              className="btn btn-secondary"
-              onClick={() =>
-                setCategoriaForm({ id_categoria: "", nombre_cat: "", descripcion: "" })
-              }
-            >
-              Cancelar
+                htmlFor="modal_categoria"
+                className="btn btn-outline text-secondary"
+                onClick={() =>
+                  setCategoriaForm({ id_categoria: "", nombre_cat: "", descripcion: "" })
+                }
+              >
+                Cancelar
             </label>
-            <button className="btn btn-success" onClick={handleSaveCategoria}>
-              Guardar
-            </button>
+            <div className="flex gap-2">
+            {/* Eliminar SOLO si estamos editando */}
+            {categoriaForm.id_categoria && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => handleDeleteCategoria(categoriaForm.id_categoria)}
+              >
+                Eliminar
+              </button>
+            )}
+              <button className="btn btn-success" onClick={handleSaveCategoria}>
+                Guardar
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -759,10 +695,10 @@ const editarCarta = async (c) => {
             }
           />
 
-          <div className="modal-action">
+          <div className="modal-action flex justify-between w-full">
             <label
               htmlFor="modal_subcategoria"
-              className="btn btn-secondary"
+              className="btn btn-outline text-secondary"
               onClick={() =>
                 setSubcategoriaForm({
                   id_subcat: "",
@@ -774,9 +710,19 @@ const editarCarta = async (c) => {
             >
               Cancelar
             </label>
-            <button className="btn btn-success" onClick={handleSaveSubcategoria}>
-              Guardar
-            </button>
+            <div className="flex gap-2">
+              {subcategoriaForm.id_subcat && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => handleDeleteSubcategoria(subcategoriaForm.id_subcat)}
+                >
+                  Eliminar
+                </button>
+              )}
+              <button className="btn btn-success" onClick={handleSaveSubcategoria}>
+                Guardar
+              </button>
+            </div>
           </div>
         </div>
       </div>
