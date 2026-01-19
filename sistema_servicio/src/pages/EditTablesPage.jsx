@@ -136,18 +136,30 @@ function EditTablesPage() {
                 </label>
               </div>
 
-              <div className="mt-4 flex gap-2 justify-end">
-                <button type="button" onClick={resetForm} className="btn btn-secondary btn-sm">
+              <div className="mt-4 flex justify-between items-center">
+                <button type="button" onClick={resetForm} className="btn btn-outline text-secondary btn-sm">
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-success btn-sm">
-                  {isEditing ? 'Actualizar' : 'Crear'}
-                </button>
+                <div className="flex gap-2">
+                  {/* BOTÓN ELIMINAR SOLO CUANDO EDITAS */}
+                  {isEditing && currentMesa.id_mesas && (
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => handleDelete(currentMesa.id_mesas)}
+                    >
+                      Eliminar
+                    </button>
+                  )}
+                  <button type="submit" className="btn btn-success btn-sm">
+                    {isEditing ? 'Actualizar' : 'Crear'}
+                  </button>
+                </div>
               </div>
             </form>
 
             {/* TABLA */}
-            <div className="bg-black rounded shadow overflow-x-auto">
+            <div className="bg-black rounded shadow overflow-x-auto select-none">
               <table className="table">
                 <thead>
                   <tr>
@@ -156,12 +168,15 @@ function EditTablesPage() {
                     <th>Capacidad</th>
                     <th>Disponible</th>
                     <th>Tipo</th>
-                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {mesas.map(mesa => (
-                    <tr key={mesa.id_mesas}>
+                    <tr
+                      key={mesa.id_mesas}
+                      className="hover:bg-neutral-700 cursor-pointer"
+                      onClick={() => handleEdit(mesa)}
+                    >
                       <td>{mesa.id_mesas}</td>
                       <td>{mesa.nombre}</td>
                       <td>{mesa.capacidad}</td>
@@ -171,48 +186,6 @@ function EditTablesPage() {
                         </span>
                       </td>
                       <td>{mesa.tipo_mesa}</td>
-                      <td className="flex gap-2">
-                        <button
-                          className="btn btn-sm btn-square btn-info"
-                          onClick={() => handleEdit(mesa)}
-                        >
-                          {/* Boton Editar */}
-                          <svg
-                            width="16"
-                            height="16"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            >
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                        </button>
-                        <button
-                          className="btn btn-sm btn-secondary btn-square"
-                          onClick={() => handleDelete(mesa.id_mesas)}
-                        >
-                          {/* Boton Borrar */}
-                          <svg
-                                    width="18"
-                                    height="18"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    viewBox="0 0 24 24"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                            </svg>
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
