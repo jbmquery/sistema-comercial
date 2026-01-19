@@ -350,7 +350,7 @@ function Menues() {
           <div className="flex flex-row justify-between gap-4">
             <button
               type="button"
-              className="btn btn-md btn-secondary text-white"
+              className="btn btn-md btn-outline text-secondary"
               onClick={() => setCarrito([])}
             >
               Cancelar

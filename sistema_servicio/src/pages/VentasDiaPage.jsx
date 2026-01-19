@@ -2,22 +2,20 @@
 
 import HeaderNav from "../components/header_nav.jsx";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react"; 
-import { 
-  getProductosVendidosDia, 
+import { useState } from "react";
+import {
+  getProductosVendidosDia,
   getProductosPerdidaDia,
   getTiposVentaDia,
   getVentasMesasDia,
   getResumenPedidosDia,
   getCajaDia,
-  getDetallePedidoVentasDia
+  getDetallePedidoVentasDia,
 } from "../api";
 
-
 function VentasDiaPage() {
-  
   const hoy = new Date(
-  new Date().getTime() - new Date().getTimezoneOffset() * 60000
+    new Date().getTime() - new Date().getTimezoneOffset() * 60000,
   )
     .toISOString()
     .split("T")[0];
@@ -25,48 +23,33 @@ function VentasDiaPage() {
   //console.log("FECHA QUE ENVÍO A LA API:", hoy);
 
   const { data: productosVendidos = [], isLoading } = useQuery({
-  queryKey: ["productosVendidos", hoy],
-  queryFn: () => getProductosVendidosDia(hoy)
+    queryKey: ["productosVendidos", hoy],
+    queryFn: () => getProductosVendidosDia(hoy),
   });
 
-  const { 
-    data: productosPerdida = [], 
-    isLoading: loadingPerdida 
-  } = useQuery({
+  const { data: productosPerdida = [], isLoading: loadingPerdida } = useQuery({
     queryKey: ["productosPerdida", hoy],
-    queryFn: () => getProductosPerdidaDia(hoy)
+    queryFn: () => getProductosPerdidaDia(hoy),
   });
 
-  const { 
-    data: tiposVenta = [], 
-    isLoading: loadingTiposVenta 
-  } = useQuery({
+  const { data: tiposVenta = [], isLoading: loadingTiposVenta } = useQuery({
     queryKey: ["tiposVenta", hoy],
-    queryFn: () => getTiposVentaDia(hoy)
+    queryFn: () => getTiposVentaDia(hoy),
   });
 
-  const { 
-    data: ventasMesas = [], 
-    isLoading: loadingMesas 
-  } = useQuery({
+  const { data: ventasMesas = [], isLoading: loadingMesas } = useQuery({
     queryKey: ["ventasMesas", hoy],
-    queryFn: () => getVentasMesasDia(hoy)
+    queryFn: () => getVentasMesasDia(hoy),
   });
 
-  const { 
-    data: resumenPedidos = [], 
-    isLoading: loadingResumen 
-  } = useQuery({
+  const { data: resumenPedidos = [], isLoading: loadingResumen } = useQuery({
     queryKey: ["resumenPedidos", hoy],
-    queryFn: () => getResumenPedidosDia(hoy)
+    queryFn: () => getResumenPedidosDia(hoy),
   });
 
-  const { 
-    data: caja = null, 
-    isLoading: loadingCaja 
-  } = useQuery({
+  const { data: caja = null, isLoading: loadingCaja } = useQuery({
     queryKey: ["cajaDia", hoy],
-    queryFn: () => getCajaDia(hoy)
+    queryFn: () => getCajaDia(hoy),
   });
 
   const APERTURA = 0;
@@ -80,27 +63,25 @@ function VentasDiaPage() {
   const totalIngresos = caja?.total_ingresos || 0;
   const perdidas = caja?.perdidas || 0;
 
-  const sumaIngresos =
-    efectivo + yape + plin + agora + transferencia;
+  const sumaIngresos = efectivo + yape + plin + agora + transferencia;
 
   const sumaEgresos = GASTOS;
 
   const vuelto = sumaIngresos - totalIngresos;
 
-  const dineroEnCaja =
-    APERTURA + sumaIngresos - sumaEgresos - vuelto;
+  const dineroEnCaja = APERTURA + sumaIngresos - sumaEgresos - vuelto;
 
-// -----------* Agrupar detalles pedido del modal VER DETALLE PEDIDO *-------------
+  // -----------* Agrupar detalles pedido del modal VER DETALLE PEDIDO *-------------
 
   const agruparDetalles = (detalles = []) => {
     const mapa = {};
 
-    detalles.forEach(item => {
+    detalles.forEach((item) => {
       // Clave única por nombre + porción + unidad
       const clave = `${item.nombre}|${item.porcion || ""}|${item.unidad_medida || ""}`;
 
       if (!mapa[clave]) {
-        mapa[clave] = { ...item }; 
+        mapa[clave] = { ...item };
       } else {
         mapa[clave].cantidad += item.cantidad;
         mapa[clave].precio_total += item.precio_total;
@@ -110,7 +91,6 @@ function VentasDiaPage() {
     return Object.values(mapa);
   };
 
-  
   // ----*-------Apagartado para el modal VER DETALLLE PEDIDO -----------*----
   const [modalAbierto, setModalAbierto] = useState(false);
   const [detallePedido, setDetallePedido] = useState(null);
@@ -121,17 +101,12 @@ function VentasDiaPage() {
 
     setPedidoActual({
       id_pedido: pedido.id_pedido,
-      mesa: pedido.mesa
+      mesa: pedido.mesa,
     });
 
     setDetallePedido(data);
     setModalAbierto(true);
   };
-
-
-
-
-
 
   //pruebas log
 
@@ -141,22 +116,22 @@ function VentasDiaPage() {
   // console.log("ventas por mesa:", ventasMesas);
   // console.log("Resumen de pedidos:", resumenPedidos);
 
-  
   return (
-    <div className="flex flex-col justify-center items-center">
+    <div className="flex flex-col justify-center items-center bg-neutral-800">
       <HeaderNav />
       {/* Cuerpo Principal */}
-      <div className="flex flex-col m-3 w-[95vw] gap-5 bg-neutral-800">
+      <div className="flex flex-col m-3 w-[95vw] gap-5">
         {/* Encabezado de cierre */}
         <div className="bg-black rounded shadow p-3 w-full flex flex-col lg:flex-row justify-between gap-6 lg:gap-2">
-          <span className="text-lg lg:text-xl">
-            Cierre Turno: 16/01/2024 - (16:00 hrs - 23:00 hrs) - Responsable:
-            Juan Perez
-          </span>
-          <div className="flex flex-row gap-2 justify-between">
-            <button className="btn btn-md">Imprimir</button>
-            <button className="btn btn-md">Gastos</button>
-            <button className="btn btn-md">Encargado</button>
+          <div className="flex flex-col lg:flex-row ">
+            <span className="text-lg lg:text-xl lg:mr-10">Fecha: 16/01/2024</span>
+            <span className="text-lg lg:text-xl lg:mr-10"> Cierre Turno:  - (16:00 hrs - 23:00 hrs) </span>
+            <span className="text-lg lg:text-xl"> Responsable: Juan Perez</span>
+          
+          </div>
+          <div className="flex flex-row gap-2 justify-end">
+            <button className="btn btn-md btn-secondary">Gastos</button>
+            <button className="btn btn-md btn-info">Caja</button>
           </div>
         </div>
         {/* Cuerpo de cuadros */}
@@ -167,7 +142,6 @@ function VentasDiaPage() {
             <div className="flex flex-col gap-5 p-5 bg-black rounded shadow py-5">
               <span className="text-3xl font-bold text-center text-success">
                 Total Ingresos: S/{totalIngresos.toFixed(2)}
-
               </span>
               <div className="overflow-x-auto">
                 <table className="table table-sm">
@@ -180,7 +154,9 @@ function VentasDiaPage() {
                   <tbody>
                     {loadingCaja ? (
                       <tr>
-                        <td colSpan={2} className="text-center">Cargando...</td>
+                        <td colSpan={2} className="text-center">
+                          Cargando...
+                        </td>
                       </tr>
                     ) : (
                       <>
@@ -190,7 +166,7 @@ function VentasDiaPage() {
                         </tr>
 
                         <tr className="text-amber-500 font-bold">
-                          <td >EFECTIVO</td>
+                          <td>EFECTIVO</td>
                           <td>S/. {efectivo.toFixed(2)}</td>
                         </tr>
 
@@ -246,7 +222,6 @@ function VentasDiaPage() {
                       </>
                     )}
                   </tbody>
-
                 </table>
               </div>
             </div>
@@ -274,7 +249,7 @@ function VentasDiaPage() {
                         </td>
                       </tr>
                     ) : (
-                      tiposVenta.map(t => (
+                      tiposVenta.map((t) => (
                         <tr key={t.tipo_mesa}>
                           <td>{t.tipo_mesa}</td>
                           <td>{t.cantidad}</td>
@@ -310,7 +285,7 @@ function VentasDiaPage() {
                         </td>
                       </tr>
                     ) : (
-                      ventasMesas.map(m => (
+                      ventasMesas.map((m) => (
                         <tr key={m.mesa}>
                           <td>{m.mesa}</td>
                           <td>{m.pedidos}</td>
@@ -365,7 +340,7 @@ function VentasDiaPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {productosVendidos.map(p => (
+                      {productosVendidos.map((p) => (
                         <tr key={p.id_carta}>
                           <td>
                             {p.nombre}
@@ -405,7 +380,7 @@ function VentasDiaPage() {
                         </td>
                       </tr>
                     ) : (
-                      productosPerdida.map(p => (
+                      productosPerdida.map((p) => (
                         <tr key={p.id_carta}>
                           <td>
                             {p.nombre}
@@ -422,7 +397,6 @@ function VentasDiaPage() {
                 </table>
               </div>
             </div>
-
           </div>
         </div>
         {/* Resumen de Pedidos */}
@@ -457,7 +431,7 @@ function VentasDiaPage() {
                     </td>
                   </tr>
                 ) : (
-                  resumenPedidos.map(p => (
+                  resumenPedidos.map((p) => (
                     <tr key={p.id_pedido}>
                       <td>{p.id_pedido}</td>
                       <td>{p.mesa}</td>
@@ -470,20 +444,17 @@ function VentasDiaPage() {
                       <td>S/. {p.monto_pagado.toFixed(2)}</td>
                       <td>S/. {p.vuelto.toFixed(2)}</td>
                       <td>
-                        <button 
+                        <button
                           className="btn btn-sm btn-info"
                           onClick={() => verPedido(p)}
                         >
                           Ver
                         </button>
-
                       </td>
                     </tr>
-
                   ))
                 )}
               </tbody>
-
             </table>
           </div>
         </div>
@@ -492,7 +463,6 @@ function VentasDiaPage() {
       {modalAbierto && detallePedido && (
         <dialog className="modal modal-open">
           <div className="modal-box max-w-2xl">
-
             <h3 className="font-bold text-lg">
               Pedido {pedidoActual.id_pedido} - {pedidoActual.mesa}
             </h3>
@@ -505,7 +475,7 @@ function VentasDiaPage() {
                   <tr>
                     <th>Cant.</th>
                     <th>Nombre</th>
-                    <th>Precio Total</th>
+                    <th>Total</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -516,7 +486,8 @@ function VentasDiaPage() {
                         {item.nombre}
                         {item.porcion && (
                           <span className="opacity-70">
-                            {" "}({item.porcion} {item.unidad_medida})
+                            {" "}
+                            ({item.porcion} {item.unidad_medida})
                           </span>
                         )}
                       </td>
@@ -529,14 +500,13 @@ function VentasDiaPage() {
 
             <div className="divider"></div>
 
-            <div className="text-right font-bold text-lg">
+            <div className="text-right font-bold text-xl">
               Total: S/ {detallePedido.total.toFixed(2)}
             </div>
 
             <div className="modal-action flex justify-between mt-4">
-
               <button
-                className="btn btn-secondary"
+                className="btn btn-outline text-secondary"
                 onClick={() => setModalAbierto(false)}
               >
                 Cerrar
@@ -546,7 +516,6 @@ function VentasDiaPage() {
         </dialog>
       )}
       {/* FIN Modal Detalle Pedido */}
-
     </div>
   );
 }

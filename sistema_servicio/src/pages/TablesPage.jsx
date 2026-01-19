@@ -32,7 +32,7 @@ function TablesPage() {
   //const mesasLlevar = mesas.filter(mesa => mesa.tipo_mesa === 'llevar');
 
   return (
-    <div className="flex flex-col justify-center items-center bg-neutral-800">
+    <div className="flex flex-col justify-start items-center bg-neutral-800 h-full min-h-screen">
       <HeaderNav />
 
       {/* Mesas físicas */}
@@ -56,8 +56,6 @@ function TablesPage() {
           ))
         )}
       </div>
-
-      <div className="divider"></div>
 
       {/* Pedidos de delivery */}
       <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8">

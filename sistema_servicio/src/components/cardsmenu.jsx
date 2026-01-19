@@ -28,7 +28,7 @@ function CardsMenu({ grupo, productos, onAdd }) {
             {/* CASO: UN SOLO PRODUCTO */}
             {unico ? (
               <button
-                className="btn btn-info font-bold rounded-lg btn-sm min-w-13 text-white"
+                className="btn btn-primary font-bold rounded-lg btn-sm min-w-13"
                 disabled={!productoUnico.disponible}
                 onClick={() => onAdd(productoUnico)}
               >
@@ -43,7 +43,7 @@ function CardsMenu({ grupo, productos, onAdd }) {
               productosOrdenados.map((prod) => (
                 <button
                   key={prod.id_carta}
-                  className="btn btn-info font-bold rounded-lg btn-sm text-white"
+                  className="btn btn-primary font-bold rounded-lg btn-sm"
                   disabled={!prod.disponible}
                   onClick={() => onAdd(prod)}
                 >
