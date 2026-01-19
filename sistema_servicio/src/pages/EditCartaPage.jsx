@@ -1,3 +1,4 @@
+// sistema_servicio/src/pages/EditCartaPage.jsx
 import { useEffect, useState } from "react";
 import HeaderCom from "../components/header_com.jsx";
 import { API_BASE } from "../config";
@@ -481,7 +482,7 @@ const editarCarta = async (c) => {
           <div className="mt-8 mb-4 flex flex-row justify-between items-center mx-2">
             {/* Filtro Carta*/}
             <select
-              className="select select-bordered max-w-30 bg-neutral-800"
+              className="select select-bordered max-w-25 lg:max-w-30 bg-neutral-800"
               value={filtroCategoria}
               onChange={(e) => {
                 setFiltroCategoria(e.target.value);
@@ -620,7 +621,7 @@ const editarCarta = async (c) => {
 {/* SIDEBAR */}
           <div className="drawer-side">
             <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
-            <ul className="menu bg-neutral-900 min-h-full w-80 p-4">
+            <ul className="menu bg-neutral-800 min-h-full w-80 p-4">
               <p className="text-xl">Configuraciones</p>
               <div className="divider"></div>
 

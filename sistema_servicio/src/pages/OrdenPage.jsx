@@ -560,7 +560,7 @@ return (
           {/* SIDEBAR */}
           <div className="drawer-side">
             <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
-                <ul className="menu bg-neutral-900 min-h-full w-80 p-4">
+                <ul className="menu bg-neutral-800 min-h-full w-80 p-4">
                 <p className="text-xl font-bold">Pedidos</p>
                 <div className="divider"></div>
 

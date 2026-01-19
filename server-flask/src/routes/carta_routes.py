@@ -1,4 +1,4 @@
-# routes/carta_routes.py
+#server-flask/src/routes/carta_routes.py
 from flask import Blueprint, request, jsonify
 from controllers.carta_controller import obtener_productos_por_categoria_y_subcategoria
 
