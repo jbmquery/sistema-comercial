@@ -482,7 +482,7 @@ const editarCarta = async (c) => {
           <div className="mt-8 mb-4 flex flex-row justify-between items-center mx-2">
             {/* Filtro Carta*/}
             <select
-              className="select select-bordered max-w-25 lg:max-w-30 bg-neutral-800"
+              className="select select-bordered max-w-27 lg:max-w-30 bg-neutral-800"
               value={filtroCategoria}
               onChange={(e) => {
                 setFiltroCategoria(e.target.value);
@@ -527,9 +527,9 @@ const editarCarta = async (c) => {
           </div>
 
           {/* ================= TABLA CARTA ================= */}
-          <div className="overflow-x-auto bg-black rounded shadow">
+          <div className="overflow-x-auto bg-black rounded shadow select-none max-h-[500px] overflow-y-auto">
             <table className="table table-sm">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-black shadow-md">
                 <tr>
                   <th>ID</th>
                   <th>Categoría</th>
@@ -544,12 +544,14 @@ const editarCarta = async (c) => {
                   <th>Observación</th>
                   <th>Estado</th>
                   <th>Disponible</th>
-                  <th>Acción</th>
                 </tr>
               </thead>
               <tbody>
                 {cartas.map(c => (
-                  <tr key={c.id_carta}>
+                  <tr key={c.id_carta}
+                    className="hover:bg-neutral-700 cursor-pointer"
+                    onClick={() => editarCarta(c)}
+                  >
                     <td>{c.id_carta}</td>
                     <td>{c.nombre_cat}</td>
                     <td>{c.nombre_subcat}</td>
@@ -567,48 +569,6 @@ const editarCarta = async (c) => {
                       <span className={`badge ${c.disponible ? 'badge-accent' : 'badge-secondary'}`}>
                         {c.disponible ? "Sí" : "No"}
                       </span>
-                    </td>
-                    <td className="flex gap-1">
-                      <button
-                        className="btn btn-sm btn-square btn-info"
-                        onClick={() => editarCarta(c)}
-                      >
-                        <svg
-                            width="16"
-                            height="16"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            >
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                      </button>
-
-                      <button
-                        className="btn btn-sm btn-secondary btn-square"
-                        onClick={() => handleDeleteCarta(c.id_carta)}
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M3 6h18" />
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                        </svg>
-                      </button>
-
                     </td>
                   </tr>
                 ))}
@@ -824,13 +784,13 @@ const editarCarta = async (c) => {
 
       {/* MODAL CARTA */}
       <input type="checkbox" id="modal_carta" className="modal-toggle" />
-      <div className="modal modal-bottom sm:modal-middle">
-        <div className="modal-box max-w-5xl">
+      <div className="modal">
+        <div className="modal-box max-w-2xl">
           <h3 className="font-bold text-lg mb-4">
             {cartaForm.id_carta ? "Editar Producto" : "Nuevo Producto"}
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
 
             {/* Categoria */}
             <select
@@ -934,35 +894,33 @@ const editarCarta = async (c) => {
                 setCartaForm({ ...cartaForm, url_imagen: e.target.value })
               }
             />
-
             {/* Estado */}
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="toggle toggle-success"
-                checked={cartaForm.estado}
-                onChange={e =>
-                  setCartaForm({ ...cartaForm, estado: e.target.checked })
-                }
-              />
-              Activo
-            </label>
-
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="toggle toggle-success"
+                  checked={cartaForm.estado}
+                  onChange={e =>
+                    setCartaForm({ ...cartaForm, estado: e.target.checked })
+                  }
+                />
+                Activo
+              </label>
             {/* Disponible */}
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="toggle toggle-primary"
-                checked={cartaForm.disponible}
-                onChange={e =>
-                  setCartaForm({ ...cartaForm, disponible: e.target.checked })
-                }
-              />
-              Disponible
-            </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="toggle toggle-primary"
+                  checked={cartaForm.disponible}
+                  onChange={e =>
+                    setCartaForm({ ...cartaForm, disponible: e.target.checked })
+                  }
+                />
+                Disponible
+              </label>
 
             <input
-              className="input input-bordered md:col-span-3"
+              className="input input-bordered min-w-full col-span-2 md:col-span-3"
               placeholder="Observación"
               value={cartaForm.observacion}
               onChange={e =>
@@ -971,34 +929,45 @@ const editarCarta = async (c) => {
             />
           </div>
 
-          <div className="modal-action">
-            <label
-              htmlFor="modal_carta"
-              className="btn btn-secondary"
-              onClick={() =>
-                setCartaForm({
-                  id_carta: "",
-                  categoria: "",
-                  sub_categoria: "",
-                  nombre: "",
-                  grupo: "",
-                  abreviado: "",
-                  precio: "",
-                  puntos_canje: "",
-                  estado: true,
-                  disponible: true,
-                  porcion: "",
-                  unidad_medida: "",
-                  observacion: "",
-                  url_imagen: ""
-                })
-              }
-            >
-              Cancelar
-            </label>
-            <button className="btn btn-success" onClick={handleSaveCarta}>
-              Guardar
-            </button>
+          <div className="modal-action flex justify-between w-full">
+              <label
+                htmlFor="modal_carta"
+                className="btn btn-outline text-secondary"
+                onClick={() =>
+                  setCartaForm({
+                    id_carta: "",
+                    categoria: "",
+                    sub_categoria: "",
+                    nombre: "",
+                    grupo: "",
+                    abreviado: "",
+                    precio: "",
+                    puntos_canje: "",
+                    estado: true,
+                    disponible: true,
+                    porcion: "",
+                    unidad_medida: "",
+                    observacion: "",
+                    url_imagen: ""
+                  })
+                }
+              >
+                Cancelar
+              </label>         
+            <div className="flex gap-2">
+            {/* BOTÓN ELIMINAR SOLO SI ESTAMOS EDITANDO */}
+            {cartaForm.id_carta && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => handleDeleteCarta(cartaForm.id_carta)}
+              >
+                Eliminar
+              </button>
+            )} 
+              <button className="btn btn-success" onClick={handleSaveCarta}>
+                Guardar
+              </button>
+            </div>
           </div>
         </div>
       </div>
