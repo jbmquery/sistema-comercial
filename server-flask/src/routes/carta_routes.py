@@ -1,6 +1,11 @@
 #server-flask/src/routes/carta_routes.py
 from flask import Blueprint, request, jsonify
 from controllers.carta_controller import obtener_productos_por_categoria_y_subcategoria
+from controllers.carta_controller import (
+    crear_carta,
+    actualizar_carta,
+    eliminar_carta
+)
 
 carta_bp = Blueprint('carta_bp', __name__)
 
@@ -13,11 +18,7 @@ def get_carta():
     productos = obtener_productos_por_categoria_y_subcategoria(categoria, sub_categoria, search)
     return jsonify({"por_subcategoria": productos})  # ← Clave correcta
 
-from controllers.carta_controller import (
-    crear_carta,
-    actualizar_carta,
-    eliminar_carta
-)
+
 
 @carta_bp.route('/api/carta', methods=['POST'])
 def post_carta():

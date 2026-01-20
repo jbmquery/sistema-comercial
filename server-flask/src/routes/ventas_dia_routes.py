@@ -1,5 +1,6 @@
 # server-flask/src/routes/ventas_dia_routes.py
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from controllers.ventas_dia_controller import (
     get_productos_vendidos_por_dia,
     get_productos_perdida_por_dia,
@@ -13,6 +14,7 @@ from controllers.ventas_dia_controller import (
 ventas_dia_bp = Blueprint('ventas_dia', __name__)
 
 @ventas_dia_bp.route('/api/ventas-dia/productos', methods=['GET'])
+@jwt_required()
 def productos_vendidos():
     fecha = request.args.get('fecha')
 
@@ -23,6 +25,7 @@ def productos_vendidos():
     return jsonify({"productos_vendidos": data})
 
 @ventas_dia_bp.route('/api/ventas-dia/perdidas', methods=['GET'])
+@jwt_required()
 def productos_perdida():
     fecha = request.args.get('fecha')
 
@@ -33,6 +36,7 @@ def productos_perdida():
     return jsonify({"productos_perdida": data})
 
 @ventas_dia_bp.route('/api/ventas-dia/tipos-venta', methods=['GET'])
+@jwt_required()
 def tipos_venta_dia():
     fecha = request.args.get('fecha')
 
@@ -43,6 +47,7 @@ def tipos_venta_dia():
     return jsonify({"tipos_venta": data})
 
 @ventas_dia_bp.route('/api/ventas-dia/mesas', methods=['GET'])
+@jwt_required()
 def ventas_por_mesa_dia():
     fecha = request.args.get('fecha')
 
@@ -53,6 +58,7 @@ def ventas_por_mesa_dia():
     return jsonify({"ventas_mesas": data})
 
 @ventas_dia_bp.route('/api/ventas-dia/resumen-pedidos', methods=['GET'])
+@jwt_required()
 def resumen_pedidos_dia():
     fecha = request.args.get('fecha')
 
@@ -63,6 +69,7 @@ def resumen_pedidos_dia():
     return jsonify({"resumen_pedidos": data})
 
 @ventas_dia_bp.route('/api/ventas-dia/caja', methods=['GET'])
+@jwt_required()
 def caja_dia():
     fecha = request.args.get('fecha')
 
@@ -73,6 +80,7 @@ def caja_dia():
     return jsonify({"caja": data})
 
 @ventas_dia_bp.route('/api/ventas-dia/pedido-detalle/<int:id_pedido>', methods=['GET'])
+@jwt_required()
 def pedido_detalle(id_pedido):
     data = get_detalle_pedido_ventas_page(id_pedido)
     return jsonify(data)
