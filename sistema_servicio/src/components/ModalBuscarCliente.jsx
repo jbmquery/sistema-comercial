@@ -1,4 +1,4 @@
-// components/ModalBuscarCliente.jsx
+// sistema_servicio/src/components/ModalBuscarCliente.jsx
 import { useState, useEffect } from 'react';
 import { API_BASE } from '../config';
 

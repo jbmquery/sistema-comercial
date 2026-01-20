@@ -1,3 +1,4 @@
+// sistema_servicio/src/components/cardsmenu.jsx
 function CardsMenu({ grupo, productos, onAdd }) {
   // Ordenar por porción ascendente (null al final)
   const productosOrdenados = [...productos].sort((a, b) => {

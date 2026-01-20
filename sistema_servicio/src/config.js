@@ -1,3 +1,4 @@
+// sistema_servicio/src/config.js
 const isLocalhost = window.location.hostname === 'localhost';
 
 export const API_BASE = isLocalhost

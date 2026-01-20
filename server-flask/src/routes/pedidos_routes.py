@@ -1,4 +1,4 @@
-# routes/pedidos_routes.py
+# server-flask/src/routes/pedidos_routes.py
 
 from flask import Blueprint, request, jsonify
 from controllers.pedidos_controller import (

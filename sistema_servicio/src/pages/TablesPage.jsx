@@ -1,3 +1,4 @@
+// sistema_servicio/src/pages/TablesPage.jsx
 import Cards from "../components/cards";
 import HeaderNav from "../components/header_nav";
 /*import { useEffect, useState } from "react";

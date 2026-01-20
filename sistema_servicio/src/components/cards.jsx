@@ -1,3 +1,4 @@
+// sistema_servicio/src/components/cards.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 

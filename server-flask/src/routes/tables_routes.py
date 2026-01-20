@@ -1,3 +1,4 @@
+# server-flask/src/routes/tables_routes.py
 from flask import Blueprint, request, jsonify
 from controllers.tables_controller import (
     obtener_mesas,

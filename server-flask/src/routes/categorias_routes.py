@@ -1,4 +1,4 @@
-# routes/categorias_routes.py
+# server-flask/src/routes/categorias_routes.py
 from flask import Blueprint, request, jsonify
 from controllers.categorias_controller import obtener_categorias, obtener_subcategorias
 

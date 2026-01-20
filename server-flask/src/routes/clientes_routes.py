@@ -1,4 +1,4 @@
-# routes/clientes_routes.py
+# server-flask/src/routes/clientes_routes.py
 from flask import Blueprint, request, jsonify
 from controllers.clientes_controller import (
     obtener_todos_clientes,

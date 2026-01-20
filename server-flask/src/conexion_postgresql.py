@@ -1,4 +1,4 @@
-#conexion_postgresql.py
+#server-flask/src/conexion_postgresql.py
 import psycopg2
 
 DB_CONFIG = {

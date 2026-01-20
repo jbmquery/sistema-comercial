@@ -1,4 +1,4 @@
-// ClientesPage.jsx
+// sistema_servicio/src/pages/ClientesPage.jsx
 import { useState, useEffect } from 'react';
 import HeaderNav from '../components/header_nav.jsx';
 import { API_BASE } from '../config';

@@ -1,3 +1,4 @@
+# server-flask/src/test_cors.py
 try:
     from flask_cors import CORS
     print("✅ flask-cors está instalado y se puede importar")

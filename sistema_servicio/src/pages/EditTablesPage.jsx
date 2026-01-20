@@ -1,14 +1,14 @@
-//sistema_servicio/src/pages/EditTablesPage.jsx
-import { useEffect, useState } from 'react';
+// sistema_servicio/src/pages/EditTablesPage.jsx
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import HeaderCom from '../components/header_com.jsx';
 import { API_BASE } from '../config';
-import { Link } from "react-router-dom";
 import Sidebar from "../components/SiderbarAdmin.jsx";
-
 
 function EditTablesPage() {
 
-  const [mesas, setMesas] = useState([]);
+  const queryClient = useQueryClient();
+
   const [isEditing, setIsEditing] = useState(false);
   const [currentMesa, setCurrentMesa] = useState({
     id_mesas: '',
@@ -18,46 +18,88 @@ function EditTablesPage() {
     tipo_mesa: ''
   });
 
-  useEffect(() => {
-    fetchMesas();
-  }, []);
+  /* =========================
+     REACT QUERY: OBTENER MESAS
+  ========================= */
 
-  const fetchMesas = async () => {
-    const res = await fetch(`${API_BASE}/api/mesas`, {
-      headers: { 'ngrok-skip-browser-warning': 'true' }
-    });
-    const data = await res.json();
-    setMesas(data.mesas);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing
-      ? `${API_BASE}/api/mesas/${currentMesa.id_mesas}`
-      : `${API_BASE}/api/mesas`;
-
-    const res = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true'
-      },
-      body: JSON.stringify({
-        nombre: currentMesa.nombre,
-        capacidad: currentMesa.capacidad,
-        disponibilidad: currentMesa.disponibilidad,
-        tipo_mesa: currentMesa.tipo_mesa
-      })
-    });
-
-    if (res.ok) {
-      fetchMesas();
-      resetForm();
-    } else {
-      alert('Error al guardar mesa');
+  const { data: mesas = [], isLoading } = useQuery({
+    queryKey: ["mesas"],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/mesas`, {
+        headers: { 'ngrok-skip-browser-warning': 'true' }
+      });
+      const data = await res.json();
+      return data.mesas;
     }
+  });
+
+  /* =========================
+     MUTATION: CREAR / EDITAR
+  ========================= */
+
+  const saveMesa = useMutation({
+    mutationFn: async (mesa) => {
+      const method = isEditing ? 'PUT' : 'POST';
+      const url = isEditing
+        ? `${API_BASE}/api/mesas/${mesa.id_mesas}`
+        : `${API_BASE}/api/mesas`;
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
+        body: JSON.stringify({
+          nombre: mesa.nombre,
+          capacidad: mesa.capacidad,
+          disponibilidad: mesa.disponibilidad,
+          tipo_mesa: mesa.tipo_mesa
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error("Error al guardar mesa");
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["mesas"]);
+      resetForm();
+    }
+  });
+
+  /* =========================
+     MUTATION: ELIMINAR
+  ========================= */
+
+  const deleteMesa = useMutation({
+    mutationFn: async (id) => {
+      const res = await fetch(`${API_BASE}/api/mesas/${id}`, {
+        method: 'DELETE',
+        headers: { 'ngrok-skip-browser-warning': 'true' }
+      });
+
+      if (!res.ok) {
+        throw new Error("Error al eliminar mesa");
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["mesas"]);
+      resetForm();
+    }
+  });
+
+  /* =========================
+     HANDLERS (IGUALES A LOS TUYOS)
+  ========================= */
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    saveMesa.mutate(currentMesa);
   };
 
   const handleEdit = (mesa) => {
@@ -65,15 +107,9 @@ function EditTablesPage() {
     setIsEditing(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (!window.confirm('¿Eliminar mesa?')) return;
-
-    await fetch(`${API_BASE}/api/mesas/${id}`, {
-      method: 'DELETE',
-      headers: { 'ngrok-skip-browser-warning': 'true' }
-    });
-
-    fetchMesas();
+    deleteMesa.mutate(id);
   };
 
   const resetForm = () => {
@@ -93,18 +129,24 @@ function EditTablesPage() {
 
       <div className="flex flex-col md:flex-row w-full bg-neutral-800">
         <div className="drawer lg:drawer-open w-full">
+
+          {/* 👉 TU PIEZA CLAVE DEL DRAWER (TAL CUAL ORIGINAL) */}
           <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
 
           {/* CONTENIDO PRINCIPAL */}
           <div className="drawer-content p-4 w-full">
 
-            <label htmlFor="my-drawer-3" className=" drawer-button btn btn-outline text-primary lg:hidden mb-4">
+            {/* 👉 BOTÓN DEL DRAWER (TAL CUAL ORIGINAL) */}
+            <label
+              htmlFor="my-drawer-3"
+              className="drawer-button btn btn-outline text-primary lg:hidden mb-4"
+            >
               ☰
             </label>
 
             <h1 className="text-2xl font-bold mb-4">Gestión de Mesas</h1>
 
-            {/* FORMULARIO */}
+            {/* FORMULARIO (IGUAL AL TUYO) */}
             <form onSubmit={handleSubmit} className="bg-black p-4 rounded shadow mb-6 w-full">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <input
@@ -144,7 +186,6 @@ function EditTablesPage() {
                   Cancelar
                 </button>
                 <div className="flex gap-2">
-                  {/* BOTÓN ELIMINAR SOLO CUANDO EDITAS */}
                   {isEditing && currentMesa.id_mesas && (
                     <button
                       type="button"
@@ -161,46 +202,49 @@ function EditTablesPage() {
               </div>
             </form>
 
-            {/* TABLA */}
+            {/* TABLA (IGUAL A LA TUYA) */}
             <div className="bg-black rounded shadow overflow-x-auto select-none">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th className='min-w-30'>Nombre</th>
-                    <th>Capacidad</th>
-                    <th>Disponible</th>
-                    <th>Tipo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {mesas.map(mesa => (
-                    <tr
-                      key={mesa.id_mesas}
-                      className="hover:bg-neutral-700 cursor-pointer"
-                      onClick={() => handleEdit(mesa)}
-                    >
-                      <td>{mesa.id_mesas}</td>
-                      <td>{mesa.nombre}</td>
-                      <td>{mesa.capacidad}</td>
-                      <td>
-                        <span className={`badge ${mesa.disponibilidad ? 'badge-accent' : 'badge-secondary'}`}>
-                          {mesa.disponibilidad ? 'Sí' : 'No'}
-                        </span>
-                      </td>
-                      <td>{mesa.tipo_mesa}</td>
+              {isLoading ? (
+                <p className="p-4 text-center">Cargando mesas...</p>
+              ) : (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th className='min-w-30'>Nombre</th>
+                      <th>Capacidad</th>
+                      <th>Disponible</th>
+                      <th>Tipo</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {mesas.map(mesa => (
+                      <tr
+                        key={mesa.id_mesas}
+                        className="hover:bg-neutral-700 cursor-pointer"
+                        onClick={() => handleEdit(mesa)}
+                      >
+                        <td>{mesa.id_mesas}</td>
+                        <td>{mesa.nombre}</td>
+                        <td>{mesa.capacidad}</td>
+                        <td>
+                          <span className={`badge ${mesa.disponibilidad ? 'badge-accent' : 'badge-secondary'}`}>
+                            {mesa.disponibilidad ? 'Sí' : 'No'}
+                          </span>
+                        </td>
+                        <td>{mesa.tipo_mesa}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
 
           </div>
 
-          {/* SIDEBAR */}
-           <Sidebar activePage="mesas" />
-         
-          {/* FIN SIDEBAR */}            
+          {/* 👉 TU SIDEBAR EN SU LUGAR ORIGINAL */}
+          <Sidebar activePage="mesas" />
+
         </div>
       </div>
     </div>

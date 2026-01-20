@@ -1,3 +1,4 @@
+// sistema_servicio/src/components/SiderbarAdmin.jsx
 import { Link } from "react-router-dom";
 
 function Sidebar({ activePage }) {

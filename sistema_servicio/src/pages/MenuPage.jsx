@@ -1,9 +1,4 @@
-// ==========================
-// ✅ MENU PAGE REFACTORIZADO
-// (mismos estilos + mismas funciones)
-// Solo cambia: React Query y buscador
-// ==========================
-
+// sistema_servicio/src/pages/MenuPage.jsx
 import HeaderCom from "../components/header_com";
 import CardsMenu from "../components/cardsmenu";
 import { useLocation, useNavigate } from 'react-router-dom';

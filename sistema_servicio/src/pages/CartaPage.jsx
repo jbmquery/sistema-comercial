@@ -1,3 +1,4 @@
+// sistema_servicio/src/pages/CartaPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import HeaderCom from '../components/header_com.jsx';
 

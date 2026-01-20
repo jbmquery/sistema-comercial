@@ -1,4 +1,4 @@
-// VentasDiaPage.jsx
+// sistema_servicio/src/pages/VentasDiaPage.jsx
 
 import HeaderNav from "../components/header_nav.jsx";
 import { useQuery } from "@tanstack/react-query";

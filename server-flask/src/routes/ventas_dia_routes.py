@@ -1,3 +1,4 @@
+# server-flask/src/routes/ventas_dia_routes.py
 from flask import Blueprint, request, jsonify
 from controllers.ventas_dia_controller import (
     get_productos_vendidos_por_dia,

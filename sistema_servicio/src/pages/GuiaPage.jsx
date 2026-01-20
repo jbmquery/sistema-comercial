@@ -1,4 +1,4 @@
-// GuiaPages.jsx
+// sistema_servicio/src/pages/GuiaPage.jsx
 import { useState, useEffect } from 'react';
 
 function GuiaPages() {

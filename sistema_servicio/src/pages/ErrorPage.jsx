@@ -1,3 +1,4 @@
+// sistema_servicio/src/pages/ErrorPage.jsx
 import React from 'react'
 
 function ErrorPage() {

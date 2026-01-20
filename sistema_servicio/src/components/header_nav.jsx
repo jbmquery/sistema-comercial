@@ -1,3 +1,4 @@
+// sistema_servicio/src/components/header_nav.jsx
 import HeaderCom from "./header_com";
 import { Link } from "react-router-dom";
 
