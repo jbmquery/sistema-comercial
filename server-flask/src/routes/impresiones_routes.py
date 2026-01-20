@@ -1,10 +1,12 @@
 #server-flask/src/routes/impresiones_routes.py
 from flask import Blueprint, request, abort, send_file
+from flask_jwt_extended import jwt_required
 from controllers.impresiones_controller import (imprimir_cocina, imprimir_voucher_pago, generar_voucher_whatsapp)
 
 impresiones_bp = Blueprint("impresiones", __name__)
 
 @impresiones_bp.route("/impresiones/cocina/<int:id_pedido>", methods=["POST"])
+@jwt_required()
 def imprimir_cocina_route(id_pedido):
     data = request.get_json()
     detalles = data.get("detalles", [])
@@ -25,6 +27,7 @@ def imprimir_cocina_route(id_pedido):
     )
 
 @impresiones_bp.route("/impresiones/voucher/<int:id_pedido>", methods=["POST"])
+@jwt_required()
 def imprimir_voucher_route(id_pedido):
     data = request.get_json()
     detalles = data.get("detalles", [])
@@ -45,7 +48,8 @@ def imprimir_voucher_route(id_pedido):
     )
 
 
-@impresiones_bp.route("/impresiones/voucher-whatsapp/<int:id_pedido>", methods=["POST", "OPTIONS"])
+@impresiones_bp.route("/impresiones/voucher-whatsapp/<int:id_pedido>", methods=["POST"])
+@jwt_required()
 def voucher_whatsapp_route(id_pedido):
 
     # RESPUESTA AL PREFLIGHT (CORS)

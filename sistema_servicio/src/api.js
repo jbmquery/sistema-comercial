@@ -77,16 +77,12 @@ export const getPedidoDetalle = async (idPedido) => {
 }
 
 export const getCuentaActual = async (idPedido) => {
-  const res = await fetch(
+  const { data } = await api.get(
     `/api/pedidos/${idPedido}/cuenta-actual`
-  )
+  );
+  return data;
+};
 
-  if (!res.ok) {
-    throw new Error('Error al obtener cuenta actual')
-  }
-
-  return res.json()
-}
 
 export const agregarDetallePedido = async ({ idPedido, payload }) => {
   const { data } = await api.post(
