@@ -14,6 +14,8 @@ function EditCartaPage() {
   ======================= */
 
   const [filtroCategoria, setFiltroCategoria] = useState("");
+  const [busquedaLocal, setBusquedaLocal] = useState("");
+
   const [categoriaSubSeleccionada, setCategoriaSubSeleccionada] = useState("");
 
   const [categoriaForm, setCategoriaForm] = useState({
@@ -92,6 +94,58 @@ function EditCartaPage() {
       return Object.values(data.por_subcategoria || {}).flat();
     }
   });
+
+  // ======== FILTRO VISUAL LOCAL + RESALTADO ========
+
+  // 🔎 FILTRO QUE IGNORA "estado" y "disponible"
+  const cartasFiltradas = cartas.filter(c => {
+    if (!busquedaLocal.trim()) return true;
+
+    const texto = busquedaLocal.toLowerCase();
+
+    return Object.entries(c).some(([key, value]) => {
+      if (key === "estado" || key === "disponible") return false; // ❌ se excluyen
+      return String(value).toLowerCase().includes(texto);
+    });
+  });
+
+  // 🧮 CUENTA COINCIDENCIAS REALES (no filas)
+  const totalCoincidencias = (() => {
+    if (!busquedaLocal.trim()) return 0;
+
+    const texto = busquedaLocal.toLowerCase();
+    let contador = 0;
+
+    cartas.forEach(c => {
+      Object.entries(c).forEach(([key, value]) => {
+        if (key === "estado" || key === "disponible") return;
+
+        const str = String(value).toLowerCase();
+        const regex = new RegExp(busquedaLocal, "gi");
+
+        const matches = str.match(regex);
+        if (matches) contador += matches.length;
+      });
+    });
+
+    return contador;
+  })();
+
+  const resaltarTexto = (texto) => {
+    if (!busquedaLocal) return texto;
+
+    const regex = new RegExp(`(${busquedaLocal})`, "gi");
+    const partes = String(texto).split(regex);
+
+    return partes.map((parte, i) =>
+      parte.toLowerCase() === busquedaLocal.toLowerCase()
+        ? <mark key={i} className="bg-yellow-400 text-black px-1 rounded">{parte}</mark>
+        : parte
+    );
+  };
+
+
+
 
   /* =======================
      CSV (NO CAMBIÓ)
@@ -431,20 +485,38 @@ function EditCartaPage() {
           {/* ================= FILTRO CARTA ================= */}
           <div className="mt-8 mb-4 flex flex-row justify-between items-center mx-2">
             {/* Filtro Carta*/}
-            <select
-              className="select select-bordered max-w-27 lg:max-w-30 bg-neutral-800"
-              value={filtroCategoria}
-              onChange={(e) => {
-                setFiltroCategoria(e.target.value);
-              }}
-            >
-              <option value="">Categorías</option>
-              {categorias.map(c => (
-                <option key={c.id_categoria} value={c.id_categoria}>
-                  {c.nombre_cat}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2 md:gap-3">
+              <select
+                className="select select-bordered max-w-20 lg:max-w-30 bg-neutral-800"
+                value={filtroCategoria}
+                onChange={(e) => {
+                  setFiltroCategoria(e.target.value);
+                }}
+              >
+                <option value="">Categorías</option>
+                {categorias.map(c => (
+                  <option key={c.id_categoria} value={c.id_categoria}>
+                    {c.nombre_cat}
+                  </option>
+                ))}
+              </select>
+              {/* 🔎 INPUT BUSCAR LOCAL */}
+              <input
+                type="text"
+                placeholder="Buscar"
+                className="input input-bordered bg-neutral-800 max-w-20 md:max-w-30"
+                value={busquedaLocal}
+                onChange={e => setBusquedaLocal(e.target.value)}
+              />
+
+              {/* 🧮 CONTADOR DE COINCIDENCIAS */}
+              <div className=" text-xs md:text-sm opacity-80 flex flex-col md:flex-row items-center">
+                <span className="mr-1">Hay </span>
+                <span className="mr-1">{totalCoincidencias}</span>
+                <span className="hidden md:inline">coincidencias</span>
+              </div>
+            </div>
+
             <div className="flex flex-row justify-between items-center gap-2">
               {/* Boton descargar CSV*/}
               <button className="btn btn-dash btn-warning btn-sm" onClick={descargarCSV}>
@@ -496,24 +568,23 @@ function EditCartaPage() {
                 </tr>
               </thead>
               <tbody>
-                {cartas.map(c => (
+                {cartasFiltradas.map(c => (
                   <tr key={c.id_carta}
                     className="hover:bg-neutral-700 cursor-pointer"
                     onClick={() => editarCarta(c)}
                   >
-                    <td>{c.id_carta}</td>
-                    <td>{c.nombre_cat}</td>
-                    <td>{c.nombre_subcat}</td>
-                    <td>{c.nombre}</td>
-                    <td>{c.grupo}</td>
-                    <td>{c.abreviado}</td>
-                    <td>S/ {c.precio}</td>
-                    <td>{c.puntos_canje}</td>
-                    <td>{c.porcion}</td>
-                    <td>{c.unidad_medida}</td>
-                    <td>{c.observacion}</td>
-                    {/* <td className="truncate max-w-[120px]">{c.url_imagen}</td>*/}
-                    <td>{c.estado ? "Activo" : "Inactivo"}</td>
+                    <td>{resaltarTexto(c.id_carta)}</td>
+                    <td>{resaltarTexto(c.nombre_cat)}</td>
+                    <td>{resaltarTexto(c.nombre_subcat)}</td>
+                    <td>{resaltarTexto(c.nombre)}</td>
+                    <td>{resaltarTexto(c.grupo)}</td>
+                    <td>{resaltarTexto(c.abreviado)}</td>
+                    <td>S/ {resaltarTexto(c.precio)}</td>
+                    <td>{resaltarTexto(c.puntos_canje)}</td>
+                    <td>{resaltarTexto(c.porcion)}</td>
+                    <td>{resaltarTexto(c.unidad_medida)}</td>
+                    <td>{resaltarTexto(c.observacion)}</td>
+                    <td>{resaltarTexto(c.estado ? "Activo" : "Inactivo")}</td>
                     <td>
                       <span className={`badge ${c.disponible ? 'badge-accent' : 'badge-secondary'}`}>
                         {c.disponible ? "Sí" : "No"}
