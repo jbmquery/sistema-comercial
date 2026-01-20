@@ -1,20 +1,18 @@
 // sistema_servicio/src/pages/EditCartaPage.jsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import HeaderCom from "../components/header_com.jsx";
 import { API_BASE } from "../config";
-import { Link } from "react-router-dom";
 import Sidebar from "../components/SiderbarAdmin.jsx";
 
 function EditCartaPage() {
 
+  const queryClient = useQueryClient();
+
   /* =======================
-     ESTADOS
+     ESTADOS (TAL CUAL TUYO)
   ======================= */
 
-  const [categorias, setCategorias] = useState([]);
-  const [subcategorias, setSubcategorias] = useState([]);
-  const [cartas, setCartas] = useState([]);
-  
   const [filtroCategoria, setFiltroCategoria] = useState("");
   const [categoriaSubSeleccionada, setCategoriaSubSeleccionada] = useState("");
 
@@ -49,55 +47,54 @@ function EditCartaPage() {
   });
 
   /* =======================
-     DATA
+     REACT QUERY - QUERIES
   ======================= */
 
-  useEffect(() => {
-    fetchCategorias();
-    fetchCartas();
-  }, []);
-
-  const fetchCategorias = async () => {
-    const res = await fetch(`${API_BASE}/api/categorias`, {
-      headers: { "ngrok-skip-browser-warning": "true" }
-    });
-    const data = await res.json();
-    setCategorias(data.categorias || []);
-  };
-
-  const fetchSubcategorias = async (categoriaId = "") => {
-    if (!categoriaId) {
-      setSubcategorias([]);
-      return;
-    }
-
-    const res = await fetch(
-      `${API_BASE}/api/subcategorias?categoria=${categoriaId}`,
-      {
+  const { data: categorias = [] } = useQuery({
+    queryKey: ["categorias"],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/api/categorias`, {
         headers: { "ngrok-skip-browser-warning": "true" }
-      }
-    );
+      });
+      const data = await res.json();
+      return data.categorias || [];
+    }
+  });
 
-    const data = await res.json();
-    setSubcategorias(data.subcategorias || []);
-  };
+  const { data: subcategorias = [] } = useQuery({
+    queryKey: ["subcategorias", categoriaSubSeleccionada],
+    queryFn: async () => {
+      if (!categoriaSubSeleccionada) return [];
 
+      const res = await fetch(
+        `${API_BASE}/api/subcategorias?categoria=${categoriaSubSeleccionada}`,
+        { headers: { "ngrok-skip-browser-warning": "true" } }
+      );
 
-  const fetchCartas = async (categoriaId = "") => {
-    const url = categoriaId
-      ? `${API_BASE}/api/carta?categoria=${categoriaId}`
-      : `${API_BASE}/api/carta`;
+      const data = await res.json();
+      return data.subcategorias || [];
+    },
+    enabled: !!categoriaSubSeleccionada
+  });
 
-    const res = await fetch(url, {
-      headers: { "ngrok-skip-browser-warning": "true" }
-    });
+  const { data: cartas = [] } = useQuery({
+    queryKey: ["carta", filtroCategoria],
+    queryFn: async () => {
+      const url = filtroCategoria
+        ? `${API_BASE}/api/carta?categoria=${filtroCategoria}`
+        : `${API_BASE}/api/carta`;
 
-    const data = await res.json();
-    setCartas(Object.values(data.por_subcategoria || {}).flat());
-  };
+      const res = await fetch(url, {
+        headers: { "ngrok-skip-browser-warning": "true" }
+      });
+
+      const data = await res.json();
+      return Object.values(data.por_subcategoria || {}).flat();
+    }
+  });
 
   /* =======================
-     CSV
+     CSV (NO CAMBIÓ)
   ======================= */
 
   const descargarCSV = () => {
@@ -120,151 +117,179 @@ function EditCartaPage() {
   };
 
   /* =======================
-   HANDLERS CATEGORIA
-======================= */
+     MUTATIONS (CRUD)
+  ======================= */
 
-const handleSaveCategoria = async () => {
-  const method = categoriaForm.id_categoria ? "PUT" : "POST";
-  const url = categoriaForm.id_categoria
-    ? `${API_BASE}/api/categorias/${categoriaForm.id_categoria}`
-    : `${API_BASE}/api/categorias`;
+  const saveCategoria = useMutation({
+    mutationFn: async () => {
+      const method = categoriaForm.id_categoria ? "PUT" : "POST";
+      const url = categoriaForm.id_categoria
+        ? `${API_BASE}/api/categorias/${categoriaForm.id_categoria}`
+        : `${API_BASE}/api/categorias`;
 
-  const res = await fetch(url, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true"
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true"
+        },
+        body: JSON.stringify(categoriaForm)
+      });
+
+      return res.json();
     },
-    body: JSON.stringify(categoriaForm)
+    onSuccess: (data) => {
+      alert(data.message);
+      queryClient.invalidateQueries(["categorias"]);
+    }
   });
 
-  const data = await res.json();
-  alert(data.message);
-  fetchCategorias();
-};
-
-const handleDeleteCategoria = async (id) => {
-  if (!confirm("¿Eliminar categoría?")) return;
-
-  const res = await fetch(`${API_BASE}/api/categorias/${id}`, {
-    method: "DELETE",
-    headers: { "ngrok-skip-browser-warning": "true" }
-  });
-
-  const data = await res.json();
-  alert(data.message);
-  fetchCategorias();
-};
-
-
-/* =======================
-   HANDLERS SUBCATEGORIA
-======================= */
-
-const handleSaveSubcategoria = async () => {
-  const method = subcategoriaForm.id_subcat ? "PUT" : "POST";
-  const url = subcategoriaForm.id_subcat
-    ? `${API_BASE}/api/subcategorias/${subcategoriaForm.id_subcat}`
-    : `${API_BASE}/api/subcategorias`;
-
-  const res = await fetch(url, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true"
+  const deleteCategoria = useMutation({
+    mutationFn: async (id) => {
+      const res = await fetch(`${API_BASE}/api/categorias/${id}`, {
+        method: "DELETE",
+        headers: { "ngrok-skip-browser-warning": "true" }
+      });
+      return res.json();
     },
-    body: JSON.stringify(subcategoriaForm)
+    onSuccess: (data) => {
+      alert(data.message);
+      queryClient.invalidateQueries(["categorias"]);
+    }
   });
 
-  const data = await res.json();
-  alert(data.message);
-  fetchSubcategorias(subcategoriaForm.categoria);
-};
+  const saveSubcategoria = useMutation({
+    mutationFn: async () => {
+      const method = subcategoriaForm.id_subcat ? "PUT" : "POST";
+      const url = subcategoriaForm.id_subcat
+        ? `${API_BASE}/api/subcategorias/${subcategoriaForm.id_subcat}`
+        : `${API_BASE}/api/subcategorias`;
 
-const handleDeleteSubcategoria = async (id) => {
-  if (!confirm("¿Eliminar subcategoría?")) return;
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true"
+        },
+        body: JSON.stringify(subcategoriaForm)
+      });
 
-  const res = await fetch(`${API_BASE}/api/subcategorias/${id}`, {
-    method: "DELETE",
-    headers: { "ngrok-skip-browser-warning": "true" }
-  });
-
-  const data = await res.json();
-  alert(data.message);
-  fetchSubcategorias();
-};
-
-
-/* =======================
-   HANDLERS CARTA
-======================= */
-
-const handleSaveCarta = async () => {
-  const method = cartaForm.id_carta ? "PUT" : "POST";
-  const url = cartaForm.id_carta
-    ? `${API_BASE}/api/carta/${cartaForm.id_carta}`
-    : `${API_BASE}/api/carta`;
-
-  const res = await fetch(url, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true"
+      return res.json();
     },
-    body: JSON.stringify(cartaForm)
+    onSuccess: (data) => {
+      alert(data.message);
+      queryClient.invalidateQueries(["subcategorias"]);
+    }
   });
 
-  const data = await res.json();
-  alert(data.message);
-  fetchCartas(filtroCategoria);
-};
-
-
-
-
-const handleDeleteCarta = async (id) => {
-  if (!confirm("¿Eliminar producto?")) return;
-
-  const res = await fetch(`${API_BASE}/api/carta/${id}`, {
-    method: "DELETE",
-    headers: { "ngrok-skip-browser-warning": "true" }
+  const deleteSubcategoria = useMutation({
+    mutationFn: async (id) => {
+      const res = await fetch(`${API_BASE}/api/subcategorias/${id}`, {
+        method: "DELETE",
+        headers: { "ngrok-skip-browser-warning": "true" }
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      alert(data.message);
+      queryClient.invalidateQueries(["subcategorias"]);
+    }
   });
 
-  const data = await res.json();
-  alert(data.message);
-  fetchCartas(filtroCategoria);
-};
+  const saveCarta = useMutation({
+    mutationFn: async () => {
+      const method = cartaForm.id_carta ? "PUT" : "POST";
+      const url = cartaForm.id_carta
+        ? `${API_BASE}/api/carta/${cartaForm.id_carta}`
+        : `${API_BASE}/api/carta`;
 
-/* =======================
-   HELPER
-======================= */
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true"
+        },
+        body: JSON.stringify(cartaForm)
+      });
 
-const editarCarta = async (c) => {
-  // 1. Setear datos base
-  setCartaForm({
-    id_carta: c.id_carta,
-    categoria: c.categoria,
-    sub_categoria: c.sub_categoria,
-    nombre: c.nombre,
-    grupo: c.grupo,
-    abreviado: c.abreviado,
-    precio: c.precio,
-    puntos_canje: c.puntos_canje,
-    estado: c.estado,
-    disponible: c.disponible,
-    porcion: c.porcion,
-    unidad_medida: c.unidad_medida,
-    observacion: c.observacion,
-    url_imagen: c.url_imagen
+      return res.json();
+    },
+    onSuccess: (data) => {
+      alert(data.message);
+      queryClient.invalidateQueries(["carta"]);
+    }
   });
 
-  // 2. Cargar subcategorías de ESA categoría
-  await fetchSubcategorias(c.categoria);
+  const deleteCarta = useMutation({
+    mutationFn: async (id) => {
+      const res = await fetch(`${API_BASE}/api/carta/${id}`, {
+        method: "DELETE",
+        headers: { "ngrok-skip-browser-warning": "true" }
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      alert(data.message);
+      queryClient.invalidateQueries(["carta"]);
+    }
+  });
 
-  // 3. Abrir modal
-  document.getElementById("modal_carta").checked = true;
-};
+  /* =======================
+     HANDLERS (MISMOS NOMBRES)
+  ======================= */
 
+  const handleSaveCategoria = async () => {
+    saveCategoria.mutate();
+  };
+
+  const handleDeleteCategoria = async (id) => {
+    if (!confirm("¿Eliminar categoría?")) return;
+    deleteCategoria.mutate(id);
+  };
+
+  const handleSaveSubcategoria = async () => {
+    saveSubcategoria.mutate();
+  };
+
+  const handleDeleteSubcategoria = async (id) => {
+    if (!confirm("¿Eliminar subcategoría?")) return;
+    deleteSubcategoria.mutate(id);
+  };
+
+  const handleSaveCarta = async () => {
+    saveCarta.mutate();
+  };
+
+  const handleDeleteCarta = async (id) => {
+    if (!confirm("¿Eliminar producto?")) return;
+    deleteCarta.mutate(id);
+  };
+
+  /* =======================
+     HELPER (CASI IGUAL)
+  ======================= */
+
+  const editarCarta = async (c) => {
+    setCartaForm({
+      id_carta: c.id_carta,
+      categoria: c.categoria,
+      sub_categoria: c.sub_categoria,
+      nombre: c.nombre,
+      grupo: c.grupo,
+      abreviado: c.abreviado,
+      precio: c.precio,
+      puntos_canje: c.puntos_canje,
+      estado: c.estado,
+      disponible: c.disponible,
+      porcion: c.porcion,
+      unidad_medida: c.unidad_medida,
+      observacion: c.observacion,
+      url_imagen: c.url_imagen
+    });
+
+    setCategoriaSubSeleccionada(c.categoria);
+    document.getElementById("modal_carta").checked = true;
+  };
 
   return (
     <div className="w-full shadow-md">
@@ -308,7 +333,7 @@ const editarCarta = async (c) => {
               </div>
               <div className="overflow-x-auto select-none max-h-[215px] overflow-y-auto">
                 <table className="table table-sm">
-                  <thead className="sticky top-0 z-10 bg-black shadow-md">
+                  <thead className="sticky top-0 z-0 bg-black shadow-md">
                     <tr>
                       <th>ID</th>
                       <th>Nombre</th>
@@ -363,7 +388,6 @@ const editarCarta = async (c) => {
                   onChange={(e) => {
                     const value = e.target.value;
                     setCategoriaSubSeleccionada(value);
-                    fetchSubcategorias(value);
                   }}
                 >
                   <option value="">Seleccione categoría</option>
@@ -375,7 +399,7 @@ const editarCarta = async (c) => {
                 </select>
               <div className="overflow-x-auto select-none max-h-[215px] overflow-y-auto">
                 <table className="table table-sm">
-                  <thead className="sticky top-0 z-10 bg-black shadow-md">
+                  <thead className="sticky top-0 z-0 bg-black shadow-md">
                     <tr>
                       <th>ID</th>
                       <th>Nombre</th>
@@ -412,7 +436,6 @@ const editarCarta = async (c) => {
               value={filtroCategoria}
               onChange={(e) => {
                 setFiltroCategoria(e.target.value);
-                fetchCartas(e.target.value);
               }}
             >
               <option value="">Categorías</option>
@@ -455,7 +478,7 @@ const editarCarta = async (c) => {
           {/* ================= TABLA CARTA ================= */}
           <div className="overflow-x-auto bg-black rounded shadow select-none max-h-[500px] overflow-y-auto">
             <table className="table table-sm">
-              <thead className="sticky top-0 z-10 bg-black shadow-md">
+              <thead className="sticky top-0 z-0 bg-black shadow-md">
                 <tr>
                   <th>ID</th>
                   <th>Categoría</th>
@@ -655,13 +678,17 @@ const editarCarta = async (c) => {
               className="select select-bordered"
               value={cartaForm.categoria}
               onChange={e => {
+                const nuevaCategoria = e.target.value;
+
                 setCartaForm({
                   ...cartaForm,
-                  categoria: e.target.value,
+                  categoria: nuevaCategoria,
                   sub_categoria: ""
                 });
-                fetchSubcategorias(e.target.value);
+
+                setCategoriaSubSeleccionada(nuevaCategoria);
               }}
+
             >
               <option value="">Categoría</option>
               {categorias.map(c => (
