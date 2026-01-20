@@ -12,6 +12,6 @@ def login():
 
     user = login_user(correo, password)
     if user:
-        return jsonify({"message": "Login exitoso", "user": user}), 200
+        return jsonify(user), 200
     else:
         return jsonify({"message": "Credenciales incorrectas"}), 401

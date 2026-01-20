@@ -34,6 +34,9 @@ function LoginPage() {
       console.log("Respuesta del backend:", data); // ← importante para depurar
 
       if (response.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("usuario", JSON.stringify(data.usuario));
+
         navigate('/tables');
       } else {
         alert(data.message);

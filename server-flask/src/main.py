@@ -2,8 +2,12 @@
 
 from flask import Flask
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 
 app = Flask(__name__)
+
+app.config["JWT_SECRET_KEY"] = "super_clave_secreta_cafe"
+jwt = JWTManager(app)
 
 # Define los orígenes permitidos
 origins = [

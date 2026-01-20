@@ -2,6 +2,9 @@
 import { Link } from "react-router-dom";
 
 function HeaderCom() {
+
+  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+
   return (
     <header className="flex items-center justify-end py-4 bg-black relative px-4">
       {/* Logo centrado */}
@@ -39,7 +42,9 @@ function HeaderCom() {
           tabIndex="-1"
           className="dropdown-content menu bg-neutral-700 rounded-box z-1 w-60 p-2 shadow-sm"
         >
-          <span className="m-4 text-lg font-bold">Hola, IvonCG</span>
+          <span className="m-4 text-lg font-bold">
+            Hola, {usuario.apodo || "Usuario"}
+          </span>
           <li>
             <div>
               <svg
@@ -86,7 +91,11 @@ function HeaderCom() {
             </div>
           </li>
           <li>
-            <div>
+            <div onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("usuario");
+              window.location.href = "/";            
+            }}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
