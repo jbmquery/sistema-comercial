@@ -7,6 +7,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCartaMenu, crearPedido } from "../api";
 
 function Menues() {
+
+  if (!localStorage.getItem("token")) {
+    window.location.replace("/");
+  }  
+
   const location = useLocation();
   const { nombreMesa, idMesa } = location.state || {};
   const navigate = useNavigate();
@@ -23,7 +28,8 @@ function Menues() {
 
   const [categoria, setCategoria] = useState(categorias[0].nombre);
 
-  const idUsuario = 1;
+  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+  const idUsuario = usuario.id_usuario;
 
   // =========================
   // ✅ REACT QUERY OPTIMIZADO

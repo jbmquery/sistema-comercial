@@ -1,6 +1,7 @@
 # server-flask/src/routes/pedidos_routes.py
 
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
 from controllers.pedidos_controller import (
     crear_pedido,
     agregar_detalle_pedido,
@@ -12,10 +13,12 @@ from controllers.orden_controller import get_pedidos_activos
 pedidos_bp = Blueprint("pedidos_bp", __name__)
 
 @pedidos_bp.route("/api/pedidos", methods=["GET"])
+@jwt_required()
 def listar_pedidos():
     return get_pedidos_activos()
 
 @pedidos_bp.route("/api/pedidos", methods=["POST"])
+@jwt_required()
 def crear_pedido_route():
     data = request.get_json()
     resultado = crear_pedido(data)
@@ -26,6 +29,7 @@ def crear_pedido_route():
     return jsonify(resultado), 500
 
 @pedidos_bp.route("/api/pedidos/<int:id_pedido>/detalle", methods=["POST"])
+@jwt_required()
 def agregar_detalle_route(id_pedido):
     data = request.get_json()
     resultado = agregar_detalle_pedido(id_pedido, data)
@@ -37,6 +41,7 @@ def agregar_detalle_route(id_pedido):
 
 
 @pedidos_bp.route("/api/detalle/<int:id_detalle>/estado", methods=["PUT"])
+@jwt_required()
 def actualizar_estado_detalle_route(id_detalle):
     data = request.get_json()
     estado = data.get("estado")
@@ -49,6 +54,7 @@ def actualizar_estado_detalle_route(id_detalle):
     return jsonify(resultado), 400
 
 @pedidos_bp.route("/api/detalle/<int:id_detalle>/observacion", methods=["PUT"])
+@jwt_required()
 def actualizar_observacion_route(id_detalle):
     data = request.get_json()
     observacion = data.get("observacion", "")
