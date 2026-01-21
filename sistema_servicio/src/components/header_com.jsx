@@ -1,5 +1,5 @@
 // sistema_servicio/src/components/header_com.jsx
-import { Link } from "react-router-dom";
+import { Link, } from "react-router-dom";
 
 function HeaderCom() {
 
@@ -71,7 +71,7 @@ function HeaderCom() {
             </div>
           </li>
           <li>
-            <div>
+            <Link to="/marcar-asistencia">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -88,7 +88,7 @@ function HeaderCom() {
               </svg>
 
               <span>Marcar Asistencia</span>
-            </div>
+            </Link>
           </li>
           <li>
             <div onClick={() => {

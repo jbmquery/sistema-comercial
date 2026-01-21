@@ -215,3 +215,34 @@ export const getDetallePedidoVentasDia = async (idPedido) => {
   );
   return data; 
 };
+
+
+// =====================
+// CATEGORÍAS
+// =====================
+export const getCategorias = async () => {
+  const { data } = await api.get("/api/categorias");
+  return data.categorias || [];
+};
+
+// =====================
+// SUBCATEGORÍAS
+// =====================
+export const getSubcategorias = async (categoria) => {
+  if (!categoria) return [];
+  const { data } = await api.get("/api/subcategorias", {
+    params: { categoria }
+  });
+  return data.subcategorias || [];
+};
+
+// =====================
+// CARTA (ADMIN)
+// =====================
+export const getCartaAdmin = async (categoria) => {
+  const { data } = await api.get("/api/carta", {
+    params: categoria ? { categoria } : {}
+  });
+
+  return Object.values(data.por_subcategoria || {}).flat();
+};

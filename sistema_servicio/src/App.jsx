@@ -11,6 +11,7 @@ import CartaPage from './pages/CartaPage.jsx';
 import EditTablesPage from './pages/EditTablesPage.jsx';
 import EditCartaPage from './pages/EditCartaPage.jsx';
 import OrdenPage from './pages/OrdenPage.jsx';
+import MarcarAsistenciaPage from './pages/MarcarAsistenciaPage.jsx';
 
 function App() {
   return (
@@ -23,11 +24,12 @@ function App() {
         <Route path="/clientes" element={<ClientesPage/>} />
         <Route path="/guia" element={<GuiaPages/>} />
         <Route path="/carta" element={<CartaPage/>} />
-        <Route path="*" element={<ErrorPage />} />
         <Route path="/edit-tables" element={<EditTablesPage/>} />
         <Route path="/edit-carta" element={<EditCartaPage/>} />
         <Route path="/orden" element={<OrdenPage/>} />
         <Route path="/orden/:idPedido" element={<OrdenPage />} />
+        <Route path="/marcar-asistencia" element={<MarcarAsistenciaPage />} />
+        <Route path="*" element={<ErrorPage />} />
       </Routes>
     </div>
   );

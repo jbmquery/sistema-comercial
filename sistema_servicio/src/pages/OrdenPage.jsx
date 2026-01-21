@@ -22,7 +22,7 @@ import { useState, useEffect } from "react";
 
 function OrdenPage() {
 
-  if (!localStorage.getItem("token")) {
+if (!localStorage.getItem("token")) {
     window.location.replace("/");
   }  
 
