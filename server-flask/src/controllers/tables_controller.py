@@ -133,13 +133,36 @@ def eliminar_mesa(id_mesa):
         conn = get_connection()
         cursor = conn.cursor()
 
-        cursor.execute("DELETE FROM mesas WHERE id_mesas=%s", (id_mesa,))
+        # 1️⃣ Verificar si hay pedido abierto
+        cursor.execute("""
+            SELECT 1
+            FROM pedidos
+            WHERE id_mesa = %s
+              AND estado = 'abierto'
+            LIMIT 1
+        """, (id_mesa,))
+
+        pedido_abierto = cursor.fetchone()
+
+        if pedido_abierto:
+            return {"error": "PEDIDO_ABIERTO"}
+
+        # 2️⃣ Eliminar mesa
+        cursor.execute(
+            "DELETE FROM mesas WHERE id_mesas = %s",
+            (id_mesa,)
+        )
+
         conn.commit()
-        return True
+        return {"success": True}
+
     except Exception as e:
-        if conn: conn.rollback()
+        if conn:
+            conn.rollback()
         print("Error eliminar_mesa:", e)
-        return False
+        return {"error": "ERROR_DELETE"}
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

@@ -1,92 +1,103 @@
 // sistema_servicio/src/pages/EditTablesPage.jsx
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import HeaderCom from '../components/header_com.jsx';
-import { API_BASE } from '../config';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import HeaderCom from "../components/header_com.jsx";
+import { API_BASE } from "../config";
 import Sidebar from "../components/SiderbarAdmin.jsx";
+import { getMesas } from "../api";
 
 function EditTablesPage() {
+  if (!localStorage.getItem("token")) {
+    window.location.replace("/");
+  }
+
+  const {
+    data: mesas = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["mesas"],
+    queryFn: getMesas,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  });
+
+  if (isError) {
+    return (
+      <div className="text-red-500 text-center mt-10">
+        Error al cargar mesas: {error.message}
+      </div>
+    );
+  }
+
 
   const queryClient = useQueryClient();
   const [mensajeOk, setMensajeOk] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [currentMesa, setCurrentMesa] = useState({
-    id_mesas: '',
-    nombre: '',
-    capacidad: '',
+    id_mesas: "",
+    nombre: "",
+    capacidad: "",
     disponibilidad: true,
-    tipo_mesa: ''
+    tipo_mesa: "",
   });
 
-  /* =========================
-     REACT QUERY: OBTENER MESAS
-  ========================= */
-
-  const { data: mesas = [], isLoading } = useQuery({
-    queryKey: ["mesas"],
-    queryFn: async () => {
-      const res = await fetch(`${API_BASE}/api/mesas`, {
-        headers: { 'ngrok-skip-browser-warning': 'true' }
-      });
-      const data = await res.json();
-      return data.mesas;
-    }
-  });
 
   /* =========================
      MUTATION: CREAR / EDITAR
   ========================= */
 
-const saveMesa = useMutation({
-  mutationFn: async (mesa) => {
-    const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing
-      ? `${API_BASE}/api/mesas/${mesa.id_mesas}`
-      : `${API_BASE}/api/mesas`;
+  const saveMesa = useMutation({
+    mutationFn: async (mesa) => {
+      const method = isEditing ? "PUT" : "POST";
+      const url = isEditing
+        ? `${API_BASE}/api/mesas/${mesa.id_mesas}`
+        : `${API_BASE}/api/mesas`;
 
-    const res = await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-      },
-      body: JSON.stringify({
-        nombre: mesa.nombre,
-        capacidad: Number(mesa.capacidad),
-        disponibilidad: mesa.disponibilidad,
-        tipo_mesa: mesa.tipo_mesa
-      })
-    });
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          nombre: mesa.nombre,
+          capacidad: Number(mesa.capacidad),
+          disponibilidad: mesa.disponibilidad,
+          tipo_mesa: mesa.tipo_mesa,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (!res.ok) {
-      throw data;
-    }
+      if (!res.ok) {
+        throw data;
+      }
 
-    return data;
-  },
+      return data;
+    },
 
-  onSuccess: () => {
-    queryClient.invalidateQueries(["mesas"]);
-    resetForm();
-  },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["mesas"]);
+      resetForm();
+    },
 
-  onError: (error) => {
-    if (
-      error?.error ===
-      "Hay un pedido aun abierto y no se puede cambiar el estado"
-    ) {
-      setMensajeOk("❌ Hay un pedido aun abierto y no se puede cambiar el estado");
-      setTimeout(() => setMensajeOk(""), 2500);
-    } else {
-      setMensajeOk("❌ Error al actualizar mesa");
-      setTimeout(() => setMensajeOk(""), 2500);
-    }
-  }
-});
-
+    onError: (error) => {
+      if (
+        error?.error ===
+        "Hay un pedido aun abierto y no se puede cambiar el estado"
+      ) {
+        setMensajeOk(
+          "❌ Hay un pedido aun abierto y no se puede cambiar el estado",
+        );
+        setTimeout(() => setMensajeOk(""), 2500);
+      } else {
+        setMensajeOk("❌ Error al actualizar mesa");
+        setTimeout(() => setMensajeOk(""), 2500);
+      }
+    },
+  });
 
   /* =========================
      MUTATION: ELIMINAR
@@ -95,20 +106,41 @@ const saveMesa = useMutation({
   const deleteMesa = useMutation({
     mutationFn: async (id) => {
       const res = await fetch(`${API_BASE}/api/mesas/${id}`, {
-        method: 'DELETE',
-        headers: { 'ngrok-skip-browser-warning': 'true' }
+        method: "DELETE",
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Error al eliminar mesa");
+        throw data;
       }
 
-      return res.json();
+      return data;
     },
+
     onSuccess: () => {
       queryClient.invalidateQueries(["mesas"]);
       resetForm();
-    }
+    },
+
+    onError: (error) => {
+      if (
+        error?.error ===
+        "Hay un pedido aun abierto y no se puede eliminar la mesa"
+      ) {
+        setMensajeOk(
+          "❌ Hay un pedido aun abierto y no se puede eliminar la mesa",
+        );
+        setTimeout(() => setMensajeOk(""), 2500);
+      } else {
+        setMensajeOk("❌ Error al eliminar mesa");
+        setTimeout(() => setMensajeOk(""), 2500);
+      }
+    },
   });
 
   /* =========================
@@ -126,17 +158,17 @@ const saveMesa = useMutation({
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm('¿Eliminar mesa?')) return;
+    if (!window.confirm("¿Eliminar mesa?")) return;
     deleteMesa.mutate(id);
   };
 
   const resetForm = () => {
     setCurrentMesa({
-      id_mesas: '',
-      nombre: '',
-      capacidad: '',
+      id_mesas: "",
+      nombre: "",
+      capacidad: "",
       disponibilidad: true,
-      tipo_mesa: ''
+      tipo_mesa: "",
     });
     setIsEditing(false);
   };
@@ -147,13 +179,11 @@ const saveMesa = useMutation({
 
       <div className="flex flex-col md:flex-row w-full bg-neutral-800">
         <div className="drawer lg:drawer-open w-full">
-
           {/* 👉 TU PIEZA CLAVE DEL DRAWER (TAL CUAL ORIGINAL) */}
           <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
 
           {/* CONTENIDO PRINCIPAL */}
           <div className="drawer-content p-4 w-full">
-
             {/* 👉 BOTÓN DEL DRAWER (TAL CUAL ORIGINAL) */}
             <label
               htmlFor="my-drawer-3"
@@ -164,19 +194,22 @@ const saveMesa = useMutation({
 
             <h1 className="text-2xl font-bold mb-4">Gestión de Mesas</h1>
             {mensajeOk && (
-              <div className="alert alert-warning mb-4">
-                {mensajeOk}
-              </div>
+              <div className="alert alert-warning mb-4">{mensajeOk}</div>
             )}
 
             {/* FORMULARIO (IGUAL AL TUYO) */}
-            <form onSubmit={handleSubmit} className="bg-black p-4 rounded shadow mb-6 w-full">
+            <form
+              onSubmit={handleSubmit}
+              className="bg-black p-4 rounded shadow mb-6 w-full"
+            >
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <input
                   className="input input-bordered bg-neutral-800"
                   placeholder="Nombre"
                   value={currentMesa.nombre}
-                  onChange={e => setCurrentMesa({ ...currentMesa, nombre: e.target.value })}
+                  onChange={(e) =>
+                    setCurrentMesa({ ...currentMesa, nombre: e.target.value })
+                  }
                   required
                 />
                 <input
@@ -184,20 +217,35 @@ const saveMesa = useMutation({
                   className="input input-bordered bg-neutral-800"
                   placeholder="Capacidad"
                   value={currentMesa.capacidad}
-                  onChange={e => setCurrentMesa({ ...currentMesa, capacidad: e.target.value })}
+                  onChange={(e) =>
+                    setCurrentMesa({
+                      ...currentMesa,
+                      capacidad: e.target.value,
+                    })
+                  }
                   required
                 />
                 <input
                   className="input input-bordered bg-neutral-800"
                   placeholder="Tipo de mesa"
                   value={currentMesa.tipo_mesa}
-                  onChange={e => setCurrentMesa({ ...currentMesa, tipo_mesa: e.target.value })}
+                  onChange={(e) =>
+                    setCurrentMesa({
+                      ...currentMesa,
+                      tipo_mesa: e.target.value,
+                    })
+                  }
                 />
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={currentMesa.disponibilidad}
-                    onChange={e => setCurrentMesa({ ...currentMesa, disponibilidad: e.target.checked })}
+                    onChange={(e) =>
+                      setCurrentMesa({
+                        ...currentMesa,
+                        disponibilidad: e.target.checked,
+                      })
+                    }
                     className="toggle toggle-primary"
                   />
                   Disponible
@@ -205,7 +253,11 @@ const saveMesa = useMutation({
               </div>
 
               <div className="mt-4 flex justify-between items-center">
-                <button type="button" onClick={resetForm} className="btn btn-outline text-secondary btn-sm">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="btn btn-outline text-secondary btn-sm"
+                >
                   Cancelar
                 </button>
                 <div className="flex gap-2">
@@ -219,7 +271,7 @@ const saveMesa = useMutation({
                     </button>
                   )}
                   <button type="submit" className="btn btn-success btn-sm">
-                    {isEditing ? 'Actualizar' : 'Crear'}
+                    {isEditing ? "Actualizar" : "Crear"}
                   </button>
                 </div>
               </div>
@@ -234,14 +286,14 @@ const saveMesa = useMutation({
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th className='min-w-30'>Nombre</th>
+                      <th className="min-w-30">Nombre</th>
                       <th>Capacidad</th>
                       <th>Disponible</th>
                       <th>Tipo</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {mesas.map(mesa => (
+                    {mesas.map((mesa) => (
                       <tr
                         key={mesa.id_mesas}
                         className="hover:bg-neutral-700 cursor-pointer"
@@ -251,8 +303,10 @@ const saveMesa = useMutation({
                         <td>{mesa.nombre}</td>
                         <td>{mesa.capacidad}</td>
                         <td>
-                          <span className={`badge ${mesa.disponibilidad ? 'badge-accent' : 'badge-secondary'}`}>
-                            {mesa.disponibilidad ? 'Sí' : 'No'}
+                          <span
+                            className={`badge ${mesa.disponibilidad ? "badge-accent" : "badge-secondary"}`}
+                          >
+                            {mesa.disponibilidad ? "Sí" : "No"}
                           </span>
                         </td>
                         <td>{mesa.tipo_mesa}</td>
@@ -262,12 +316,10 @@ const saveMesa = useMutation({
                 </table>
               )}
             </div>
-
           </div>
 
           {/* 👉 TU SIDEBAR EN SU LUGAR ORIGINAL */}
           <Sidebar activePage="mesas" />
-
         </div>
       </div>
     </div>

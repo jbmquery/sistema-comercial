@@ -1,6 +1,7 @@
 #server-flask/src/routes/carta_routes.py
 from flask import Blueprint, request, jsonify
 from controllers.carta_controller import obtener_productos_por_categoria_y_subcategoria
+from flask_jwt_extended import jwt_required
 from controllers.carta_controller import (
     crear_carta,
     actualizar_carta,
@@ -10,6 +11,7 @@ from controllers.carta_controller import (
 carta_bp = Blueprint('carta_bp', __name__)
 
 @carta_bp.route('/api/carta', methods=['GET'])
+@jwt_required()
 def get_carta():
     categoria = request.args.get('categoria')
     sub_categoria = request.args.get('sub_categoria')
@@ -21,6 +23,7 @@ def get_carta():
 
 
 @carta_bp.route('/api/carta', methods=['POST'])
+@jwt_required()
 def post_carta():
     if crear_carta(request.get_json()):
         return jsonify({"success": True, "message": "Producto creado"})
@@ -28,6 +31,7 @@ def post_carta():
 
 
 @carta_bp.route('/api/carta/<int:id_carta>', methods=['PUT'])
+@jwt_required()
 def put_carta(id_carta):
     if actualizar_carta(id_carta, request.get_json()):
         return jsonify({"success": True, "message": "Producto actualizado"})
@@ -35,6 +39,7 @@ def put_carta(id_carta):
 
 
 @carta_bp.route('/api/carta/<int:id_carta>', methods=['DELETE'])
+@jwt_required()
 def delete_carta(id_carta):
     if eliminar_carta(id_carta):
         return jsonify({"success": True, "message": "Producto eliminado"})

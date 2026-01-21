@@ -47,6 +47,14 @@ def put_mesa(id_mesa):
 @tables_bp.route('/api/mesas/<int:id_mesa>', methods=['DELETE'])
 @jwt_required()
 def delete_mesa(id_mesa):
-    if eliminar_mesa(id_mesa):
-        return jsonify({"success": True}), 200
+    result = eliminar_mesa(id_mesa)
+
+    if result.get("success"):
+        return jsonify(result), 200
+
+    if result.get("error") == "PEDIDO_ABIERTO":
+        return jsonify({
+            "error": "Hay un pedido aun abierto y no se puede eliminar la mesa"
+        }), 409
+
     return jsonify({"error": "Error al eliminar mesa"}), 500
