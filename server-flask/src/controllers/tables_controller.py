@@ -1,3 +1,4 @@
+# server-flask/src/controllers/tables_controller.py
 from conexion_postgresql import get_connection
 
 def obtener_mesas():
@@ -65,9 +66,41 @@ def actualizar_mesa(id_mesa, mesa):
         conn = get_connection()
         cursor = conn.cursor()
 
+        # 1️⃣ Obtener disponibilidad actual de la mesa
+        cursor.execute(
+            "SELECT disponibilidad FROM mesas WHERE id_mesas = %s",
+            (id_mesa,)
+        )
+        row = cursor.fetchone()
+
+        if not row:
+            return {"error": "MESA_NO_EXISTE"}
+
+        disponibilidad_actual = row[0]
+        disponibilidad_nueva = mesa['disponibilidad']
+
+        # 2️⃣ Si intenta cambiar disponibilidad
+        if disponibilidad_actual != disponibilidad_nueva:
+            cursor.execute("""
+                SELECT 1
+                FROM pedidos
+                WHERE id_mesa = %s
+                  AND estado = 'abierto'
+                LIMIT 1
+            """, (id_mesa,))
+
+            pedido_abierto = cursor.fetchone()
+
+            if pedido_abierto:
+                return {"error": "PEDIDO_ABIERTO"}
+
+        # 3️⃣ Update permitido
         cursor.execute("""
             UPDATE mesas
-            SET nombre=%s, capacidad=%s, disponibilidad=%s, tipo_mesa=%s
+            SET nombre=%s,
+                capacidad=%s,
+                disponibilidad=%s,
+                tipo_mesa=%s
             WHERE id_mesas=%s
         """, (
             mesa['nombre'],
@@ -78,14 +111,19 @@ def actualizar_mesa(id_mesa, mesa):
         ))
 
         conn.commit()
-        return True
+        return {"success": True}
+
     except Exception as e:
-        if conn: conn.rollback()
+        if conn:
+            conn.rollback()
         print("Error actualizar_mesa:", e)
-        return False
+        return {"error": "ERROR_UPDATE"}
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
 
 
 def eliminar_mesa(id_mesa):

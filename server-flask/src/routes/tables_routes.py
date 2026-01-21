@@ -31,8 +31,16 @@ def post_mesa():
 @jwt_required()
 def put_mesa(id_mesa):
     mesa = request.get_json()
-    if actualizar_mesa(id_mesa, mesa):
-        return jsonify({"success": True}), 200
+    result = actualizar_mesa(id_mesa, mesa)
+
+    if result.get("success"):
+        return jsonify(result), 200
+
+    if result.get("error") == "PEDIDO_ABIERTO":
+        return jsonify({
+            "error": "Hay un pedido aun abierto y no se puede cambiar el estado"
+        }), 409
+
     return jsonify({"error": "Error al actualizar mesa"}), 500
 
 

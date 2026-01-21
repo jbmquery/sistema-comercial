@@ -8,7 +8,7 @@ import Sidebar from "../components/SiderbarAdmin.jsx";
 function EditTablesPage() {
 
   const queryClient = useQueryClient();
-
+  const [mensajeOk, setMensajeOk] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [currentMesa, setCurrentMesa] = useState({
     id_mesas: '',
@@ -37,38 +37,56 @@ function EditTablesPage() {
      MUTATION: CREAR / EDITAR
   ========================= */
 
-  const saveMesa = useMutation({
-    mutationFn: async (mesa) => {
-      const method = isEditing ? 'PUT' : 'POST';
-      const url = isEditing
-        ? `${API_BASE}/api/mesas/${mesa.id_mesas}`
-        : `${API_BASE}/api/mesas`;
+const saveMesa = useMutation({
+  mutationFn: async (mesa) => {
+    const method = isEditing ? 'PUT' : 'POST';
+    const url = isEditing
+      ? `${API_BASE}/api/mesas/${mesa.id_mesas}`
+      : `${API_BASE}/api/mesas`;
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
-        },
-        body: JSON.stringify({
-          nombre: mesa.nombre,
-          capacidad: mesa.capacidad,
-          disponibilidad: mesa.disponibilidad,
-          tipo_mesa: mesa.tipo_mesa
-        })
-      });
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      },
+      body: JSON.stringify({
+        nombre: mesa.nombre,
+        capacidad: Number(mesa.capacidad),
+        disponibilidad: mesa.disponibilidad,
+        tipo_mesa: mesa.tipo_mesa
+      })
+    });
 
-      if (!res.ok) {
-        throw new Error("Error al guardar mesa");
-      }
+    const data = await res.json();
 
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(["mesas"]);
-      resetForm();
+    if (!res.ok) {
+      throw data;
     }
-  });
+
+    return data;
+  },
+
+  onSuccess: () => {
+    queryClient.invalidateQueries(["mesas"]);
+    resetForm();
+  },
+
+  onError: (error) => {
+    if (
+      error?.error ===
+      "Hay un pedido aun abierto y no se puede cambiar el estado"
+    ) {
+      setMensajeOk("❌ Hay un pedido aun abierto y no se puede cambiar el estado");
+      setTimeout(() => setMensajeOk(""), 2500);
+    } else {
+      setMensajeOk("❌ Error al actualizar mesa");
+      setTimeout(() => setMensajeOk(""), 2500);
+    }
+  }
+});
+
 
   /* =========================
      MUTATION: ELIMINAR
@@ -145,6 +163,11 @@ function EditTablesPage() {
             </label>
 
             <h1 className="text-2xl font-bold mb-4">Gestión de Mesas</h1>
+            {mensajeOk && (
+              <div className="alert alert-warning mb-4">
+                {mensajeOk}
+              </div>
+            )}
 
             {/* FORMULARIO (IGUAL AL TUYO) */}
             <form onSubmit={handleSubmit} className="bg-black p-4 rounded shadow mb-6 w-full">
