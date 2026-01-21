@@ -1,4 +1,9 @@
 // sistema_servicio/src/pages/EditTablesPage.jsx
+
+ /* =========================
+    IMPORTS
+  ========================= */
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import HeaderCom from "../components/header_com.jsx";
@@ -7,30 +12,6 @@ import Sidebar from "../components/SiderbarAdmin.jsx";
 import { getMesas } from "../api";
 
 function EditTablesPage() {
-  if (!localStorage.getItem("token")) {
-    window.location.replace("/");
-  }
-
-  const {
-    data: mesas = [],
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey: ["mesas"],
-    queryFn: getMesas,
-    staleTime: 1000 * 60 * 5, // 5 minutos
-  });
-
-  if (isError) {
-    return (
-      <div className="text-red-500 text-center mt-10">
-        Error al cargar mesas: {error.message}
-      </div>
-    );
-  }
-
-
   const queryClient = useQueryClient();
   const [mensajeOk, setMensajeOk] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -42,6 +23,16 @@ function EditTablesPage() {
     tipo_mesa: "",
   });
 
+  const {
+    data: mesas = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["mesas"],
+    queryFn: getMesas,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  });
 
   /* =========================
      MUTATION: CREAR / EDITAR
@@ -142,6 +133,18 @@ function EditTablesPage() {
       }
     },
   });
+
+  if (!localStorage.getItem("token")) {
+    window.location.replace("/");
+    return null;
+  }
+  if (isError) {
+    return (
+      <div className="text-red-500 text-center mt-10">
+        Error al cargar mesas: {error.message}
+      </div>
+    );
+  }
 
   /* =========================
      HANDLERS (IGUALES A LOS TUYOS)
