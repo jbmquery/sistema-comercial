@@ -46,7 +46,7 @@ function HeaderCom() {
             Hola, {usuario.apodo || "Usuario"}
           </span>
           <li>
-            <div>
+            <Link to="/info-datos_personales">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -68,7 +68,7 @@ function HeaderCom() {
               </svg>
 
               <span>Ver información</span>
-            </div>
+            </Link >
           </li>
           <li>
             <Link to="/marcar-asistencia">

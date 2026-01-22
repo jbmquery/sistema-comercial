@@ -74,7 +74,7 @@ function VentasDiaPage() {
 
   const vuelto = sumaIngresos - totalIngresos;
 
-  const dineroEnCaja = APERTURA + sumaIngresos - sumaEgresos - vuelto;
+  const dineroEnCaja = APERTURA + efectivo - sumaEgresos - vuelto;
 
   // -----------* Agrupar detalles pedido del modal VER DETALLE PEDIDO *-------------
 

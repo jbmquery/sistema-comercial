@@ -6,7 +6,6 @@ import { API_BASE } from "../config";
 import Sidebar from "../components/SiderbarAdmin.jsx";
 
 function EditCartaPage() {
-
   const queryClient = useQueryClient();
 
   /* =======================
@@ -21,14 +20,14 @@ function EditCartaPage() {
   const [categoriaForm, setCategoriaForm] = useState({
     id_categoria: "",
     nombre_cat: "",
-    descripcion: ""
+    descripcion: "",
   });
 
   const [subcategoriaForm, setSubcategoriaForm] = useState({
     id_subcat: "",
     nombre_subcat: "",
     descripcion: "",
-    categoria: ""
+    categoria: "",
   });
 
   const [cartaForm, setCartaForm] = useState({
@@ -45,7 +44,7 @@ function EditCartaPage() {
     porcion: "",
     unidad_medida: "",
     observacion: "",
-    url_imagen: ""
+    url_imagen: "",
   });
 
   /* =======================
@@ -56,11 +55,11 @@ function EditCartaPage() {
     queryKey: ["categorias"],
     queryFn: async () => {
       const res = await fetch(`${API_BASE}/api/categorias`, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: { "ngrok-skip-browser-warning": "true" },
       });
       const data = await res.json();
       return data.categorias || [];
-    }
+    },
   });
 
   const { data: subcategorias = [] } = useQuery({
@@ -70,13 +69,13 @@ function EditCartaPage() {
 
       const res = await fetch(
         `${API_BASE}/api/subcategorias?categoria=${categoriaSubSeleccionada}`,
-        { headers: { "ngrok-skip-browser-warning": "true" } }
+        { headers: { "ngrok-skip-browser-warning": "true" } },
       );
 
       const data = await res.json();
       return data.subcategorias || [];
     },
-    enabled: !!categoriaSubSeleccionada
+    enabled: !!categoriaSubSeleccionada,
   });
 
   const { data: cartas = [] } = useQuery({
@@ -87,18 +86,18 @@ function EditCartaPage() {
         : `${API_BASE}/api/carta`;
 
       const res = await fetch(url, {
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: { "ngrok-skip-browser-warning": "true" },
       });
 
       const data = await res.json();
       return Object.values(data.por_subcategoria || {}).flat();
-    }
+    },
   });
 
   // ======== FILTRO VISUAL LOCAL + RESALTADO ========
 
   // 🔎 FILTRO QUE IGNORA "estado" y "disponible"
-  const cartasFiltradas = cartas.filter(c => {
+  const cartasFiltradas = cartas.filter((c) => {
     if (!busquedaLocal.trim()) return true;
 
     const texto = busquedaLocal.toLowerCase();
@@ -116,7 +115,7 @@ function EditCartaPage() {
     const texto = busquedaLocal.toLowerCase();
     let contador = 0;
 
-    cartas.forEach(c => {
+    cartas.forEach((c) => {
       Object.entries(c).forEach(([key, value]) => {
         if (key === "estado" || key === "disponible") return;
 
@@ -138,14 +137,15 @@ function EditCartaPage() {
     const partes = String(texto).split(regex);
 
     return partes.map((parte, i) =>
-      parte.toLowerCase() === busquedaLocal.toLowerCase()
-        ? <mark key={i} className="bg-yellow-400 text-black px-1 rounded">{parte}</mark>
-        : parte
+      parte.toLowerCase() === busquedaLocal.toLowerCase() ? (
+        <mark key={i} className="bg-yellow-400 text-black px-1 rounded">
+          {parte}
+        </mark>
+      ) : (
+        parte
+      ),
     );
   };
-
-
-
 
   /* =======================
      CSV (NO CAMBIÓ)
@@ -155,14 +155,15 @@ function EditCartaPage() {
     if (!cartas.length) return;
 
     const headers = Object.keys(cartas[0]).join(",");
-    const rows = cartas.map(c =>
-      Object.values(c).map(v => `"${v ?? ""}"`).join(",")
+    const rows = cartas.map((c) =>
+      Object.values(c)
+        .map((v) => `"${v ?? ""}"`)
+        .join(","),
     );
 
-    const blob = new Blob(
-      [headers + "\n" + rows.join("\n")],
-      { type: "text/csv;charset=utf-8;" }
-    );
+    const blob = new Blob([headers + "\n" + rows.join("\n")], {
+      type: "text/csv;charset=utf-8;",
+    });
 
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -185,9 +186,9 @@ function EditCartaPage() {
         method,
         headers: {
           "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true"
+          "ngrok-skip-browser-warning": "true",
         },
-        body: JSON.stringify(categoriaForm)
+        body: JSON.stringify(categoriaForm),
       });
 
       return res.json();
@@ -195,21 +196,21 @@ function EditCartaPage() {
     onSuccess: (data) => {
       alert(data.message);
       queryClient.invalidateQueries(["categorias"]);
-    }
+    },
   });
 
   const deleteCategoria = useMutation({
     mutationFn: async (id) => {
       const res = await fetch(`${API_BASE}/api/categorias/${id}`, {
         method: "DELETE",
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: { "ngrok-skip-browser-warning": "true" },
       });
       return res.json();
     },
     onSuccess: (data) => {
       alert(data.message);
       queryClient.invalidateQueries(["categorias"]);
-    }
+    },
   });
 
   const saveSubcategoria = useMutation({
@@ -223,9 +224,9 @@ function EditCartaPage() {
         method,
         headers: {
           "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true"
+          "ngrok-skip-browser-warning": "true",
         },
-        body: JSON.stringify(subcategoriaForm)
+        body: JSON.stringify(subcategoriaForm),
       });
 
       return res.json();
@@ -233,21 +234,21 @@ function EditCartaPage() {
     onSuccess: (data) => {
       alert(data.message);
       queryClient.invalidateQueries(["subcategorias"]);
-    }
+    },
   });
 
   const deleteSubcategoria = useMutation({
     mutationFn: async (id) => {
       const res = await fetch(`${API_BASE}/api/subcategorias/${id}`, {
         method: "DELETE",
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: { "ngrok-skip-browser-warning": "true" },
       });
       return res.json();
     },
     onSuccess: (data) => {
       alert(data.message);
       queryClient.invalidateQueries(["subcategorias"]);
-    }
+    },
   });
 
   const saveCarta = useMutation({
@@ -261,9 +262,9 @@ function EditCartaPage() {
         method,
         headers: {
           "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true"
+          "ngrok-skip-browser-warning": "true",
         },
-        body: JSON.stringify(cartaForm)
+        body: JSON.stringify(cartaForm),
       });
 
       return res.json();
@@ -271,21 +272,21 @@ function EditCartaPage() {
     onSuccess: (data) => {
       alert(data.message);
       queryClient.invalidateQueries(["carta"]);
-    }
+    },
   });
 
   const deleteCarta = useMutation({
     mutationFn: async (id) => {
       const res = await fetch(`${API_BASE}/api/carta/${id}`, {
         method: "DELETE",
-        headers: { "ngrok-skip-browser-warning": "true" }
+        headers: { "ngrok-skip-browser-warning": "true" },
       });
       return res.json();
     },
     onSuccess: (data) => {
       alert(data.message);
       queryClient.invalidateQueries(["carta"]);
-    }
+    },
   });
 
   /* =======================
@@ -338,7 +339,7 @@ function EditCartaPage() {
       porcion: c.porcion,
       unidad_medida: c.unidad_medida,
       observacion: c.observacion,
-      url_imagen: c.url_imagen
+      url_imagen: c.url_imagen,
     });
 
     setCategoriaSubSeleccionada(c.categoria);
@@ -354,30 +355,36 @@ function EditCartaPage() {
 
         {/* ================= CONTENIDO ================= */}
         <div className="drawer-content p-4">
-
-          <label htmlFor="my-drawer-3" className="btn drawer-button btn-outline btn-primary lg:hidden mb-4">☰</label>
+          <label
+            htmlFor="my-drawer-3"
+            className="btn drawer-button btn-outline btn-primary lg:hidden mb-4"
+          >
+            ☰
+          </label>
 
           <h1 className="text-2xl font-bold mb-6">Gestión de Carta</h1>
 
           {/* ================= CATEGORIAS + SUB ================= */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
             {/* CATEGORIAS */}
             <div className="bg-black rounded shadow">
               <div className="flex flex-row justify-between items-center">
                 <h2 className="font-bold p-3">Categorías</h2>
-                <label htmlFor="modal_categoria" className="btn btn-sm btn-primary mx-2">
+                <label
+                  htmlFor="modal_categoria"
+                  className="btn btn-sm btn-primary mx-2"
+                >
                   <svg
-                            width="18"
-                            height="18"
-                            fill="none"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
+                    width="18"
+                    height="18"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                     <path d="M12 8v8" />
                     <path d="M8 12h8" />
@@ -395,12 +402,14 @@ function EditCartaPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {categorias.map(c => (
-                      <tr key={c.id_categoria}
+                    {categorias.map((c) => (
+                      <tr
+                        key={c.id_categoria}
                         className="hover:bg-neutral-700 cursor-pointer"
                         onClick={() => {
                           setCategoriaForm(c);
-                          document.getElementById("modal_categoria").checked = true;
+                          document.getElementById("modal_categoria").checked =
+                            true;
                         }}
                       >
                         <td>{c.id_categoria}</td>
@@ -417,18 +426,21 @@ function EditCartaPage() {
             <div className="bg-black rounded shadow">
               <div className="flex flex-row justify-between items-center mx-2">
                 <h2 className="font-bold p-3">Subcategorías</h2>
-                <label htmlFor="modal_subcategoria" className="btn btn-sm btn-primary">
+                <label
+                  htmlFor="modal_subcategoria"
+                  className="btn btn-sm btn-primary"
+                >
                   <svg
-                            width="18"
-                            height="18"
-                            fill="none"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
+                    width="18"
+                    height="18"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                     <path d="M12 8v8" />
                     <path d="M8 12h8" />
@@ -437,20 +449,20 @@ function EditCartaPage() {
                 </label>
               </div>
               <select
-                  className="select select-bordered my-2 mx-3 bg-neutral-800"
-                  value={categoriaSubSeleccionada}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setCategoriaSubSeleccionada(value);
-                  }}
-                >
-                  <option value="">Seleccione categoría</option>
-                  {categorias.map(c => (
+                className="select select-bordered my-2 mx-3 bg-neutral-800"
+                value={categoriaSubSeleccionada}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setCategoriaSubSeleccionada(value);
+                }}
+              >
+                <option value="">Seleccione categoría</option>
+                {categorias.map((c) => (
                   <option key={c.id_categoria} value={c.id_categoria}>
-                  {c.nombre_cat}
+                    {c.nombre_cat}
                   </option>
-                  ))}
-                </select>
+                ))}
+              </select>
               <div className="overflow-x-auto select-none max-h-[215px] overflow-y-auto">
                 <table className="table table-sm">
                   <thead className="sticky top-0 z-0 bg-black shadow-md">
@@ -461,13 +473,16 @@ function EditCartaPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {subcategorias.map(s => (
-                      <tr key={s.id_subcat}
+                    {subcategorias.map((s) => (
+                      <tr
+                        key={s.id_subcat}
                         className="hover:bg-neutral-700 cursor-pointer"
                         onClick={() => {
                           setSubcategoriaForm(s);
-                          document.getElementById("modal_subcategoria").checked = true;
-                        }}                   
+                          document.getElementById(
+                            "modal_subcategoria",
+                          ).checked = true;
+                        }}
                       >
                         <td>{s.id_subcat}</td>
                         <td>{s.nombre_subcat}</td>
@@ -476,10 +491,8 @@ function EditCartaPage() {
                     ))}
                   </tbody>
                 </table>
-
               </div>
             </div>
-
           </div>
 
           {/* ================= FILTRO CARTA ================= */}
@@ -494,7 +507,7 @@ function EditCartaPage() {
                 }}
               >
                 <option value="">Categorías</option>
-                {categorias.map(c => (
+                {categorias.map((c) => (
                   <option key={c.id_categoria} value={c.id_categoria}>
                     {c.nombre_cat}
                   </option>
@@ -506,7 +519,7 @@ function EditCartaPage() {
                 placeholder="Buscar"
                 className="input input-bordered bg-neutral-800 max-w-20 md:max-w-30"
                 value={busquedaLocal}
-                onChange={e => setBusquedaLocal(e.target.value)}
+                onChange={(e) => setBusquedaLocal(e.target.value)}
               />
 
               {/* 🧮 CONTADOR DE COINCIDENCIAS */}
@@ -519,29 +532,41 @@ function EditCartaPage() {
 
             <div className="flex flex-row justify-between items-center gap-2">
               {/* Boton descargar CSV*/}
-              <button className="btn btn-dash btn-warning btn-sm" onClick={descargarCSV}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5">
-                  <path fillRule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v11.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 1 1 1.06-1.06l3.22 3.22V3a.75.75 0 0 1 .75-.75Zm-9 13.5a.75.75 0 0 1 .75.75v2.25a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5V16.5a.75.75 0 0 1 1.5 0v2.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V16.5a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+              <button
+                className="btn btn-dash btn-warning btn-sm"
+                onClick={descargarCSV}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="size-5"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M12 2.25a.75.75 0 0 1 .75.75v11.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 1 1 1.06-1.06l3.22 3.22V3a.75.75 0 0 1 .75-.75Zm-9 13.5a.75.75 0 0 1 .75.75v2.25a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5V16.5a.75.75 0 0 1 1.5 0v2.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V16.5a.75.75 0 0 1 .75-.75Z"
+                    clipRule="evenodd"
+                  />
                 </svg>
                 <span className="hidden md:inline">CSV</span>
               </button>
               {/* Boton agregar nuevo registro de carta*/}
               <label htmlFor="modal_carta" className="btn btn-sm btn-primary">
-                  <svg
-                            width="18"
-                            height="18"
-                            fill="none"
-                                stroke="currentColor"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                    <path d="M12 8v8" />
-                    <path d="M8 12h8" />
-                  </svg>
+                <svg
+                  width="18"
+                  height="18"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                  <path d="M12 8v8" />
+                  <path d="M8 12h8" />
+                </svg>
                 <span className="hidden md:inline">Producto</span>
               </label>
             </div>
@@ -568,8 +593,9 @@ function EditCartaPage() {
                 </tr>
               </thead>
               <tbody>
-                {cartasFiltradas.map(c => (
-                  <tr key={c.id_carta}
+                {cartasFiltradas.map((c) => (
+                  <tr
+                    key={c.id_carta}
                     className="hover:bg-neutral-700 cursor-pointer"
                     onClick={() => editarCarta(c)}
                   >
@@ -586,7 +612,9 @@ function EditCartaPage() {
                     <td>{resaltarTexto(c.observacion)}</td>
                     <td>{resaltarTexto(c.estado ? "Activo" : "Inactivo")}</td>
                     <td>
-                      <span className={`badge ${c.disponible ? 'badge-accent' : 'badge-secondary'}`}>
+                      <span
+                        className={`badge ${c.disponible ? "badge-accent" : "badge-secondary"}`}
+                      >
                         {c.disponible ? "Sí" : "No"}
                       </span>
                     </td>
@@ -600,7 +628,7 @@ function EditCartaPage() {
         {/* ================= SIDEBAR ================= */}
         {/* SIDEBAR */}
         <Sidebar activePage="carta" />
-          {/* FIN SIDEBAR */}
+        {/* FIN SIDEBAR */}
       </div>
 
       {/* ================= MODALES ================= */}
@@ -610,14 +638,16 @@ function EditCartaPage() {
       <div className="modal">
         <div className="modal-box">
           <h3 className="font-bold text-lg mb-2">
-            {categoriaForm.id_categoria ? "Editar Categoría" : "Nueva Categoría"}
+            {categoriaForm.id_categoria
+              ? "Editar Categoría"
+              : "Nueva Categoría"}
           </h3>
 
           <input
             className="input input-bordered w-full my-2"
             placeholder="Nombre categoría"
             value={categoriaForm.nombre_cat}
-            onChange={e =>
+            onChange={(e) =>
               setCategoriaForm({ ...categoriaForm, nombre_cat: e.target.value })
             }
           />
@@ -626,31 +656,40 @@ function EditCartaPage() {
             className="input input-bordered w-full my-2"
             placeholder="Descripción"
             value={categoriaForm.descripcion}
-            onChange={e =>
-              setCategoriaForm({ ...categoriaForm, descripcion: e.target.value })
+            onChange={(e) =>
+              setCategoriaForm({
+                ...categoriaForm,
+                descripcion: e.target.value,
+              })
             }
           />
 
           <div className="modal-action flex justify-between w-full">
             <label
-                htmlFor="modal_categoria"
-                className="btn btn-outline text-secondary"
-                onClick={() =>
-                  setCategoriaForm({ id_categoria: "", nombre_cat: "", descripcion: "" })
-                }
-              >
-                Cancelar
+              htmlFor="modal_categoria"
+              className="btn btn-outline text-secondary"
+              onClick={() =>
+                setCategoriaForm({
+                  id_categoria: "",
+                  nombre_cat: "",
+                  descripcion: "",
+                })
+              }
+            >
+              Cancelar
             </label>
             <div className="flex gap-2">
-            {/* Eliminar SOLO si estamos editando */}
-            {categoriaForm.id_categoria && (
-              <button
-                className="btn btn-secondary"
-                onClick={() => handleDeleteCategoria(categoriaForm.id_categoria)}
-              >
-                Eliminar
-              </button>
-            )}
+              {/* Eliminar SOLO si estamos editando */}
+              {categoriaForm.id_categoria && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() =>
+                    handleDeleteCategoria(categoriaForm.id_categoria)
+                  }
+                >
+                  Eliminar
+                </button>
+              )}
               <button className="btn btn-success" onClick={handleSaveCategoria}>
                 Guardar
               </button>
@@ -659,24 +698,28 @@ function EditCartaPage() {
         </div>
       </div>
 
-
       {/* MODAL SUBCATEGORIA */}
       <input type="checkbox" id="modal_subcategoria" className="modal-toggle" />
       <div className="modal">
         <div className="modal-box">
           <h3 className="font-bold text-lg mb-2">
-            {subcategoriaForm.id_subcat ? "Editar Subcategoría" : "Nueva Subcategoría"}
+            {subcategoriaForm.id_subcat
+              ? "Editar Subcategoría"
+              : "Nueva Subcategoría"}
           </h3>
 
           <select
             className="select select-bordered w-full my-2"
             value={subcategoriaForm.categoria}
-            onChange={e =>
-              setSubcategoriaForm({ ...subcategoriaForm, categoria: e.target.value })
+            onChange={(e) =>
+              setSubcategoriaForm({
+                ...subcategoriaForm,
+                categoria: e.target.value,
+              })
             }
           >
             <option value="">Seleccione categoría</option>
-            {categorias.map(c => (
+            {categorias.map((c) => (
               <option key={c.id_categoria} value={c.id_categoria}>
                 {c.nombre_cat}
               </option>
@@ -687,8 +730,11 @@ function EditCartaPage() {
             className="input input-bordered w-full my-2"
             placeholder="Nombre subcategoría"
             value={subcategoriaForm.nombre_subcat}
-            onChange={e =>
-              setSubcategoriaForm({ ...subcategoriaForm, nombre_subcat: e.target.value })
+            onChange={(e) =>
+              setSubcategoriaForm({
+                ...subcategoriaForm,
+                nombre_subcat: e.target.value,
+              })
             }
           />
 
@@ -696,8 +742,11 @@ function EditCartaPage() {
             className="input input-bordered w-full my-2"
             placeholder="Descripción"
             value={subcategoriaForm.descripcion}
-            onChange={e =>
-              setSubcategoriaForm({ ...subcategoriaForm, descripcion: e.target.value })
+            onChange={(e) =>
+              setSubcategoriaForm({
+                ...subcategoriaForm,
+                descripcion: e.target.value,
+              })
             }
           />
 
@@ -710,7 +759,7 @@ function EditCartaPage() {
                   id_subcat: "",
                   nombre_subcat: "",
                   descripcion: "",
-                  categoria: ""
+                  categoria: "",
                 })
               }
             >
@@ -720,19 +769,23 @@ function EditCartaPage() {
               {subcategoriaForm.id_subcat && (
                 <button
                   className="btn btn-secondary"
-                  onClick={() => handleDeleteSubcategoria(subcategoriaForm.id_subcat)}
+                  onClick={() =>
+                    handleDeleteSubcategoria(subcategoriaForm.id_subcat)
+                  }
                 >
                   Eliminar
                 </button>
               )}
-              <button className="btn btn-success" onClick={handleSaveSubcategoria}>
+              <button
+                className="btn btn-success"
+                onClick={handleSaveSubcategoria}
+              >
                 Guardar
               </button>
             </div>
           </div>
         </div>
       </div>
-
 
       {/* MODAL CARTA */}
       <input type="checkbox" id="modal_carta" className="modal-toggle" />
@@ -743,26 +796,24 @@ function EditCartaPage() {
           </h3>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-
             {/* Categoria */}
             <select
               className="select select-bordered"
               value={cartaForm.categoria}
-              onChange={e => {
+              onChange={(e) => {
                 const nuevaCategoria = e.target.value;
 
                 setCartaForm({
                   ...cartaForm,
                   categoria: nuevaCategoria,
-                  sub_categoria: ""
+                  sub_categoria: "",
                 });
 
                 setCategoriaSubSeleccionada(nuevaCategoria);
               }}
-
             >
               <option value="">Categoría</option>
-              {categorias.map(c => (
+              {categorias.map((c) => (
                 <option key={c.id_categoria} value={c.id_categoria}>
                   {c.nombre_cat}
                 </option>
@@ -773,12 +824,12 @@ function EditCartaPage() {
             <select
               className="select select-bordered"
               value={cartaForm.sub_categoria}
-              onChange={e =>
+              onChange={(e) =>
                 setCartaForm({ ...cartaForm, sub_categoria: e.target.value })
               }
             >
               <option value="">Subcategoría</option>
-              {subcategorias.map(s => (
+              {subcategorias.map((s) => (
                 <option key={s.id_subcat} value={s.id_subcat}>
                   {s.nombre_subcat}
                 </option>
@@ -789,21 +840,25 @@ function EditCartaPage() {
               className="input input-bordered"
               placeholder="Nombre *"
               value={cartaForm.nombre}
-              onChange={e => setCartaForm({ ...cartaForm, nombre: e.target.value })}
+              onChange={(e) =>
+                setCartaForm({ ...cartaForm, nombre: e.target.value })
+              }
             />
 
             <input
               className="input input-bordered"
               placeholder="Grupo *"
               value={cartaForm.grupo}
-              onChange={e => setCartaForm({ ...cartaForm, grupo: e.target.value })}
+              onChange={(e) =>
+                setCartaForm({ ...cartaForm, grupo: e.target.value })
+              }
             />
 
             <input
               className="input input-bordered"
               placeholder="Abreviado *"
               value={cartaForm.abreviado}
-              onChange={e =>
+              onChange={(e) =>
                 setCartaForm({ ...cartaForm, abreviado: e.target.value })
               }
             />
@@ -813,7 +868,9 @@ function EditCartaPage() {
               className="input input-bordered"
               placeholder="Precio *"
               value={cartaForm.precio}
-              onChange={e => setCartaForm({ ...cartaForm, precio: e.target.value })}
+              onChange={(e) =>
+                setCartaForm({ ...cartaForm, precio: e.target.value })
+              }
             />
 
             <input
@@ -821,7 +878,7 @@ function EditCartaPage() {
               className="input input-bordered"
               placeholder="Puntos canje *"
               value={cartaForm.puntos_canje}
-              onChange={e =>
+              onChange={(e) =>
                 setCartaForm({ ...cartaForm, puntos_canje: e.target.value })
               }
             />
@@ -830,14 +887,16 @@ function EditCartaPage() {
               className="input input-bordered"
               placeholder="Porción"
               value={cartaForm.porcion}
-              onChange={e => setCartaForm({ ...cartaForm, porcion: e.target.value })}
+              onChange={(e) =>
+                setCartaForm({ ...cartaForm, porcion: e.target.value })
+              }
             />
 
             <input
               className="input input-bordered"
               placeholder="Unidad medida"
               value={cartaForm.unidad_medida}
-              onChange={e =>
+              onChange={(e) =>
                 setCartaForm({ ...cartaForm, unidad_medida: e.target.value })
               }
             />
@@ -846,80 +905,80 @@ function EditCartaPage() {
               className="input input-bordered"
               placeholder="URL imagen"
               value={cartaForm.url_imagen}
-              onChange={e =>
+              onChange={(e) =>
                 setCartaForm({ ...cartaForm, url_imagen: e.target.value })
               }
             />
             {/* Estado */}
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="toggle toggle-success"
-                  checked={cartaForm.estado}
-                  onChange={e =>
-                    setCartaForm({ ...cartaForm, estado: e.target.checked })
-                  }
-                />
-                Activo
-              </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                className="toggle toggle-success"
+                checked={cartaForm.estado}
+                onChange={(e) =>
+                  setCartaForm({ ...cartaForm, estado: e.target.checked })
+                }
+              />
+              Activo
+            </label>
             {/* Disponible */}
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="toggle toggle-primary"
-                  checked={cartaForm.disponible}
-                  onChange={e =>
-                    setCartaForm({ ...cartaForm, disponible: e.target.checked })
-                  }
-                />
-                Disponible
-              </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                className="toggle toggle-primary"
+                checked={cartaForm.disponible}
+                onChange={(e) =>
+                  setCartaForm({ ...cartaForm, disponible: e.target.checked })
+                }
+              />
+              Disponible
+            </label>
 
             <input
               className="input input-bordered min-w-full col-span-2 md:col-span-3"
               placeholder="Observación"
               value={cartaForm.observacion}
-              onChange={e =>
+              onChange={(e) =>
                 setCartaForm({ ...cartaForm, observacion: e.target.value })
               }
             />
           </div>
 
           <div className="modal-action flex justify-between w-full">
-              <label
-                htmlFor="modal_carta"
-                className="btn btn-outline text-secondary"
-                onClick={() =>
-                  setCartaForm({
-                    id_carta: "",
-                    categoria: "",
-                    sub_categoria: "",
-                    nombre: "",
-                    grupo: "",
-                    abreviado: "",
-                    precio: "",
-                    puntos_canje: "",
-                    estado: true,
-                    disponible: true,
-                    porcion: "",
-                    unidad_medida: "",
-                    observacion: "",
-                    url_imagen: ""
-                  })
-                }
-              >
-                Cancelar
-              </label>         
+            <label
+              htmlFor="modal_carta"
+              className="btn btn-outline text-secondary"
+              onClick={() =>
+                setCartaForm({
+                  id_carta: "",
+                  categoria: "",
+                  sub_categoria: "",
+                  nombre: "",
+                  grupo: "",
+                  abreviado: "",
+                  precio: "",
+                  puntos_canje: "",
+                  estado: true,
+                  disponible: true,
+                  porcion: "",
+                  unidad_medida: "",
+                  observacion: "",
+                  url_imagen: "",
+                })
+              }
+            >
+              Cancelar
+            </label>
             <div className="flex gap-2">
-            {/* BOTÓN ELIMINAR SOLO SI ESTAMOS EDITANDO */}
-            {cartaForm.id_carta && (
-              <button
-                className="btn btn-secondary"
-                onClick={() => handleDeleteCarta(cartaForm.id_carta)}
-              >
-                Eliminar
-              </button>
-            )} 
+              {/* BOTÓN ELIMINAR SOLO SI ESTAMOS EDITANDO */}
+              {cartaForm.id_carta && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => handleDeleteCarta(cartaForm.id_carta)}
+                >
+                  Eliminar
+                </button>
+              )}
               <button className="btn btn-success" onClick={handleSaveCarta}>
                 Guardar
               </button>
@@ -927,8 +986,6 @@ function EditCartaPage() {
           </div>
         </div>
       </div>
-
-
     </div>
   );
 }
