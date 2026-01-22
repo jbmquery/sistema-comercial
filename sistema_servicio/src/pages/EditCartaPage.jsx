@@ -133,6 +133,26 @@ function EditCartaPage() {
     return contador;
   })();
 
+  const resaltarTexto = (texto) => {
+    if (!busquedaLocal.trim()) return texto;
+
+    const regex = new RegExp(`(${busquedaLocal})`, "gi");
+
+    return String(texto).split(regex).map((parte, i) =>
+      parte.toLowerCase() === busquedaLocal.toLowerCase() ? (
+        <span
+          key={i}
+          className="bg-warning text-black px-1 rounded"
+        >
+          {parte}
+        </span>
+      ) : (
+        parte
+      )
+    );
+  };
+
+
   /* =======================
      MUTATIONS (JWT)
   ======================= */
@@ -559,21 +579,21 @@ function EditCartaPage() {
                     className="hover:bg-neutral-700 cursor-pointer"
                     onClick={() => editarCarta(c)}
                   >
-                    <td>{c.id_carta}</td>
-                    <td>{c.nombre_cat}</td>
-                    <td>{c.nombre_subcat}</td>
-                    <td>{c.nombre}</td>
-                    <td>{c.grupo}</td>
-                    <td>{c.abreviado}</td>
-                    <td>S/ {c.precio}</td>
-                    <td>{c.puntos_canje}</td>
-                    <td>{c.porcion}</td>
-                    <td>{c.unidad_medida}</td>
-                    <td>{c.observacion}</td>
-                    <td>{c.estado ? "Activo" : "Inactivo"}</td>
+                    <td>{resaltarTexto(c.id_carta)}</td>
+                    <td>{resaltarTexto(c.nombre_cat)}</td>
+                    <td>{resaltarTexto(c.nombre_subcat)}</td>
+                    <td>{resaltarTexto(c.nombre)}</td>
+                    <td>{resaltarTexto(c.grupo)}</td>
+                    <td>{resaltarTexto(c.abreviado)}</td>
+                    <td>S/ {resaltarTexto(c.precio)}</td>
+                    <td>{resaltarTexto(c.puntos_canje)}</td>
+                    <td>{resaltarTexto(c.porcion)}</td>
+                    <td>{resaltarTexto(c.unidad_medida)}</td>
+                    <td>{resaltarTexto(c.observacion)}</td>
+                    <td>{resaltarTexto(c.estado ? "Activo" : "Inactivo")}</td>
                     <td>
                       <span
-                        className={`badge ${c.disponible ? "badge-accent" : "badge-secondary"}`}
+                        className={resaltarTexto(`badge ${c.disponible ? "badge-accent" : "badge-secondary"}`)}
                       >
                         {c.disponible ? "Sí" : "No"}
                       </span>
