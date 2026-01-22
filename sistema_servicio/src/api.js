@@ -246,3 +246,24 @@ export const getCartaAdmin = async (categoria) => {
 
   return Object.values(data.por_subcategoria || {}).flat();
 };
+
+  // ===== CARTA EditCartaPage=====
+  export const crearCarta = (payload) => api.post("/api/carta", payload);
+  export const actualizarCarta = (payload) =>
+    api.put(`/api/carta/${payload.id_carta}`, payload);
+  export const eliminarCarta = (id) => api.delete(`/api/carta/${id}`);
+
+  // ===== CATEGORIAS =====
+  export const crearCategoria = (payload) =>
+    api.post("/api/categorias", payload);
+  export const actualizarCategoria = (payload) =>
+    api.put(`/api/categorias/${payload.id_categoria}`, payload);
+  export const eliminarCategoria = (id) => api.delete(`/api/categorias/${id}`);
+
+  // ===== SUBCATEGORIAS =====
+  export const crearSubcategoria = (payload) =>
+    api.post("/api/subcategorias", payload);
+  export const actualizarSubcategoria = (payload) =>
+    api.put(`/api/subcategorias/${payload.id_subcat}`, payload);
+  export const eliminarSubcategoria = (id) =>
+    api.delete(`/api/subcategorias/${id}`);

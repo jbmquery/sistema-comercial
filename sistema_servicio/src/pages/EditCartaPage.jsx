@@ -2,8 +2,22 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import HeaderCom from "../components/header_com.jsx";
-import { API_BASE } from "../config";
 import Sidebar from "../components/SiderbarAdmin.jsx";
+
+import {
+  getCategorias,
+  getSubcategorias,
+  getCartaAdmin,
+  crearCarta,
+  actualizarCarta,
+  eliminarCarta,
+  crearCategoria,
+  actualizarCategoria,
+  eliminarCategoria,
+  crearSubcategoria,
+  actualizarSubcategoria,
+  eliminarSubcategoria,
+} from "../api";
 
 function EditCartaPage() {
   const queryClient = useQueryClient();
@@ -14,7 +28,6 @@ function EditCartaPage() {
 
   const [filtroCategoria, setFiltroCategoria] = useState("");
   const [busquedaLocal, setBusquedaLocal] = useState("");
-
   const [categoriaSubSeleccionada, setCategoriaSubSeleccionada] = useState("");
 
   const [categoriaForm, setCategoriaForm] = useState({
@@ -47,283 +60,6 @@ function EditCartaPage() {
     url_imagen: "",
   });
 
-  /* =======================
-     REACT QUERY - QUERIES
-  ======================= */
-
-  const { data: categorias = [] } = useQuery({
-    queryKey: ["categorias"],
-    queryFn: async () => {
-      const res = await fetch(`${API_BASE}/api/categorias`, {
-        headers: { "ngrok-skip-browser-warning": "true" },
-      });
-      const data = await res.json();
-      return data.categorias || [];
-    },
-  });
-
-  const { data: subcategorias = [] } = useQuery({
-    queryKey: ["subcategorias", categoriaSubSeleccionada],
-    queryFn: async () => {
-      if (!categoriaSubSeleccionada) return [];
-
-      const res = await fetch(
-        `${API_BASE}/api/subcategorias?categoria=${categoriaSubSeleccionada}`,
-        { headers: { "ngrok-skip-browser-warning": "true" } },
-      );
-
-      const data = await res.json();
-      return data.subcategorias || [];
-    },
-    enabled: !!categoriaSubSeleccionada,
-  });
-
-  const { data: cartas = [] } = useQuery({
-    queryKey: ["carta", filtroCategoria],
-    queryFn: async () => {
-      const url = filtroCategoria
-        ? `${API_BASE}/api/carta?categoria=${filtroCategoria}`
-        : `${API_BASE}/api/carta`;
-
-      const res = await fetch(url, {
-        headers: { "ngrok-skip-browser-warning": "true" },
-      });
-
-      const data = await res.json();
-      return Object.values(data.por_subcategoria || {}).flat();
-    },
-  });
-
-  // ======== FILTRO VISUAL LOCAL + RESALTADO ========
-
-  // 🔎 FILTRO QUE IGNORA "estado" y "disponible"
-  const cartasFiltradas = cartas.filter((c) => {
-    if (!busquedaLocal.trim()) return true;
-
-    const texto = busquedaLocal.toLowerCase();
-
-    return Object.entries(c).some(([key, value]) => {
-      if (key === "estado" || key === "disponible") return false; // ❌ se excluyen
-      return String(value).toLowerCase().includes(texto);
-    });
-  });
-
-  // 🧮 CUENTA COINCIDENCIAS REALES (no filas)
-  const totalCoincidencias = (() => {
-    if (!busquedaLocal.trim()) return 0;
-
-    const texto = busquedaLocal.toLowerCase();
-    let contador = 0;
-
-    cartas.forEach((c) => {
-      Object.entries(c).forEach(([key, value]) => {
-        if (key === "estado" || key === "disponible") return;
-
-        const str = String(value).toLowerCase();
-        const regex = new RegExp(busquedaLocal, "gi");
-
-        const matches = str.match(regex);
-        if (matches) contador += matches.length;
-      });
-    });
-
-    return contador;
-  })();
-
-  const resaltarTexto = (texto) => {
-    if (!busquedaLocal) return texto;
-
-    const regex = new RegExp(`(${busquedaLocal})`, "gi");
-    const partes = String(texto).split(regex);
-
-    return partes.map((parte, i) =>
-      parte.toLowerCase() === busquedaLocal.toLowerCase() ? (
-        <mark key={i} className="bg-yellow-400 text-black px-1 rounded">
-          {parte}
-        </mark>
-      ) : (
-        parte
-      ),
-    );
-  };
-
-  /* =======================
-     CSV (NO CAMBIÓ)
-  ======================= */
-
-  const descargarCSV = () => {
-    if (!cartas.length) return;
-
-    const headers = Object.keys(cartas[0]).join(",");
-    const rows = cartas.map((c) =>
-      Object.values(c)
-        .map((v) => `"${v ?? ""}"`)
-        .join(","),
-    );
-
-    const blob = new Blob([headers + "\n" + rows.join("\n")], {
-      type: "text/csv;charset=utf-8;",
-    });
-
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "carta.csv";
-    link.click();
-  };
-
-  /* =======================
-     MUTATIONS (CRUD)
-  ======================= */
-
-  const saveCategoria = useMutation({
-    mutationFn: async () => {
-      const method = categoriaForm.id_categoria ? "PUT" : "POST";
-      const url = categoriaForm.id_categoria
-        ? `${API_BASE}/api/categorias/${categoriaForm.id_categoria}`
-        : `${API_BASE}/api/categorias`;
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify(categoriaForm),
-      });
-
-      return res.json();
-    },
-    onSuccess: (data) => {
-      alert(data.message);
-      queryClient.invalidateQueries(["categorias"]);
-    },
-  });
-
-  const deleteCategoria = useMutation({
-    mutationFn: async (id) => {
-      const res = await fetch(`${API_BASE}/api/categorias/${id}`, {
-        method: "DELETE",
-        headers: { "ngrok-skip-browser-warning": "true" },
-      });
-      return res.json();
-    },
-    onSuccess: (data) => {
-      alert(data.message);
-      queryClient.invalidateQueries(["categorias"]);
-    },
-  });
-
-  const saveSubcategoria = useMutation({
-    mutationFn: async () => {
-      const method = subcategoriaForm.id_subcat ? "PUT" : "POST";
-      const url = subcategoriaForm.id_subcat
-        ? `${API_BASE}/api/subcategorias/${subcategoriaForm.id_subcat}`
-        : `${API_BASE}/api/subcategorias`;
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify(subcategoriaForm),
-      });
-
-      return res.json();
-    },
-    onSuccess: (data) => {
-      alert(data.message);
-      queryClient.invalidateQueries(["subcategorias"]);
-    },
-  });
-
-  const deleteSubcategoria = useMutation({
-    mutationFn: async (id) => {
-      const res = await fetch(`${API_BASE}/api/subcategorias/${id}`, {
-        method: "DELETE",
-        headers: { "ngrok-skip-browser-warning": "true" },
-      });
-      return res.json();
-    },
-    onSuccess: (data) => {
-      alert(data.message);
-      queryClient.invalidateQueries(["subcategorias"]);
-    },
-  });
-
-  const saveCarta = useMutation({
-    mutationFn: async () => {
-      const method = cartaForm.id_carta ? "PUT" : "POST";
-      const url = cartaForm.id_carta
-        ? `${API_BASE}/api/carta/${cartaForm.id_carta}`
-        : `${API_BASE}/api/carta`;
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify(cartaForm),
-      });
-
-      return res.json();
-    },
-    onSuccess: (data) => {
-      alert(data.message);
-      queryClient.invalidateQueries(["carta"]);
-    },
-  });
-
-  const deleteCarta = useMutation({
-    mutationFn: async (id) => {
-      const res = await fetch(`${API_BASE}/api/carta/${id}`, {
-        method: "DELETE",
-        headers: { "ngrok-skip-browser-warning": "true" },
-      });
-      return res.json();
-    },
-    onSuccess: (data) => {
-      alert(data.message);
-      queryClient.invalidateQueries(["carta"]);
-    },
-  });
-
-  /* =======================
-     HANDLERS (MISMOS NOMBRES)
-  ======================= */
-
-  const handleSaveCategoria = async () => {
-    saveCategoria.mutate();
-  };
-
-  const handleDeleteCategoria = async (id) => {
-    if (!confirm("¿Eliminar categoría?")) return;
-    deleteCategoria.mutate(id);
-  };
-
-  const handleSaveSubcategoria = async () => {
-    saveSubcategoria.mutate();
-  };
-
-  const handleDeleteSubcategoria = async (id) => {
-    if (!confirm("¿Eliminar subcategoría?")) return;
-    deleteSubcategoria.mutate(id);
-  };
-
-  const handleSaveCarta = async () => {
-    saveCarta.mutate();
-  };
-
-  const handleDeleteCarta = async (id) => {
-    if (!confirm("¿Eliminar producto?")) return;
-    deleteCarta.mutate(id);
-  };
-
-  /* =======================
-     HELPER (CASI IGUAL)
-  ======================= */
-
   const editarCarta = async (c) => {
     setCartaForm({
       id_carta: c.id_carta,
@@ -345,6 +81,121 @@ function EditCartaPage() {
     setCategoriaSubSeleccionada(c.categoria);
     document.getElementById("modal_carta").checked = true;
   };
+
+  /* =======================
+     QUERIES (JWT + AXIOS)
+  ======================= */
+
+  const { data: categorias = [] } = useQuery({
+    queryKey: ["categorias"],
+    queryFn: getCategorias,
+  });
+
+  const { data: subcategorias = [] } = useQuery({
+    queryKey: ["subcategorias", categoriaSubSeleccionada],
+    queryFn: () => getSubcategorias(categoriaSubSeleccionada),
+    enabled: !!categoriaSubSeleccionada,
+  });
+
+  const { data: cartas = [] } = useQuery({
+    queryKey: ["carta", filtroCategoria],
+    queryFn: () => getCartaAdmin(filtroCategoria),
+  });
+
+  /* =======================
+     FILTRO LOCAL (IGUAL)
+  ======================= */
+
+  const cartasFiltradas = cartas.filter((c) => {
+    if (!busquedaLocal.trim()) return true;
+
+    const texto = busquedaLocal.toLowerCase();
+    return Object.entries(c).some(([key, value]) => {
+      if (key === "estado" || key === "disponible") return false;
+      return String(value).toLowerCase().includes(texto);
+    });
+  });
+
+  const totalCoincidencias = (() => {
+    if (!busquedaLocal.trim()) return 0;
+    let contador = 0;
+    cartas.forEach((c) => {
+      Object.entries(c).forEach(([key, value]) => {
+        if (key === "estado" || key === "disponible") return;
+        const matches = String(value)
+          .toLowerCase()
+          .match(new RegExp(busquedaLocal, "gi"));
+        if (matches) contador += matches.length;
+      });
+    });
+    return contador;
+  })();
+
+  /* =======================
+     MUTATIONS (JWT)
+  ======================= */
+
+  const saveCategoria = useMutation({
+    mutationFn: () =>
+      categoriaForm.id_categoria
+        ? actualizarCategoria(categoriaForm)
+        : crearCategoria(categoriaForm),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["categorias"]);
+    },
+  });
+
+  const deleteCategoria = useMutation({
+    mutationFn: eliminarCategoria,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["categorias"]);
+    },
+  });
+
+  const saveSubcategoria = useMutation({
+    mutationFn: () =>
+      subcategoriaForm.id_subcat
+        ? actualizarSubcategoria(subcategoriaForm)
+        : crearSubcategoria(subcategoriaForm),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["subcategorias"]);
+    },
+  });
+
+  const deleteSubcategoria = useMutation({
+    mutationFn: eliminarSubcategoria,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["subcategorias"]);
+    },
+  });
+
+  const saveCarta = useMutation({
+    mutationFn: () =>
+      cartaForm.id_carta ? actualizarCarta(cartaForm) : crearCarta(cartaForm),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["carta"]);
+    },
+  });
+
+  const deleteCarta = useMutation({
+    mutationFn: eliminarCarta,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["carta"]);
+    },
+  });
+
+  /* =======================
+     HANDLERS
+  ======================= */
+
+  const handleSaveCategoria = () => saveCategoria.mutate();
+  const handleDeleteCategoria = (id) => deleteCategoria.mutate(id);
+
+  const handleSaveSubcategoria = () => saveSubcategoria.mutate();
+  const handleDeleteSubcategoria = (id) => deleteSubcategoria.mutate(id);
+
+  const handleSaveCarta = () => saveCarta.mutate();
+  const handleDeleteCarta = (id) => deleteCarta.mutate(id);
 
   return (
     <div className="w-full shadow-md">
@@ -534,7 +385,6 @@ function EditCartaPage() {
               {/* Boton descargar CSV*/}
               <button
                 className="btn btn-dash btn-warning btn-sm"
-                onClick={descargarCSV}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -599,18 +449,18 @@ function EditCartaPage() {
                     className="hover:bg-neutral-700 cursor-pointer"
                     onClick={() => editarCarta(c)}
                   >
-                    <td>{resaltarTexto(c.id_carta)}</td>
-                    <td>{resaltarTexto(c.nombre_cat)}</td>
-                    <td>{resaltarTexto(c.nombre_subcat)}</td>
-                    <td>{resaltarTexto(c.nombre)}</td>
-                    <td>{resaltarTexto(c.grupo)}</td>
-                    <td>{resaltarTexto(c.abreviado)}</td>
-                    <td>S/ {resaltarTexto(c.precio)}</td>
-                    <td>{resaltarTexto(c.puntos_canje)}</td>
-                    <td>{resaltarTexto(c.porcion)}</td>
-                    <td>{resaltarTexto(c.unidad_medida)}</td>
-                    <td>{resaltarTexto(c.observacion)}</td>
-                    <td>{resaltarTexto(c.estado ? "Activo" : "Inactivo")}</td>
+                    <td>{c.id_carta}</td>
+                    <td>{c.nombre_cat}</td>
+                    <td>{c.nombre_subcat}</td>
+                    <td>{c.nombre}</td>
+                    <td>{c.grupo}</td>
+                    <td>{c.abreviado}</td>
+                    <td>S/ {c.precio}</td>
+                    <td>{c.puntos_canje}</td>
+                    <td>{c.porcion}</td>
+                    <td>{c.unidad_medida}</td>
+                    <td>{c.observacion}</td>
+                    <td>{c.estado ? "Activo" : "Inactivo"}</td>
                     <td>
                       <span
                         className={`badge ${c.disponible ? "badge-accent" : "badge-secondary"}`}
