@@ -63,19 +63,19 @@ function EditCartaPage() {
   const editarCarta = async (c) => {
     setCartaForm({
       id_carta: c.id_carta,
-      categoria: c.categoria,
-      sub_categoria: c.sub_categoria,
-      nombre: c.nombre,
-      grupo: c.grupo,
-      abreviado: c.abreviado,
-      precio: c.precio,
-      puntos_canje: c.puntos_canje,
-      estado: c.estado,
-      disponible: c.disponible,
-      porcion: c.porcion,
-      unidad_medida: c.unidad_medida,
-      observacion: c.observacion,
-      url_imagen: c.url_imagen,
+      categoria: c.categoria ?? "",
+      sub_categoria: c.sub_categoria ?? "",
+      nombre: c.nombre ?? "",
+      grupo: c.grupo ?? "",
+      abreviado: c.abreviado ?? "",
+      precio: c.precio ?? "",
+      puntos_canje: c.puntos_canje ?? "",
+      estado: !!c.estado,
+      disponible: !!c.disponible,
+      porcion: c.porcion ?? "",
+      unidad_medida: c.unidad_medida ?? "",
+      observacion: c.observacion ?? "",
+      url_imagen: c.url_imagen ?? "",
     });
 
     setCategoriaSubSeleccionada(c.categoria);
@@ -183,6 +183,15 @@ function EditCartaPage() {
       queryClient.invalidateQueries(["carta"]);
     },
   });
+
+  /* =======================
+   AUTH GUARD (JWT)
+======================= */
+
+  if (!localStorage.getItem("token")) {
+    window.location.replace("/");
+    return null;
+  }
 
   /* =======================
      HANDLERS
