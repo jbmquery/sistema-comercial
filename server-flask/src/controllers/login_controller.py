@@ -1,6 +1,6 @@
 # server-flask/src/controllers/login_controller.py
 import bcrypt
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, create_refresh_token
 from conexion_postgresql import get_connection
 
 def login_user(correo, password):
@@ -28,7 +28,7 @@ def login_user(correo, password):
         return None
 
     # Crear token JWT
-    token = create_access_token(
+    access_token = create_access_token(
         identity=str(id_usuario),
         additional_claims={
             "correo": correo_db,
@@ -37,8 +37,12 @@ def login_user(correo, password):
         }
     )
 
+    refresh_token = create_refresh_token(identity=str(id_usuario))
+
+
     return {
-        "token": token,
+        "access_token": access_token,
+        "refresh_token": refresh_token,
         "usuario": {
             "id_usuario": id_usuario,
             "correo": correo_db,

@@ -251,15 +251,6 @@ function EditCartaPage() {
   });
 
   /* =======================
-   AUTH GUARD (JWT)
-======================= */
-
-  if (!localStorage.getItem("token")) {
-    window.location.replace("/");
-    return null;
-  }
-
-  /* =======================
      HANDLERS
   ======================= */
 

@@ -3,10 +3,16 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from datetime import timedelta
+
 
 app = Flask(__name__)
 
 app.config["JWT_SECRET_KEY"] = "super_clave_secreta_cafe"
+
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=7)
+
 jwt = JWTManager(app)
 
 # Define los orígenes permitidos
@@ -34,6 +40,7 @@ from routes.pagos_routes import pagos_bp
 from routes.cuenta_routes import cuenta_routes
 from routes.impresiones_routes import impresiones_bp
 from routes.ventas_dia_routes import ventas_dia_bp
+from routes.refresh_routes import refresh_bp
 
 
 app.register_blueprint(login_bp, url_prefix='/api')
@@ -47,6 +54,7 @@ app.register_blueprint(pagos_bp)
 app.register_blueprint(cuenta_routes, url_prefix='/api')
 app.register_blueprint(impresiones_bp, url_prefix="/api")
 app.register_blueprint(ventas_dia_bp)
+app.register_blueprint(refresh_bp)
 
 
 if __name__ == '__main__':

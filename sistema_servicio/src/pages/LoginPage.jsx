@@ -31,11 +31,13 @@ function LoginPage() {
       });
 
       const data = await response.json();
-      console.log("Respuesta del backend:", data); // ← importante para depurar
+      //console.log("Respuesta del backend:", data); // ← importante para depurar
 
       if (response.ok) {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("accessToken", data.access_token);
+        localStorage.setItem("refreshToken", data.refresh_token);
         localStorage.setItem("usuario", JSON.stringify(data.usuario));
+
 
         navigate('/tables');
       } else {

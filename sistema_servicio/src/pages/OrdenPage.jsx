@@ -22,10 +22,6 @@ import { useState, useEffect } from "react";
 
 function OrdenPage() {
 
-if (!localStorage.getItem("token")) {
-    window.location.replace("/");
-  }  
-
   const [seleccionados, setSeleccionados] = useState([]);
   const { idPedido } = useParams();
   const [showModal, setShowModal] = useState(false);

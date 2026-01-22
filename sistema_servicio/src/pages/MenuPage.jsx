@@ -8,10 +8,6 @@ import { getCartaMenu, crearPedido } from "../api";
 
 function Menues() {
 
-  if (!localStorage.getItem("token")) {
-    window.location.replace("/");
-  }  
-
   const location = useLocation();
   const { nombreMesa, idMesa } = location.state || {};
   const navigate = useNavigate();

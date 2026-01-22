@@ -15,10 +15,6 @@ import {
 
 function VentasDiaPage() {
 
-  if (!localStorage.getItem("token")) {
-    window.location.replace("/");
-  }  
-
   const hoy = new Date(
     new Date().getTime() - new Date().getTimezoneOffset() * 60000,
   )

@@ -8,10 +8,6 @@ import { getMesas } from "../api";
 
 function TablesPage() {
   
-  if (!localStorage.getItem("token")) {
-    window.location.replace("/");
-  }
-
   const {
     data: mesas = [],
     isLoading,

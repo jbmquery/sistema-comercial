@@ -1,6 +1,9 @@
 // sistema_servicio/src/api.js
 
 import axios from "axios";
+import { API_BASE } from "./config";
+
+//REFRESH TOKEN API
 
 const isLocalhost = window.location.hostname === "localhost";
 
@@ -15,8 +18,20 @@ const api = axios.create({
 
 export default api;
 
+// 👉 Instancia limpia SOLO para refresh token
+const refreshApi = axios.create({
+  baseURL: isLocalhost
+    ? "http://localhost:5000"
+    : "https://lucienne-preadministrative-odelia.ngrok-free.dev",
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+  },
+});
+
+
+
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("accessToken");
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -25,7 +40,97 @@ api.interceptors.request.use(config => {
   return config;
 });
 
+//---Complemento del interceptor para refrescar token (opcional)---//
+let isRefreshing = false;
+let failedQueue = [];
 
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config;
+
+    // Si no hay response (network error)
+    if (!error.response) {
+      return Promise.reject(error);
+    }
+
+    const status = error.response.status;
+
+    // ⚠️ Evitar loop infinito
+    if ((status === 401 || status === 422) && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      if (isRefreshing) {
+        // Espera a que termine el refresh en curso
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        });
+      }
+
+      isRefreshing = true;
+
+      try {
+        const refreshToken = localStorage.getItem("refreshToken");
+
+        if (!refreshToken) {
+          throw new Error("No refresh token");
+        }
+
+        const { data } = await refreshApi.post(
+          "/api/refresh",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${refreshToken}`,
+            },
+          }
+        );
+
+
+        const newAccessToken = data.access_token;
+
+        localStorage.setItem("accessToken", newAccessToken);
+        api.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        processQueue(null, newAccessToken);
+
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+
+      } catch (err) {
+        processQueue(err, null);
+
+        // 🔥 Sesión muerta → logout
+        localStorage.clear();
+        window.location.href = "/login";
+
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+
+//-----------------------
 export const getMesas = async () => {
   const { data } = await api.get("/api/mesas");
   return data.mesas;

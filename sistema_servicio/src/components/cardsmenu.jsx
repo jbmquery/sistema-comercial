@@ -10,8 +10,6 @@ function CardsMenu({ grupo, productos, onAdd }) {
   const unico = productosOrdenados.length === 1;
   const productoUnico = productosOrdenados[0];
 
-  console.log(productos);
-
 
   return (
     <div className="card bg-black shadow-md">

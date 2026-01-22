@@ -134,10 +134,6 @@ function EditTablesPage() {
     },
   });
 
-  if (!localStorage.getItem("token")) {
-    window.location.replace("/");
-    return null;
-  }
   if (isError) {
     return (
       <div className="text-red-500 text-center mt-10">
