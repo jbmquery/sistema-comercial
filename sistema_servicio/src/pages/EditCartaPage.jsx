@@ -29,6 +29,8 @@ function EditCartaPage() {
   const [filtroCategoria, setFiltroCategoria] = useState("");
   const [busquedaLocal, setBusquedaLocal] = useState("");
   const [categoriaSubSeleccionada, setCategoriaSubSeleccionada] = useState("");
+  const [mensajeOk, setMensajeOk] = useState("");
+
 
   const [categoriaForm, setCategoriaForm] = useState({
     id_categoria: "",
@@ -140,10 +142,22 @@ function EditCartaPage() {
       categoriaForm.id_categoria
         ? actualizarCategoria(categoriaForm)
         : crearCategoria(categoriaForm),
+
     onSuccess: () => {
       queryClient.invalidateQueries(["categorias"]);
+      setMensajeOk(
+        categoriaForm.id_categoria
+          ? "✅ Categoría actualizada correctamente"
+          : "✅ Categoría creada correctamente"
+      );
+      setTimeout(() => setMensajeOk(""), 2500);
+    },
+    onError: () => {
+      setMensajeOk("❌ Error al guardar categoría");
+      setTimeout(() => setMensajeOk(""), 2500);
     },
   });
+
 
   const deleteCategoria = useMutation({
     mutationFn: eliminarCategoria,
@@ -157,10 +171,25 @@ function EditCartaPage() {
       subcategoriaForm.id_subcat
         ? actualizarSubcategoria(subcategoriaForm)
         : crearSubcategoria(subcategoriaForm),
+
     onSuccess: () => {
       queryClient.invalidateQueries(["subcategorias"]);
+
+      setMensajeOk(
+        subcategoriaForm.id_subcat
+          ? "✅ Subcategoría actualizada correctamente"
+          : "✅ Subcategoría creada correctamente"
+      );
+
+      setTimeout(() => setMensajeOk(""), 2500);
+    },
+
+    onError: () => {
+      setMensajeOk("❌ Error al guardar subcategoría");
+      setTimeout(() => setMensajeOk(""), 2500);
     },
   });
+
 
   const deleteSubcategoria = useMutation({
     mutationFn: eliminarSubcategoria,
@@ -171,11 +200,28 @@ function EditCartaPage() {
 
   const saveCarta = useMutation({
     mutationFn: () =>
-      cartaForm.id_carta ? actualizarCarta(cartaForm) : crearCarta(cartaForm),
+      cartaForm.id_carta
+        ? actualizarCarta(cartaForm)
+        : crearCarta(cartaForm),
+
     onSuccess: () => {
       queryClient.invalidateQueries(["carta"]);
+
+      setMensajeOk(
+        cartaForm.id_carta
+          ? "✅ Producto actualizado correctamente"
+          : "✅ Producto creado correctamente"
+      );
+
+      setTimeout(() => setMensajeOk(""), 2500);
+    },
+
+    onError: () => {
+      setMensajeOk("❌ Error al guardar producto");
+      setTimeout(() => setMensajeOk(""), 2500);
     },
   });
+
 
   const deleteCarta = useMutation({
     mutationFn: eliminarCarta,
@@ -198,13 +244,62 @@ function EditCartaPage() {
   ======================= */
 
   const handleSaveCategoria = () => saveCategoria.mutate();
-  const handleDeleteCategoria = (id) => deleteCategoria.mutate(id);
-
   const handleSaveSubcategoria = () => saveSubcategoria.mutate();
-  const handleDeleteSubcategoria = (id) => deleteSubcategoria.mutate(id);
-
   const handleSaveCarta = () => saveCarta.mutate();
-  const handleDeleteCarta = (id) => deleteCarta.mutate(id);
+  
+  const handleDeleteCategoria = (id) => {
+    if (!window.confirm("¿Estás seguro de eliminar esta categoría?")) return;
+
+    deleteCategoria.mutate(id, {
+      onSuccess: () => {
+        setMensajeOk("🗑️ Categoría eliminada correctamente");
+        setTimeout(() => setMensajeOk(""), 2500);
+      },
+      onError: (error) => {
+        if (error?.response?.data?.message) {
+          setMensajeOk(`❌ ${error.response.data.message}`);
+        } else {
+          setMensajeOk("❌ Error al eliminar categoría");
+        }
+        setTimeout(() => setMensajeOk(""), 3000);
+      },
+    });
+  };
+    
+  const handleDeleteSubcategoria = (id) => {
+    if (!window.confirm("¿Seguro que deseas eliminar esta subcategoría?")) return;
+
+    deleteSubcategoria.mutate(id, {
+      onSuccess: () => {
+        setMensajeOk("🗑️ Subcategoría eliminada correctamente");
+        setTimeout(() => setMensajeOk(""), 2500);
+      },
+      onError: (error) => {
+        if (error?.response?.data?.message) {
+          setMensajeOk(`❌ ${error.response.data.message}`);
+        } else {
+          setMensajeOk("❌ Error al eliminar subcategoría");
+        }
+        setTimeout(() => setMensajeOk(""), 3000);
+      },
+    });
+  };
+
+  const handleDeleteCarta = (id) => {
+    if (!window.confirm("¿Estás seguro de eliminar este producto?")) return;
+
+    deleteCarta.mutate(id, {
+      onSuccess: () => {
+        setMensajeOk("🗑️ Producto eliminado correctamente");
+        setTimeout(() => setMensajeOk(""), 2500);
+      },
+      onError: () => {
+        setMensajeOk("❌ Error al eliminar producto");
+        setTimeout(() => setMensajeOk(""), 2500);
+      },
+    });
+  };
+
 
   return (
     <div className="w-full shadow-md">
@@ -223,6 +318,12 @@ function EditCartaPage() {
           </label>
 
           <h1 className="text-2xl font-bold mb-6">Gestión de Carta</h1>
+          {mensajeOk && (
+            <div className="alert alert-warning mb-4 z-2">
+              {mensajeOk}
+            </div>
+          )}
+
 
           {/* ================= CATEGORIAS + SUB ================= */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
