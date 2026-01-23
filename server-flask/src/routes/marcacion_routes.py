@@ -38,10 +38,17 @@ def marcar_asistencia():
 
     if not asistencia:
         resultado = registrar_entrada(id_usuario, id_sede, id_turno)
+
+        if "error" in resultado:
+            return jsonify({
+                "message": resultado["error"]
+            }), 403
+
         return jsonify({
             "message": "Entrada registrada",
             "resultado": resultado
         })
+
 
     if asistencia["hora_salida"]:
         return jsonify({"message": "Ya registraste salida hoy"}), 409

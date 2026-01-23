@@ -87,19 +87,36 @@ def registrar_entrada(id_usuario, id_sede, id_turno):
     """, (id_turno,))
     turno = cur.fetchone()
 
-    hora_inicio, hora_fin, tolerancia = turno
-    ahora = datetime.now().time()
+    if not turno:
+        cur.close()
+        conn.close()
+        return {"error": "Turno no encontrado"}
 
-    # Determinar estado
+    hora_inicio, hora_fin, tolerancia = turno
+    ahora_dt = datetime.now()
+    hoy = date.today()
+
+    # 🔒 LÍMITE: solo 30 min antes del inicio
+    inicio_turno_dt = datetime.combine(hoy, hora_inicio)
+    limite_anticipacion = inicio_turno_dt - timedelta(minutes=30)
+
+    if ahora_dt < limite_anticipacion:
+        cur.close()
+        conn.close()
+        return {
+            "error": "Aún no puedes marcar asistencia. Solo se permite desde 30 minutos antes del inicio del turno."
+        }
+
+    ahora = ahora_dt.time()
+
+    # Determinar estado (puntual / tarde)
     hora_inicio_con_tolerancia = (
-        datetime.combine(date.today(), hora_inicio)
-        + timedelta(minutes=tolerancia)
+        inicio_turno_dt + timedelta(minutes=tolerancia)
     ).time()
 
     estado = "puntual"
     if ahora > hora_inicio_con_tolerancia:
         estado = "tarde"
-
 
     cur.execute("""
         INSERT INTO asistencias (
@@ -124,8 +141,6 @@ def registrar_entrada(id_usuario, id_sede, id_turno):
         estado
     ))
 
-
-
     id_asistencia = cur.fetchone()[0]
     conn.commit()
     cur.close()
@@ -136,6 +151,7 @@ def registrar_entrada(id_usuario, id_sede, id_turno):
         "estado": estado,
         "id_asistencia": id_asistencia
     }
+
 
 def registrar_salida(asistencia_id):
     conn = get_connection()

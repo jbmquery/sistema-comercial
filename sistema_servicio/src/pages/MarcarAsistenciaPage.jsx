@@ -205,6 +205,9 @@ function MarcarAsistenciaPage() {
                   lugar de trabajo.
                 </li>
                 <li>✅ Elige tu horario de asistencia.</li>
+                 <li>
+                  ✅ Registro habilitado 30 minutos antes del turno seleccionado.
+                </li>
                 <li>✅ Confirma con un clic en el botón.</li>
                 <li>✅ Marcación obligatoria: entrada + salida</li>
               </ol>
@@ -218,6 +221,7 @@ function MarcarAsistenciaPage() {
                 </li>
                 <li>📊 3 tardanzas en el mes = 1 falta automática.</li>
                 <li>🚫 Salida anticipada solo con autorización</li>
+                <li>⚠️ En caso de no marcar su SALIDA, el sistema la considerará como FALTA</li>
               </ol>
               <br />
               <span className="text-secondary font-bold">Advertencia</span>
