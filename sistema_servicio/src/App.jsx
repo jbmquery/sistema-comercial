@@ -15,6 +15,7 @@ import OrdenPage from './pages/OrdenPage.jsx';
 import MarcarAsistenciaPage from './pages/MarcarAsistenciaPage.jsx';
 import InfoDatosPage from './pages/InfoDatosPage.jsx';
 import InfoAsistenciasPage from './pages/InfoAsistenciasPage.jsx';
+import InfoDescuentosPage from './pages/InfoDescuentosPage.jsx';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
           <Route path="/marcar-asistencia" element={<MarcarAsistenciaPage />} />
           <Route path="/info-datos_personales" element={<InfoDatosPage />} />
           <Route path="/info-datos_asistencia" element={<InfoAsistenciasPage />} />
+          <Route path="/info-datos_descuentos" element={<InfoDescuentosPage />} />
           <Route path="*" element={<ErrorPage />} />
         </Route>
       </Routes>

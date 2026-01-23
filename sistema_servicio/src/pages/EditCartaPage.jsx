@@ -263,7 +263,7 @@ function EditCartaPage() {
 
     deleteCategoria.mutate(id, {
       onSuccess: () => {
-        setMensajeOk("🗑️ Categoría eliminada correctamente");
+        setMensajeOk("Categoría eliminada correctamente");
         setTimeout(() => setMensajeOk(""), 2500);
       },
       onError: (error) => {
@@ -282,7 +282,7 @@ function EditCartaPage() {
 
     deleteSubcategoria.mutate(id, {
       onSuccess: () => {
-        setMensajeOk("🗑️ Subcategoría eliminada correctamente");
+        setMensajeOk("Subcategoría eliminada correctamente");
         setTimeout(() => setMensajeOk(""), 2500);
       },
       onError: (error) => {
@@ -301,7 +301,7 @@ function EditCartaPage() {
 
     deleteCarta.mutate(id, {
       onSuccess: () => {
-        setMensajeOk("🗑️ Producto eliminado correctamente");
+        setMensajeOk("Producto eliminado correctamente");
         setTimeout(() => setMensajeOk(""), 2500);
       },
       onError: () => {
@@ -314,6 +314,14 @@ function EditCartaPage() {
 
   return (
     <div className="w-full shadow-md">
+      <div className="toast toast-top toast-center z-[9999]">
+        {mensajeOk && (
+            <div className="alert alert-warning mb-4">
+              {mensajeOk}
+            </div>
+          )}
+      </div>
+
       <HeaderCom />
 
       <div className="drawer lg:drawer-open bg-neutral-800">
@@ -329,13 +337,6 @@ function EditCartaPage() {
           </label>
 
           <h1 className="text-2xl font-bold mb-6">Gestión de Carta</h1>
-          {mensajeOk && (
-            <div className="alert alert-warning mb-4 z-2">
-              {mensajeOk}
-            </div>
-          )}
-
-
           {/* ================= CATEGORIAS + SUB ================= */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* CATEGORIAS */}
@@ -957,6 +958,7 @@ function EditCartaPage() {
           </div>
         </div>
       </div>
+      {/**Fin MODAL CARTA */}
     </div>
   );
 }
