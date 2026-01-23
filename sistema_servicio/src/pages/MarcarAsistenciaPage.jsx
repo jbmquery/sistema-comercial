@@ -1,3 +1,4 @@
+// sistema_servicio/src/pages/MarcarAsistenciaPage.jsx
 import React, { useState, useEffect } from "react";
 import api from "../api";
 import HeaderCom from "../components/header_com.jsx";
@@ -194,6 +195,11 @@ function MarcarAsistenciaPage() {
                 </li>
                 <li>📊 3 tardanzas en el mes = 1 falta automática.</li>
                 <li>🚫 Salida anticipada solo con autorización</li>
+              </ol>
+              <br />
+              <span className="text-secondary font-bold">Advertencia</span>
+              <ol className="list-inside space-y-2 text-sm ml-5">
+                <li>‼️ El registro de asistencia es responsabilidad individual y definitiva; al ser un proceso automático, el sistema no permite ajustes manuales ni reclamaciones por omisión de registro ‼️</li>
               </ol>
             </div>
             <div className="modal-action">
