@@ -1,8 +1,90 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import api from "../api";
 import HeaderCom from "../components/header_com.jsx";
+
+
+
+function distanciaMetros(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const toRad = (x) => (x * Math.PI) / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
 
 function MarcarAsistenciaPage() {
   const [mostrarModal, setMostrarModal] = useState(false);
+  //Estados para traer los datos de marcacion (sedes,ubicacion y turnos)
+  const [ubicacion, setUbicacion] = useState(null);
+  const [sedeActual, setSedeActual] = useState(null);
+  const [turnos, setTurnos] = useState([]);
+  const [turnoSeleccionado, setTurnoSeleccionado] = useState("");
+  const botonActivo = sedeActual && turnoSeleccionado;
+
+  const fecha = new Date();
+  const dia = fecha.getDate();
+  const mes = fecha.toLocaleString("es-PE", { month: "long" }).toUpperCase();
+  const texto = fecha.toLocaleDateString("es-PE", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUbicacion({
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+        });
+      },
+      () => alert("Activa tu GPS"),
+      { enableHighAccuracy: true },
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!ubicacion) return;
+
+    api.get("/api/sedes").then((res) => {
+      const sedes = res.data.sedes;
+
+      let sedeEncontrada = null;
+
+      for (const sede of sedes) {
+        const d = distanciaMetros(
+          ubicacion.lat,
+          ubicacion.lon,
+          sede.latitud,
+          sede.longitud,
+        );
+
+        if (d <= 30) {
+          sedeEncontrada = sede;
+          break;
+        }
+      }
+
+      setSedeActual(sedeEncontrada);
+    });
+  }, [ubicacion]);
+
+  useEffect(() => {
+    if (!sedeActual) return;
+
+    api
+      .get("/api/turnos", {
+        params: { id_sede: sedeActual.id_sede },
+      })
+      .then((res) => setTurnos(res.data.turnos));
+  }, [sedeActual]);
 
   return (
     <div className="w-full shadow-md">
@@ -10,7 +92,9 @@ function MarcarAsistenciaPage() {
       <div className="bg-neutral-800 flex flex-col items-center min-h-screen">
         <div className=" flex flex-col md:flex-row justify-center items-center text-white mb-10 mt-10 lg:mt-15">
           <span className="text-xl md:mr-2">Marcar Asistencia</span>
-          <span className="text-2xl font-bold">Sede Pluvia KM22</span>
+          <span className="text-2xl font-bold">
+            {sedeActual ? sedeActual.nombre : "Fuera de rango"}
+          </span>
         </div>
 
         {/* Contenedor relativo para posicionar los elementos */}
@@ -23,7 +107,14 @@ function MarcarAsistenciaPage() {
 
           {/* Botón encima del fondo (posición absoluta) */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <div className="btn flex flex-row justify-center bg-primary w-45 h-45 rounded-full items-center cursor-pointer hover:scale-105 transition-transform duration-300">
+            <div
+              className={`btn flex flex-row justify-center w-45 h-45 rounded-full items-center transition-transform duration-300 ${
+                botonActivo
+                  ? "bg-primary cursor-pointer hover:scale-105"
+                  : "bg-gray-600 opacity-50 cursor-not-allowed"
+              }`}
+            >
+
               <div className="flex flex-col justify-center items-center bg-neutral-800 w-35 h-35 rounded-full">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -37,24 +128,28 @@ function MarcarAsistenciaPage() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="text-4xl font-bold text-white">21</span>
-                <span className="text-white">ENERO</span>
+                <span className="text-4xl font-bold text-white">{dia}</span>
+                <span className="text-white">{mes}</span>
               </div>
             </div>
           </div>
         </div>
         <div className="mt-10 flex flex-row items-center">
           <select
-            name="sede"
-            id="sede"
             className="select select-bordered my-2 mx-3 bg-neutral-800"
+            value={turnoSeleccionado}
+            onChange={(e) => setTurnoSeleccionado(e.target.value)}
+            disabled={!sedeActual}
           >
             <option value="">Selecciona Horario</option>
-            <option value="pluvia_km22">08:00Hrs-15:00Hrs</option>
-            <option value="pluvia_km22">16:00Hrs-23:00Hrs</option>
+            {turnos.map((t) => (
+              <option key={t.id_turno} value={t.id_turno}>
+                {t.inicio} - {t.fin}
+              </option>
+            ))}
           </select>
           <button
-            className="btn btn-soft btn-warning"
+          className="btn btn-soft btn-warning"
             onClick={() => setMostrarModal(true)}
           >
             ?
@@ -66,7 +161,7 @@ function MarcarAsistenciaPage() {
             Presiona el botón para marcar tu asistencia
           </p>
           <p className="text-sm text-gray-400">
-            Hoy es Miércoles, 21 de Enero 2026
+            Hoy es {texto}
           </p>
         </div>
       </div>
@@ -81,7 +176,10 @@ function MarcarAsistenciaPage() {
               <span className="text-info font-bold">Instrucciones</span>
               <ol className="list-inside space-y-2 text-sm bt-4 ml-5">
                 <li>✅ Activa tu ubicación GPS.</li>
-                <li>✅ Asegúrate de estar dentro del radio de 30 metros de tu lugar de trabajo.</li>
+                <li>
+                  ✅ Asegúrate de estar dentro del radio de 30 metros de tu
+                  lugar de trabajo.
+                </li>
                 <li>✅ Elige tu horario de asistencia.</li>
                 <li>✅ Confirma con un clic en el botón.</li>
                 <li>✅ Marcación obligatoria: entrada + salida</li>
@@ -97,14 +195,6 @@ function MarcarAsistenciaPage() {
                 <li>📊 3 tardanzas en el mes = 1 falta automática.</li>
                 <li>🚫 Salida anticipada solo con autorización</li>
               </ol>
-            </div>
-
-            {/* Contenido de Instrucciones */}
-            <div className="tab-content hidden">
-              <div className="space-y-4">
-                <p className="font-medium">Instrucciones:</p>
-                <ol className="list-decimal list-inside space-y-2 text-sm"></ol>
-              </div>
             </div>
             <div className="modal-action">
               <button
