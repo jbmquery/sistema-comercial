@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from "react";
 import api from "../api";
 import HeaderCom from "../components/header_com.jsx";
+import { useMutation } from "@tanstack/react-query";
+import { marcarAsistencia } from "../api";
 
 
 
@@ -87,6 +89,19 @@ function MarcarAsistenciaPage() {
       .then((res) => setTurnos(res.data.turnos));
   }, [sedeActual]);
 
+// HOOK DE MARCACIÓN
+
+  const marcarMutation = useMutation({
+    mutationFn: marcarAsistencia,
+    onSuccess: (data) => {
+      alert(data.message);
+    },
+    onError: (err) => {
+      alert(err.response?.data?.message || "Error al marcar");
+    }
+  });
+
+
   return (
     <div className="w-full shadow-md">
       <HeaderCom />
@@ -109,6 +124,14 @@ function MarcarAsistenciaPage() {
           {/* Botón encima del fondo (posición absoluta) */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             <div
+              onClick={() => {
+                if (!botonActivo) return;
+
+                marcarMutation.mutate({
+                  id_turno: turnoSeleccionado,
+                  id_sede: sedeActual.id_sede
+                });
+              }}
               className={`btn flex flex-row justify-center w-45 h-45 rounded-full items-center transition-transform duration-300 ${
                 botonActivo
                   ? "bg-primary cursor-pointer hover:scale-105"

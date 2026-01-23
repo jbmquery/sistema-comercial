@@ -372,3 +372,13 @@ export const getCartaAdmin = async (categoria) => {
     api.put(`/api/subcategorias/${payload.id_subcat}`, payload);
   export const eliminarSubcategoria = (id) =>
     api.delete(`/api/subcategorias/${id}`);
+
+  //marcacion asistencia-----------------------------
+
+  export const marcarAsistencia = async ({ id_turno, id_sede }) => {
+    const { data } = await api.post("/api/asistencias/marcar", {
+      id_turno,
+      id_sede
+    });
+    return data;
+  };
