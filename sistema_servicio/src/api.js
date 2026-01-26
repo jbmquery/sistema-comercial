@@ -382,3 +382,15 @@ export const getCartaAdmin = async (categoria) => {
     });
     return data;
   };
+
+  // Cada usuario obtiene su propia informacion personal
+
+export const getMiInformacion = async () => {
+  const { data } = await api.get("/api/mi-informacion");
+  return data;
+};
+
+export const getMisAsistencias = async () => {
+  const { data } = await api.get("/api/mi-asistencia");
+  return data.asistencias;
+};

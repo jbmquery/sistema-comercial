@@ -1,8 +1,43 @@
+// sistema_servicio/src/pages/InfoDatosPage.jsx
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import HeaderCom from "../components/header_com.jsx";
 import SiderbarInfo from "../components/SiderbarInfo.jsx";
+import { getMiInformacion } from "../api";
 
 function InfoDatosPage() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["mi-informacion"],
+    queryFn: getMiInformacion,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="w-full shadow-md h-screen bg-neutral-800">
+        <HeaderCom />
+        <div className="flex flex-col md:flex-row w-full">
+          <div className="drawer lg:drawer-open w-full">
+            <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
+            {/* CONTENIDO PRINCIPAL */}
+            <div className="drawer-content p-4 w-full">
+              <label
+                htmlFor="my-drawer-3"
+                className="drawer-button btn btn-outline text-primary lg:hidden mb-4"
+              >
+                ☰
+              </label>
+              <div className="flex flex-row justify-center text-center">
+                <span className="loading loading-bars loading-md"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const nombreCompleto = `${data.nombres} ${data.ape_paterno} ${data.ape_materno}`;
+
   return (
     <div className="w-full shadow-md">
       <HeaderCom />
@@ -46,7 +81,7 @@ function InfoDatosPage() {
                       </div>
                       <div className="flex flex-col text-base md:text-lg">
                         <span className="font-bold">Nombre</span>
-                        <span>Jheferson Blanco Martín</span>
+                        <span>{nombreCompleto}</span>
                       </div>
                     </td>
                   </tr>
@@ -70,7 +105,7 @@ function InfoDatosPage() {
                       </div>
                       <div className="flex flex-col text-base md:text-lg">
                         <span className="font-bold">Apodo</span>
-                        <span>Shandey</span>
+                        <span>{data.apodo}</span>
                       </div>
                     </td>
                   </tr>
@@ -94,7 +129,7 @@ function InfoDatosPage() {
                       </div>
                       <div className="flex flex-col text-base md:text-lg">
                         <span className="font-bold">Correo</span>
-                        <span>jhefersonbm.query@gmail.com</span>
+                        <span>{data.correo}</span>
                       </div>
                     </td>
                   </tr>
@@ -118,7 +153,7 @@ function InfoDatosPage() {
                       </div>
                       <div className="flex flex-col text-base md:text-lg">
                         <span className="font-bold">Celular</span>
-                        <span>+51 987654321</span>
+                        <span>{data.celular || "No registrado"}</span>
                       </div>
                     </td>
                   </tr>
@@ -142,7 +177,7 @@ function InfoDatosPage() {
                       </div>
                       <div className="flex flex-col text-base md:text-lg">
                         <span className="font-bold">Fecha de nacimiento</span>
-                        <span>12 de marzo de 2000</span>
+                        <span>{data.fecha_nacimiento || "01/01/2026"}</span>
                       </div>
                     </td>
                   </tr>
@@ -166,21 +201,31 @@ function InfoDatosPage() {
                       </div>
                       <div className="flex flex-col text-base md:text-lg">
                         <span className="font-bold">Estado</span>
-                        <span>Activo</span>
+                        <span>{data.estado ? "Activo" : "Inactivo"}</span>
                       </div>
                     </td>
                   </tr>
                   <tr className="hover:bg-neutral-700">
                     <td className="flex flex-row gap-4 items-center text-lg">
                       <div className="w-10 md:w-15 items-center justify-center flex">
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-</svg>
-
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="size-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+                          />
+                        </svg>
                       </div>
                       <div className="flex flex-col text-base md:text-lg">
                         <span className="font-bold">Fecha de Contratación</span>
-                        <span>12 de marzo de 2020</span>
+                        <span>{data.fecha_contratacion || "01/01/2026"}</span>
                       </div>
                     </td>
                   </tr>

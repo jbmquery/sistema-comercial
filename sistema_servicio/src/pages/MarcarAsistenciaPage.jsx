@@ -107,7 +107,7 @@ function MarcarAsistenciaPage() {
       <HeaderCom />
       <div className="bg-neutral-800 flex flex-col items-center min-h-screen">
         <div className=" flex flex-col md:flex-row justify-center items-center text-white mb-10 mt-10 lg:mt-15">
-          <span className="text-xl md:mr-2">Marcar Asistencia</span>
+          <span className="text-xl md:mr-2">Asistencia Sede</span>
           <span className="text-2xl font-bold">
             {sedeActual ? sedeActual.nombre : "Fuera de rango"}
           </span>

@@ -42,6 +42,8 @@ from routes.impresiones_routes import impresiones_bp
 from routes.ventas_dia_routes import ventas_dia_bp
 from routes.refresh_routes import refresh_bp
 from routes.marcacion_routes import marcacion_bp
+from routes.infousuario_routes import infousuario_bp
+from routes.infoasistencia_routes import infoasistencia_bp
 
 
 app.register_blueprint(login_bp, url_prefix='/api')
@@ -57,6 +59,8 @@ app.register_blueprint(impresiones_bp, url_prefix="/api")
 app.register_blueprint(ventas_dia_bp)
 app.register_blueprint(refresh_bp)
 app.register_blueprint(marcacion_bp)
+app.register_blueprint(infousuario_bp)
+app.register_blueprint(infoasistencia_bp)
 
 
 if __name__ == '__main__':

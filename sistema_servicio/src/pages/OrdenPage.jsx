@@ -1,4 +1,10 @@
 // sistema_servicio/src/pages/OrdenPage.jsx
+/*
+Api.js
+categorias_routes.py - categorias_controller.py
+carta_routes.py - carta_controller.py
+pedidos_routes.py - pedidos_controller.py
+*/
 import { Link } from "react-router-dom";
 import HeaderNav from "../components/header_nav.jsx";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -21,7 +27,6 @@ import { getPedidos } from "../api";
 import { useState, useEffect } from "react";
 
 function OrdenPage() {
-
   const [seleccionados, setSeleccionados] = useState([]);
   const { idPedido } = useParams();
   const [showModal, setShowModal] = useState(false);
@@ -33,8 +38,6 @@ function OrdenPage() {
 
   // Estados para el modal de Agregar Producto
   const [mostrarModalProducto, setMostrarModalProducto] = useState(false);
-  const [categoriaSel, setCategoriaSel] = useState("");
-  const [subcategoriaSel, setSubcategoriaSel] = useState("");
   const [productoSel, setProductoSel] = useState(null);
   const [observacion, setObservacion] = useState("");
   // Estdados para el modal de eliminar productos
@@ -174,32 +177,6 @@ function OrdenPage() {
 
   /* ----------- Modal Agregar Productos-----------*/
 
-  const { data: categorias = [] } = useQuery({
-    queryKey: ["categorias"],
-    queryFn: () => api.get("/api/categorias").then((r) => r.data.categorias),
-  });
-
-  const { data: subcategorias = [] } = useQuery({
-    queryKey: ["subcategorias", categoriaSel],
-    queryFn: () =>
-      api
-        .get("/api/subcategorias", {
-          params: { categoria: categoriaSel },
-        })
-        .then((r) => r.data.subcategorias),
-    enabled: !!categoriaSel,
-  });
-
-  const { data: productos = [] } = useQuery({
-    queryKey: ["productos", categoriaSel, subcategoriaSel],
-    queryFn: () =>
-      getCartaOrden({
-        categoria: categoriaSel,
-        sub_categoria: subcategoriaSel,
-      }),
-    enabled: !!categoriaSel && !!subcategoriaSel,
-  });
-
   const agregarProductoMutation = useMutation({
     mutationFn: agregarDetallePedido,
     onSuccess: () => {
@@ -254,6 +231,22 @@ function OrdenPage() {
       drawer.checked = false;
     }
   };
+
+  /* NUEVO BUSCADOR DE MODAL */
+
+  // Nuevo estado para el buscador local
+  const [busquedaProducto, setBusquedaProducto] = useState("");
+
+  // Query modificada: Traemos todos los productos (sin depender de selectores)
+  const { data: todosLosProductos = [] } = useQuery({
+    queryKey: ["productos_todos"],
+    queryFn: () => getCartaOrden({}), // Llamada sin filtros para traer todo
+  });
+
+  // Lógica de filtrado local
+  const productosFiltrados = todosLosProductos.filter((p) =>
+    p.nombre.toLowerCase().includes(busquedaProducto.toLowerCase()),
+  );
 
   return (
     <div className="w-full shadow-md">
@@ -728,90 +721,124 @@ function OrdenPage() {
 
       {mostrarModalProducto && (
         <dialog className="modal modal-open">
-          <div className="modal-box max-w-lg">
-            <h3 className="font-bold text-lg">Agregar Producto</h3>
-            <div className="divider"></div>
+          <div className="modal-box max-w-2xl h-[80vh] flex flex-col">
+            <h3 className="font-bold text-lg">Seleccionar Producto</h3>
+            <div className="divider my-1"></div>
 
-            <select
-              className="select select-bordered w-full mb-2"
-              onChange={(e) => setCategoriaSel(e.target.value)}
-            >
-              <option value="">Seleccionar categoría</option>
-              {categorias.map((c) => (
-                <option key={c.id_categoria} value={c.id_categoria}>
-                  {c.nombre_cat}
-                </option>
-              ))}
-            </select>
-
-            <select
-              className="select select-bordered w-full mb-2"
-              disabled={!categoriaSel}
-              onChange={(e) => setSubcategoriaSel(e.target.value)}
-            >
-              <option value="">Seleccionar subcategoría</option>
-              {subcategorias.map((s, index) => (
-                <option key={`${s.id_subcat}-${index}`} value={s.id_subcat}>
-                  {s.nombre_subcat}
-                </option>
-              ))}
-            </select>
-
-            <select
-              className="select select-bordered w-full mb-2"
-              disabled={!subcategoriaSel}
-              onChange={(e) => {
-                const prod = productos.find(
-                  (p) => p.id_carta == e.target.value,
-                );
-                setProductoSel(prod);
-              }}
-            >
-              <option value="">Seleccionar producto</option>
-              {productos.map((p) => (
-                <option key={p.id_carta} value={p.id_carta}>
-                  {p.nombre}
-                  {p.porcion ? ` (${p.porcion} ${p.unidad_medida})` : ""}
-                  {" - S/ "}
-                  {p.precio}
-                </option>
-              ))}
-            </select>
-
-            <textarea
-              className="textarea textarea-bordered w-full"
-              placeholder="Observación"
-              value={observacion}
-              onChange={(e) => setObservacion(e.target.value)}
-            />
-
-            <div className="modal-action">
-              <button
-                className="btn btn-outline text-secondary"
-                onClick={() => setMostrarModalProducto(false)}
+            {/* Buscador */}
+            <div className="relative mb-4">
+              <input
+                type="text"
+                className="input input-bordered w-full pl-10"
+                placeholder="Buscar producto por nombre..."
+                value={busquedaProducto}
+                onChange={(e) => setBusquedaProducto(e.target.value)}
+                autoFocus
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 absolute left-3 top-3 opacity-50"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                Cancelar
-              </button>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
 
-              <button
-                className="btn btn-success"
-                disabled={!productoSel}
-                onClick={() =>
-                  agregarProductoMutation.mutate({
-                    idPedido,
-                    payload: {
-                      id_carta: productoSel.id_carta,
-                      observacion,
-                    },
-                  })
-                }
-              >
-                Agregar
-              </button>
+            {/* Tabla de Productos */}
+            <div className="flex-grow overflow-y-auto border rounded-lg bg-base-200">
+              <table className="table table-pin-rows table-sm">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Porción</th>
+                    <th className="text-right">Precio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productosFiltrados.length > 0 ? (
+                    productosFiltrados.map((p) => (
+                      <tr
+                        key={p.id_carta}
+                        className={`cursor-pointer hover:bg-primary hover:text-white ${productoSel?.id_carta === p.id_carta ? "bg-primary text-white" : ""}`}
+                        onClick={() => setProductoSel(p)}
+                      >
+                        <td className="font-medium">{p.nombre}</td>
+                        <td>
+                          {p.porcion} {p.unidad_medida}
+                        </td>
+                        <td className="text-right">S/ {p.precio.toFixed(2)}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="text-center py-4">
+                        No se encontraron productos
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Observación y Acción */}
+            <div className="mt-4 space-y-3">
+              {productoSel && (
+                <div className="badge badge-primary gap-2 p-3">
+                  Seleccionado: {productoSel.nombre}
+                </div>
+              )}
+
+              <textarea
+                className="textarea textarea-bordered w-full"
+                placeholder="Agregar observación al producto..."
+                rows="2"
+                value={observacion}
+                onChange={(e) => setObservacion(e.target.value)}
+              />
+
+              <div className="modal-action mt-0">
+                <button
+                  className="btn btn-outline"
+                  onClick={() => {
+                    setMostrarModalProducto(false);
+                    setProductoSel(null);
+                    setBusquedaProducto("");
+                    setObservacion("");
+                  }}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  className="btn btn-success"
+                  disabled={!productoSel || agregarProductoMutation.isLoading}
+                  onClick={() =>
+                    agregarProductoMutation.mutate({
+                      idPedido,
+                      payload: {
+                        id_carta: productoSel.id_carta,
+                        observacion,
+                      },
+                    })
+                  }
+                >
+                  {agregarProductoMutation.isLoading
+                    ? "Guardando..."
+                    : "Agregar al Pedido"}
+                </button>
+              </div>
             </div>
           </div>
         </dialog>
       )}
+
       {/*FIN Modal de Agregar Producto */}
 
       {/*Modal de eliminar Producto */}

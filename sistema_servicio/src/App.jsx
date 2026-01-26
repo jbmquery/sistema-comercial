@@ -22,21 +22,24 @@ function App() {
     <div>
       <Routes>
         <Route path="/" element={<LoginPage />} />
+        {/* Rutas protegidas */}
         <Route element={<PrivateRoute />}>
+          {/* Rutas protegidas - operaciones */}
           <Route path="/tables" element={<TablesPage />} />
           <Route path="/menues" element={<Menues />} />
-          <Route path="/ventas_dia" element={<VentasDiaPage/>} />
-          <Route path="/clientes" element={<ClientesPage/>} />
-          <Route path="/guia" element={<GuiaPages/>} />
-          <Route path="/carta" element={<CartaPage/>} />
-          <Route path="/edit-tables" element={<EditTablesPage/>} />
-          <Route path="/edit-carta" element={<EditCartaPage/>} />
           <Route path="/orden" element={<OrdenPage/>} />
+          <Route path="/ventas_dia" element={<VentasDiaPage/>} />
           <Route path="/orden/:idPedido" element={<OrdenPage />} />
           <Route path="/marcar-asistencia" element={<MarcarAsistenciaPage />} />
           <Route path="/info-datos_personales" element={<InfoDatosPage />} />
           <Route path="/info-datos_asistencia" element={<InfoAsistenciasPage />} />
           <Route path="/info-datos_descuentos" element={<InfoDescuentosPage />} />
+          {/* Rutas protegidas - Administracion */}
+          <Route path="/clientes" element={<ClientesPage/>} />
+          <Route path="/guia" element={<GuiaPages/>} />
+          <Route path="/carta" element={<CartaPage/>} />
+          <Route path="/edit-tables" element={<EditTablesPage/>} />
+          <Route path="/edit-carta" element={<EditCartaPage/>} />
           <Route path="*" element={<ErrorPage />} />
         </Route>
       </Routes>
