@@ -219,7 +219,7 @@ function MarcarAsistenciaPage() {
                   💰 Tras los 10 minutos: descuento por cada minuto adicional de
                   retardo.
                 </li>
-                <li>📊 3 tardanzas en el mes = 1 falta automática.</li>
+                <li>📊 5 tardanzas en el mes = 1 falta automática.</li>
                 <li>🚫 Salida anticipada solo con autorización</li>
                 <li>⚠️ En caso de no marcar su SALIDA, el sistema la considerará como FALTA</li>
               </ol>

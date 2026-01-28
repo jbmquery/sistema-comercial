@@ -8,7 +8,6 @@ pedidos_routes.py - pedidos_controller.py
 import { Link } from "react-router-dom";
 import HeaderNav from "../components/header_nav.jsx";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import api from "../api";
 import {
   pagarCuenta,
   getPedidoDetalle,
@@ -24,12 +23,11 @@ import {
 
 import { useParams } from "react-router-dom";
 import { getPedidos } from "../api";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 function OrdenPage() {
   const [seleccionados, setSeleccionados] = useState([]);
   const { idPedido } = useParams();
-  const [showModal, setShowModal] = useState(false);
   const [mostrarModalPago, setMostrarModalPago] = useState(false);
   const [mostrarModalWhatsapp, setMostrarModalWhatsapp] = useState(false);
   const [telefonoWhatsapp, setTelefonoWhatsapp] = useState("");
