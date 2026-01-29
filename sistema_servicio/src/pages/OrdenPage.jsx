@@ -19,6 +19,8 @@ import {
   imprimirCocina,
   imprimirVoucher,
   generarVoucherWhatsapp,
+  cambiarMesaPedido,
+  getMesas,
 } from "../api";
 
 import { useParams } from "react-router-dom";
@@ -33,6 +35,8 @@ function OrdenPage() {
   const [telefonoWhatsapp, setTelefonoWhatsapp] = useState("");
   const [pagos, setPagos] = useState([{ metodo: "efectivo", monto: "" }]);
   const [mensajeOk, setMensajeOk] = useState("");
+  const [mostrarModalCambiarMesa, setMostrarModalCambiarMesa] = useState(false);
+  const [mesaSeleccionada, setMesaSeleccionada] = useState(null);
 
   // Estados para el modal de Agregar Producto
   const [mostrarModalProducto, setMostrarModalProducto] = useState(false);
@@ -81,7 +85,7 @@ function OrdenPage() {
     },
   });
 
-  const { data: detalles = [], isLoading } = useQuery({
+  const { data: detalles = []} = useQuery({
     queryKey: ["pedido", idPedido],
     queryFn: () => getPedidoDetalle(idPedido),
     enabled: !!idPedido,
@@ -169,9 +173,9 @@ function OrdenPage() {
 
   // Agregar Pago compuesto
 
-  const agregarPago = () => {
+ /*  const agregarPago = () => {
     setPagos([...pagos, { metodo: "efectivo", monto: "" }]);
-  };
+  }; */
 
   /* ----------- Modal Agregar Productos-----------*/
 
@@ -246,6 +250,29 @@ function OrdenPage() {
     p.nombre.toLowerCase().includes(busquedaProducto.toLowerCase()),
   );
 
+  // Mutation de Cambiar Mesa
+
+  const { data: mesas = [] } = useQuery({
+    queryKey: ["mesas"],
+    queryFn: getMesas,
+  });
+
+  const cambiarMesaMutation = useMutation({
+    mutationFn: cambiarMesaPedido,
+    onSuccess: (res) => {
+      setMensajeOk(res.mensaje);
+
+      queryClient.invalidateQueries(["pedidos"]);
+      queryClient.invalidateQueries(["pedido", idPedido]);
+
+      setMostrarModalCambiarMesa(false);
+      setTimeout(() => setMensajeOk(""), 3000);
+    },
+    onError: (err) => {
+      alert(err.response?.data?.error || "Error al cambiar de mesa");
+    },
+  });
+
   return (
     <div className="w-full shadow-md">
       {mensajeOk && (
@@ -272,9 +299,23 @@ function OrdenPage() {
             </label>
             <div className="flex flex-row justify-between items-center">
               <h1 className="text-2xl font-bold mb-4">Detalles del Pedido</h1>
-              <button className="btn btn-sm btn-warning mr-2 mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+              <button
+                className="btn btn-sm btn-warning mr-2 mb-2"
+                onClick={() => setMostrarModalCambiarMesa(true)}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="size-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+                  />
                 </svg>
 
                 <span className="hidden md:inline">Cambiar de Mesa</span>
@@ -336,7 +377,6 @@ function OrdenPage() {
                         <th>
                           <input
                             type="checkbox"
-                            defaultChecked
                             className="checkbox checkbox-primary"
                             checked={todosSeleccionados}
                             onChange={toggleTodos}
@@ -1015,6 +1055,63 @@ function OrdenPage() {
       )}
 
       {/*FIN Modal de enviar Voucher por Whatsapp*/}
+
+      {/* MODAL cambiar de mesa */}
+
+      {mostrarModalCambiarMesa && (
+        <dialog className="modal modal-open">
+          <div className="modal-box max-w-md">
+            <h3 className="font-bold text-lg">Cambiar de Mesa</h3>
+
+            <div className="divider"></div>
+
+            <select
+              className="select select-bordered w-full"
+              value={mesaSeleccionada || ""}
+              onChange={(e) => setMesaSeleccionada(e.target.value)}
+            >
+              <option disabled value="">
+                Selecciona una mesa disponible
+              </option>
+
+              {mesas
+                .filter((m) => m.disponibilidad)
+                .map((m) => (
+                  <option key={m.id_mesas} value={m.id_mesas}>
+                    {m.nombre} (cap. {m.capacidad})
+                  </option>
+                ))}
+            </select>
+
+            <div className="modal-action">
+              <button
+                className="btn btn-outline"
+                onClick={() => {
+                  setMostrarModalCambiarMesa(false);
+                  setMesaSeleccionada(null);
+                }}
+              >
+                Cancelar
+              </button>
+
+              <button
+                className="btn btn-success"
+                disabled={!mesaSeleccionada}
+                onClick={() =>
+                  cambiarMesaMutation.mutate({
+                    idPedido,
+                    idMesaNueva: mesaSeleccionada,
+                  })
+                }
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
+
+      {/* Fin MODAL cambiar de mesa */}
     </div>
   );
 }

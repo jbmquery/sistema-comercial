@@ -271,3 +271,67 @@ def actualizar_observacion_detalle(id_detalle, observacion):
             cursor.close()
         if conn:
             conn.close()
+
+from conexion_postgresql import get_connection
+
+def cambiar_mesa_pedido(id_pedido, id_mesa_nueva):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        # 1️⃣ Obtener mesa actual del pedido
+        cursor.execute("""
+            SELECT id_mesa
+            FROM pedidos
+            WHERE id_pedido = %s
+        """, (id_pedido,))
+        row = cursor.fetchone()
+
+        if not row:
+            return {"error": "PEDIDO_NO_EXISTE"}
+
+        id_mesa_actual = row[0]
+
+        # 2️⃣ Validar que la nueva mesa esté disponible
+        cursor.execute("""
+            SELECT disponibilidad
+            FROM mesas
+            WHERE id_mesas = %s
+        """, (id_mesa_nueva,))
+        mesa = cursor.fetchone()
+
+        if not mesa or mesa[0] is False:
+            return {"error": "MESA_NO_DISPONIBLE"}
+
+        # 3️⃣ Actualizar pedido
+        cursor.execute("""
+            UPDATE pedidos
+            SET id_mesa = %s
+            WHERE id_pedido = %s
+        """, (id_mesa_nueva, id_pedido))
+
+        # 4️⃣ Liberar mesa anterior
+        cursor.execute("""
+            UPDATE mesas
+            SET disponibilidad = true
+            WHERE id_mesas = %s
+        """, (id_mesa_actual,))
+
+        # 5️⃣ Ocupar nueva mesa
+        cursor.execute("""
+            UPDATE mesas
+            SET disponibilidad = false
+            WHERE id_mesas = %s
+        """, (id_mesa_nueva,))
+
+        conn.commit()
+
+        return {"success": True}
+
+    except Exception as e:
+        conn.rollback()
+        return {"error": str(e)}
+
+    finally:
+        cursor.close()
+        conn.close()

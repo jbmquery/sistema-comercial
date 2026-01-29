@@ -394,3 +394,12 @@ export const getMisAsistencias = async () => {
   const { data } = await api.get("/api/mi-asistencia");
   return data.asistencias;
 };
+
+export const cambiarMesaPedido = async ({ idPedido, idMesaNueva }) => {
+  const { data } = await api.put(
+    `/api/pedidos/${idPedido}/cambiar-mesa`,
+    { id_mesa_nueva: idMesaNueva }
+  )
+  return data
+}
+
