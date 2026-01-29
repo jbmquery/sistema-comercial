@@ -50,7 +50,7 @@ function EditTablesPage() {
         headers: {
           "Content-Type": "application/json",
           "ngrok-skip-browser-warning": "true",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
         body: JSON.stringify({
           nombre: mesa.nombre,
@@ -100,7 +100,7 @@ function EditTablesPage() {
         method: "DELETE",
         headers: {
           "ngrok-skip-browser-warning": "true",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       });
 

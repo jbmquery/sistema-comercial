@@ -37,6 +37,8 @@ function OrdenPage() {
   const [mensajeOk, setMensajeOk] = useState("");
   const [mostrarModalCambiarMesa, setMostrarModalCambiarMesa] = useState(false);
   const [mesaSeleccionada, setMesaSeleccionada] = useState(null);
+  const hayPedidoSeleccionado = !!idPedido;
+
 
   // Estados para el modal de Agregar Producto
   const [mostrarModalProducto, setMostrarModalProducto] = useState(false);
@@ -301,7 +303,11 @@ function OrdenPage() {
               <h1 className="text-2xl font-bold mb-4">Detalles del Pedido</h1>
               <button
                 className="btn btn-sm btn-warning mr-2 mb-2"
-                onClick={() => setMostrarModalCambiarMesa(true)}
+                disabled={!hayPedidoSeleccionado}
+                onClick={() => {
+                  if (!hayPedidoSeleccionado) return;
+                  setMostrarModalCambiarMesa(true);
+                }}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
