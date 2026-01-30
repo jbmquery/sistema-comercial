@@ -16,6 +16,7 @@ import MarcarAsistenciaPage from './pages/MarcarAsistenciaPage.jsx';
 import InfoDatosPage from './pages/InfoDatosPage.jsx';
 import InfoAsistenciasPage from './pages/InfoAsistenciasPage.jsx';
 import InfoDescuentosPage from './pages/InfoDescuentosPage.jsx';
+import NotificacionesPage from './pages/NotificacionesPage.jsx';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Route path="/info-datos_personales" element={<InfoDatosPage />} />
           <Route path="/info-datos_asistencia" element={<InfoAsistenciasPage />} />
           <Route path="/info-datos_descuentos" element={<InfoDescuentosPage />} />
+          <Route path='/notificaciones_usuarios' element={<NotificacionesPage/>} />
           {/* Rutas protegidas - Administracion */}
           <Route path="/clientes" element={<ClientesPage/>} />
           <Route path="/guia" element={<GuiaPages/>} />

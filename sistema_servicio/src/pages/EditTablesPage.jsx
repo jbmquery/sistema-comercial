@@ -10,6 +10,8 @@ import HeaderCom from "../components/header_com.jsx";
 import { API_BASE } from "../config";
 import Sidebar from "../components/SiderbarAdmin.jsx";
 import { getMesas } from "../api";
+import api from "../api";
+
 
 function EditTablesPage() {
   const queryClient = useQueryClient();
@@ -40,33 +42,26 @@ function EditTablesPage() {
 
   const saveMesa = useMutation({
     mutationFn: async (mesa) => {
-      const method = isEditing ? "PUT" : "POST";
-      const url = isEditing
-        ? `${API_BASE}/api/mesas/${mesa.id_mesas}`
-        : `${API_BASE}/api/mesas`;
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: JSON.stringify({
+      if (isEditing) {
+        const { data } = await api.put(
+          `/api/mesas/${mesa.id_mesas}`,
+          {
+            nombre: mesa.nombre,
+            capacidad: Number(mesa.capacidad),
+            disponibilidad: mesa.disponibilidad,
+            tipo_mesa: mesa.tipo_mesa,
+          }
+        );
+        return data;
+      } else {
+        const { data } = await api.post("/api/mesas", {
           nombre: mesa.nombre,
           capacidad: Number(mesa.capacidad),
           disponibilidad: mesa.disponibilidad,
           tipo_mesa: mesa.tipo_mesa,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw data;
+        });
+        return data;
       }
-
-      return data;
     },
 
     onSuccess: () => {
@@ -76,19 +71,20 @@ function EditTablesPage() {
 
     onError: (error) => {
       if (
-        error?.error ===
-        "Hay un pedido aun abierto y no se puede cambiar el estado"
+        error?.response?.status === 409 &&
+        error?.response?.data?.error ===
+          "Hay un pedido aun abierto y no se puede cambiar el estado"
       ) {
         setMensajeOk(
-          "❌ Hay un pedido aun abierto y no se puede cambiar el estado",
+          "❌ Hay un pedido aun abierto y no se puede cambiar el estado"
         );
-        setTimeout(() => setMensajeOk(""), 2500);
       } else {
         setMensajeOk("❌ Error al actualizar mesa");
-        setTimeout(() => setMensajeOk(""), 2500);
       }
+      setTimeout(() => setMensajeOk(""), 2500);
     },
   });
+
 
   /* =========================
      MUTATION: ELIMINAR

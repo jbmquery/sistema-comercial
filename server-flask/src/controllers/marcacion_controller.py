@@ -157,19 +157,38 @@ def registrar_salida(asistencia_id):
     conn = get_connection()
     cur = conn.cursor()
 
-    ahora = datetime.now().time()
+    ahora_dt = datetime.now()
 
-    # Obtener hora_salida_horario
+    # Obtener hora de entrada y salida programada
     cur.execute("""
-        SELECT hora_salida_horario
+        SELECT hora_entrada_real, hora_salida_horario
         FROM asistencias
         WHERE id_asistencia = %s
     """, (asistencia_id,))
 
     row = cur.fetchone()
-    hora_salida_horario = row[0] if row else None
+    if not row:
+        cur.close()
+        conn.close()
+        return {"error": "Asistencia no encontrada"}
 
-    # Comparar y decidir observación
+    hora_entrada_real = row[0]
+    hora_salida_horario = row[1]
+
+    # ⏱️ Validación: mínimo 5 minutos desde la entrada
+    entrada_dt = datetime.combine(date.today(), hora_entrada_real)
+    diferencia = ahora_dt - entrada_dt
+
+    if diferencia < timedelta(minutes=5):
+        cur.close()
+        conn.close()
+        return {
+            "error": "Ya marcó su ingreso"
+        }
+
+    ahora = ahora_dt.time()
+
+    # Registrar salida
     if hora_salida_horario and ahora < hora_salida_horario:
         cur.execute("""
             UPDATE asistencias
@@ -191,5 +210,9 @@ def registrar_salida(asistencia_id):
     return {
         "tipo": "salida",
         "hora_salida": str(ahora),
-        "observacion": "Salida antes de tiempo" if hora_salida_horario and ahora < hora_salida_horario else None
+        "observacion": (
+            "Salida antes de tiempo"
+            if hora_salida_horario and ahora < hora_salida_horario
+            else None
+        )
     }

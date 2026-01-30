@@ -54,6 +54,12 @@ def marcar_asistencia():
         return jsonify({"message": "Ya registraste salida hoy"}), 409
 
     resultado = registrar_salida(asistencia["id_asistencia"])
+
+    if "error" in resultado:
+        return jsonify({
+        "message": resultado["error"]
+        }), 409
+
     return jsonify({
         "message": "Salida registrada",
         "resultado": resultado
