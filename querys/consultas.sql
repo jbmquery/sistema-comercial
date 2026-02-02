@@ -284,3 +284,96 @@ CREATE TABLE IF NOT EXISTS public.usuarios
         ON DELETE NO ACTION
         NOT VALID
 )
+
+CREATE TABLE IF NOT EXISTS public.notificaciones
+(
+    id_notificacion bigint NOT NULL DEFAULT nextval('notificaciones_id_notificacion_seq'::regclass),
+    tipo character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    alcance character varying(15) COLLATE pg_catalog."default",
+    id_usuario bigint,
+    titulo character varying(50) COLLATE pg_catalog."default",
+    descripcion text COLLATE pg_catalog."default",
+    estado character varying(20) COLLATE pg_catalog."default",
+    fecha date,
+    hora time with time zone,
+    recomendacion character varying(255) COLLATE pg_catalog."default",
+    CONSTRAINT notificaciones_pkey PRIMARY KEY (id_notificacion)
+)
+
+CREATE TABLE IF NOT EXISTS public.insumos
+(
+    id_insumo bigint NOT NULL DEFAULT nextval('insumos_id_insumo_seq'::regclass),
+    nombre character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    categoria character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    unidad_medida_base character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    estado boolean DEFAULT true,
+    fecha_registro date,
+    CONSTRAINT insumos_pkey PRIMARY KEY (id_insumo)
+)
+
+CREATE TABLE IF NOT EXISTS public.proveedor
+(
+    id_proveedor bigint NOT NULL DEFAULT nextval('proveedor_id_proveedor_seq'::regclass),
+    nombre_proveedor character varying(150) COLLATE pg_catalog."default" NOT NULL,
+    ruc_dni character varying(20) COLLATE pg_catalog."default",
+    celular character varying(20) COLLATE pg_catalog."default",
+    correo character varying(100) COLLATE pg_catalog."default",
+    direccion character varying(200) COLLATE pg_catalog."default",
+    estado boolean DEFAULT true,
+    fecha_registro date,
+    observaciones text COLLATE pg_catalog."default",
+    CONSTRAINT proveedor_pkey PRIMARY KEY (id_proveedor)
+)
+
+CREATE TABLE IF NOT EXISTS public.registro_costos_variables
+(
+    id_registro bigint NOT NULL DEFAULT nextval('registro_costos_variables_id_registro_seq'::regclass),
+    id_insumo bigint NOT NULL,
+    id_proveedor bigint,
+    precio_unitario numeric(10,2),
+    cantidad bigint,
+    unidad_medida character varying(20) COLLATE pg_catalog."default",
+    total_compra numeric(12,2),
+    forma_pago character varying(30) COLLATE pg_catalog."default",
+    fecha_registro date,
+    hora_registro time without time zone,
+    observacion text COLLATE pg_catalog."default",
+    CONSTRAINT registro_costos_variables_pkey PRIMARY KEY (id_registro),
+    CONSTRAINT fk_registro_insumo FOREIGN KEY (id_insumo)
+        REFERENCES public.insumos (id_insumo) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+    CONSTRAINT fk_registro_proveedor FOREIGN KEY (id_proveedor)
+        REFERENCES public.proveedor (id_proveedor) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+)
+
+CREATE TABLE IF NOT EXISTS public.registro_costos_variables
+(
+    id_registro bigint NOT NULL DEFAULT nextval('registro_costos_variables_id_registro_seq'::regclass),
+    id_insumo bigint NOT NULL,
+    id_proveedor bigint,
+    precio_unitario numeric(10,2),
+    cantidad bigint,
+    unidad_medida character varying(20) COLLATE pg_catalog."default",
+    total_compra numeric(12,2),
+    forma_pago character varying(30) COLLATE pg_catalog."default",
+    fecha_registro date,
+    hora_registro time without time zone,
+    observacion text COLLATE pg_catalog."default",
+    id_usuario bigint,
+    CONSTRAINT registro_costos_variables_pkey PRIMARY KEY (id_registro),
+    CONSTRAINT fk_registro_insumo FOREIGN KEY (id_insumo)
+        REFERENCES public.insumos (id_insumo) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+    CONSTRAINT fk_registro_proveedor FOREIGN KEY (id_proveedor)
+        REFERENCES public.proveedor (id_proveedor) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+    CONSTRAINT fk_registro_usuario FOREIGN KEY (id_usuario)
+        REFERENCES public.usuarios (id_usuario) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+)

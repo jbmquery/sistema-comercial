@@ -403,3 +403,19 @@ export const cambiarMesaPedido = async ({ idPedido, idMesaNueva }) => {
   return data
 }
 
+// NOTIFICACIONES
+
+export const getMisNotificaciones = async () => {
+  const { data } = await api.get("/api/notificaciones")
+  return data
+}
+
+export const getPendientesCount = async () => {
+  const { data } = await api.get("/api/notificaciones/pendientes-count")
+  return data.total
+}
+
+export const marcarNotificacionVista = async (id) => {
+  await api.put(`/api/notificaciones/${id}/visto`)
+}
+
