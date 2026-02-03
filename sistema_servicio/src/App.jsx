@@ -17,6 +17,10 @@ import InfoDatosPage from './pages/InfoDatosPage.jsx';
 import InfoAsistenciasPage from './pages/InfoAsistenciasPage.jsx';
 import InfoDescuentosPage from './pages/InfoDescuentosPage.jsx';
 import NotificacionesPage from './pages/NotificacionesPage.jsx';
+import InventarioPage from './pages/InventarioPage.jsx';
+import ProveedoresPage from './pages/ProveedoresPage.jsx';
+import UsuariosPage from './pages/UsuariosPage.jsx';
+import RecetasPage from './pages/RecetasPage.jsx';
 
 function App() {
   return (
@@ -42,6 +46,10 @@ function App() {
           <Route path="/carta" element={<CartaPage/>} />
           <Route path="/edit-tables" element={<EditTablesPage/>} />
           <Route path="/edit-carta" element={<EditCartaPage/>} />
+          <Route path="/inventario" element={<InventarioPage/>} />
+          <Route path="/proveedores" element={<ProveedoresPage/>} />
+          <Route path="/admi-usuarios" element={<UsuariosPage/>} />
+          <Route path="/recetas" element={<RecetasPage/>} />
           <Route path="*" element={<ErrorPage />} />
         </Route>
       </Routes>

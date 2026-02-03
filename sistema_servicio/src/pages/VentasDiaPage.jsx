@@ -14,7 +14,6 @@ import {
 } from "../api";
 
 function VentasDiaPage() {
-
   const hoy = new Date(
     new Date().getTime() - new Date().getTimezoneOffset() * 60000,
   )
@@ -54,7 +53,7 @@ function VentasDiaPage() {
   });
 
   const APERTURA = 0;
-  const GASTOS = 0;
+  const COSTOS = 0;
 
   const efectivo = caja?.efectivo || 0;
   const yape = caja?.yape || 0;
@@ -66,7 +65,7 @@ function VentasDiaPage() {
 
   const sumaIngresos = efectivo + yape + plin + agora + transferencia;
 
-  const sumaEgresos = GASTOS;
+  const sumaEgresos = COSTOS;
 
   const vuelto = sumaIngresos - totalIngresos;
 
@@ -125,14 +124,13 @@ function VentasDiaPage() {
         {/* Encabezado de cierre */}
         <div className="bg-black rounded shadow p-3 w-full flex flex-col lg:flex-row justify-between gap-6 lg:gap-2">
           <div className="flex flex-col lg:flex-row ">
-            <span className="text-lg lg:text-xl lg:mr-10">Fecha: 16/01/2024</span>
-            <span className="text-lg lg:text-xl lg:mr-10"> Cierre Turno:  - (16:00 hrs - 23:00 hrs) </span>
-            <span className="text-lg lg:text-xl"> Responsable: Juan Perez</span>
-          
+            <span className="text-lg lg:text-xl lg:mr-10 animate-pulse text-warning">
+              PROXIMAMENTE - Apertura de caja 🥳😎
+            </span>
           </div>
           <div className="flex flex-row gap-2 justify-end">
-            <button className="btn btn-md btn-secondary">Gastos</button>
-            <button className="btn btn-md btn-info">Caja</button>
+            <button className="btn btn-md btn-secondary">Añadir Costos</button>
+            <button className="btn btn-md btn-info">Abrir Caja</button>
           </div>
         </div>
         {/* Cuerpo de cuadros */}
@@ -192,8 +190,8 @@ function VentasDiaPage() {
                         </tr>
 
                         <tr>
-                          <td>GASTOS</td>
-                          <td>S/. {GASTOS.toFixed(2)}</td>
+                          <td>COSTOS</td>
+                          <td>S/. {COSTOS.toFixed(2)}</td>
                         </tr>
 
                         <tr>
@@ -299,9 +297,33 @@ function VentasDiaPage() {
               </div>
             </div>
 
-            {/* Gastos */}
+            {/* Costo */}
             <div className="bg-black rounded shadow flex flex-col p-5">
-              <span className="pl-3 py-3 text-xl font-bold">Gastos</span>
+              <div className="flex flex-row justify-between items-center">
+                <span className="pl-3 py-3 text-xl font-bold">
+                  Costos (insumos)
+                </span>
+                <button
+                  className="btn btn-sm btn-primary mr-2 mb-2"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                    <path d="M12 8v8" />
+                    <path d="M8 12h8" />
+                  </svg>
+                  <span className="hidden md:inline">Agregar Insumo</span>
+                </button>
+              </div>
               <div className="overflow-x-auto">
                 <table className="table table-sm">
                   <thead>

@@ -304,10 +304,11 @@ CREATE TABLE IF NOT EXISTS public.insumos
 (
     id_insumo bigint NOT NULL DEFAULT nextval('insumos_id_insumo_seq'::regclass),
     nombre character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    categoria character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    categoria character varying(20) COLLATE pg_catalog."default" NOT NULL, -- Ingrediente / Envase / Apoyo
     unidad_medida_base character varying(20) COLLATE pg_catalog."default" NOT NULL,
     estado boolean DEFAULT true,
     fecha_registro date,
+    clase character varying(30) COLLATE pg_catalog."default", --leche / azucar / etc etc
     CONSTRAINT insumos_pkey PRIMARY KEY (id_insumo)
 )
 
