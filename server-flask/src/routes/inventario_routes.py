@@ -1,3 +1,4 @@
+# server-flask/src/routes/inventario_routes.py
 from flask import Blueprint, request
 from controllers.inventario_controller import (
     get_insumos,

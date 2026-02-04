@@ -436,3 +436,21 @@ export const actualizarInsumo = (payload) =>
 
 export const eliminarInsumo = (id) =>
   api.delete(`/api/insumos/${id}`);
+
+// =====================
+// PROVEEDORES
+// =====================
+
+export const getProveedores = async () => {
+  const { data } = await api.get("/api/proveedores");
+  return data.proveedores || [];
+};
+
+export const crearProveedor = (payload) =>
+  api.post("/api/proveedores", payload);
+
+export const actualizarProveedor = (payload) =>
+  api.put(`/api/proveedores/${payload.id_proveedor}`, payload);
+
+export const eliminarProveedor = (id) =>
+  api.delete(`/api/proveedores/${id}`);
