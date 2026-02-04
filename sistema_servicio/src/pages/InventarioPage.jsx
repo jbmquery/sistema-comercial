@@ -26,7 +26,7 @@ const UNIDADES = {
     "Cucharita",
     "Porcion",
     "Dosis",
-    "Unidad (u)"
+    "Unidad (u)",
   ],
   Envase: ["Unidad (u)", "Docena", "Paquete", "Bolsa", "Caja", "Rollo"],
   Apoyo: ["Unidad (u)", "Docena", "Paquete", "Bolsa", "Caja", "Rollo"],
@@ -127,6 +127,86 @@ function InventarioPage() {
     });
   };
 
+  /* ----- Contador de coincidencias */
+
+  const totalCoincidencias = (() => {
+    if (!busquedaLocal.trim()) return 0;
+
+    let contador = 0;
+
+    insumosFiltrados.forEach((i) => {
+      Object.entries(i).forEach(([key, value]) => {
+        if (key === "estado") return;
+
+        const matches = String(value)
+          .toLowerCase()
+          .match(new RegExp(busquedaLocal.toLowerCase(), "gi"));
+
+        if (matches) contador += matches.length;
+      });
+    });
+
+    return contador;
+  })();
+
+  /* Resaltador de coindicencias */
+
+  const resaltarTexto = (texto) => {
+    if (!busquedaLocal.trim()) return texto;
+
+    const regex = new RegExp(`(${busquedaLocal})`, "gi");
+
+    return String(texto)
+      .split(regex)
+      .map((parte, i) =>
+        parte.toLowerCase() === busquedaLocal.toLowerCase() ? (
+          <span key={i} className="bg-warning text-black px-1 rounded">
+            {parte}
+          </span>
+        ) : (
+          parte
+        ),
+      );
+  };
+
+  /* Descargar CSV */
+
+  const descargarCSV = () => {
+    if (!insumosFiltrados.length) return;
+
+    const headers = [
+      "ID",
+      "Nombre",
+      "Categoría",
+      "Clase",
+      "Unidad",
+      "Estado",
+      "Fecha Registro",
+    ];
+
+    const filas = insumosFiltrados.map((i) => [
+      i.id_insumo,
+      i.nombre,
+      i.categoria,
+      i.clase,
+      i.unidad_medida_base,
+      i.estado ? "Activo" : "Inactivo",
+      i.fecha_registro,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers, ...filas].map((e) => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "inventario.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="w-full shadow-md">
       <div className="toast toast-top toast-center z-[9999]">
@@ -179,14 +259,14 @@ function InventarioPage() {
                 {/* 🧮 CONTADOR DE COINCIDENCIAS */}
                 <div className=" text-xs md:text-sm opacity-80 flex flex-col md:flex-row items-center">
                   <span className="mr-1">Hay </span>
-                  <span className="mr-1">0</span>
+                  <span className="mr-1">{totalCoincidencias}</span>
                   <span className="hidden md:inline">coincidencias</span>
                 </div>
               </div>
 
               <div className="flex flex-row justify-between items-center gap-2">
                 {/* Boton descargar CSV*/}
-                <button className="btn btn-dash btn-warning btn-sm">
+                <button className="btn btn-dash btn-warning btn-sm" onClick={descargarCSV}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -243,7 +323,7 @@ function InventarioPage() {
                 <tr>
                   <th>ID</th>
                   <th>Nombre</th>
-                  <th>Categoría</th>
+                  <th>Categoria</th>
                   <th>Clase</th>
                   <th>Unidad de medida</th>
                   <th>Estado</th>
@@ -258,12 +338,12 @@ function InventarioPage() {
                     onClick={() => editarInsumo(i)}
                   >
                     <td>{i.id_insumo}</td>
-                    <td>{i.nombre}</td>
-                    <td>{i.categoria}</td>
-                    <td>{i.clase}</td>
-                    <td>{i.unidad_medida_base}</td>
+                    <td>{resaltarTexto(i.nombre)}</td>
+                    <td>{resaltarTexto(i.categoria)}</td>
+                    <td>{resaltarTexto(i.clase)}</td>
+                    <td>{resaltarTexto(i.unidad_medida_base)}</td>
                     <td>{i.estado ? "Activo" : "Inactivo"}</td>
-                    <td>{i.fecha_registro}</td>
+                    <td>{resaltarTexto(i.fecha_registro)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -362,7 +442,7 @@ function InventarioPage() {
           <div className="modal-action flex justify-between">
             <label
               htmlFor="modal_insumo"
-              className="btn btn-outline"
+              className="btn btn-outline btn-secondary"
               onClick={() =>
                 setInsumoForm({
                   id_insumo: "",
