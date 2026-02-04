@@ -45,6 +45,7 @@ from routes.marcacion_routes import marcacion_bp
 from routes.infousuario_routes import infousuario_bp
 from routes.infoasistencia_routes import infoasistencia_bp
 from routes.notificaciones_routes import notificaciones_bp
+from routes.inventario_routes import inventario_bp
 
 
 app.register_blueprint(login_bp, url_prefix='/api')
@@ -63,6 +64,7 @@ app.register_blueprint(marcacion_bp)
 app.register_blueprint(infousuario_bp)
 app.register_blueprint(infoasistencia_bp)
 app.register_blueprint(notificaciones_bp)
+app.register_blueprint(inventario_bp, url_prefix='/api')
 
 
 if __name__ == '__main__':

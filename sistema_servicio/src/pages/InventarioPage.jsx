@@ -2,14 +2,137 @@
 import React from "react";
 import HeaderCom from "../components/header_com.jsx";
 import Sidebar from "../components/SiderbarAdmin.jsx";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getInsumos,
+  crearInsumo,
+  actualizarInsumo,
+  eliminarInsumo,
+} from "../api";
+
+const CATEGORIAS = ["Ingrediente", "Envase", "Apoyo"];
+
+const UNIDADES = {
+  Ingrediente: [
+    "Kilogramo (kg)",
+    "Gramo (g)",
+    "Miligramo (mg)",
+    "Litro (l)",
+    "Mililitro (ml)",
+    "Onza (oz)",
+    "Shot",
+    "Cucharada",
+    "Cucharita",
+    "Porcion",
+    "Dosis",
+    "Unidad (u)"
+  ],
+  Envase: ["Unidad (u)", "Docena", "Paquete", "Bolsa", "Caja", "Rollo"],
+  Apoyo: ["Unidad (u)", "Docena", "Paquete", "Bolsa", "Caja", "Rollo"],
+};
 
 function InventarioPage() {
+  const queryClient = useQueryClient();
+
+  const [mensajeOk, setMensajeOk] = useState("");
+  const [busquedaLocal, setBusquedaLocal] = useState("");
+  const [filtroCategoria, setFiltroCategoria] = useState("");
+  const [insumoForm, setInsumoForm] = useState({
+    id_insumo: "",
+    nombre: "",
+    categoria: "",
+    unidad_medida_base: "",
+    estado: true,
+    clase: "",
+  });
+
+  const editarInsumo = (i) => {
+    setInsumoForm({
+      id_insumo: i.id_insumo,
+      nombre: i.nombre ?? "",
+      categoria: i.categoria ?? "",
+      unidad_medida_base: i.unidad_medida_base ?? "",
+      estado: !!i.estado,
+      clase: i.clase ?? "",
+    });
+
+    document.getElementById("modal_insumo").checked = true;
+  };
+
+  // ================= QUERY =================
+  const { data: insumos = [] } = useQuery({
+    queryKey: ["insumos"],
+    queryFn: getInsumos,
+  });
+
+  // ================= FILTRO LOCAL =================
+  const insumosFiltrados = insumos.filter((i) => {
+    if (filtroCategoria && i.categoria !== filtroCategoria) return false;
+
+    if (!busquedaLocal.trim()) return true;
+
+    const texto = busquedaLocal.toLowerCase();
+
+    return Object.values(i).some((v) =>
+      String(v).toLowerCase().includes(texto),
+    );
+  });
+
+  const clasesDisponibles = [
+    ...new Set(
+      insumos
+        .filter((i) => i.categoria === insumoForm.categoria)
+        .map((i) => i.clase)
+        .filter(Boolean),
+    ),
+  ];
+
+  // ================= MUTATIONS =================
+
+  const saveInsumo = useMutation({
+    mutationFn: () =>
+      insumoForm.id_insumo
+        ? actualizarInsumo(insumoForm)
+        : crearInsumo(insumoForm),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries(["insumos"]);
+      setMensajeOk(
+        insumoForm.id_insumo ? "✅ Insumo actualizado" : "✅ Insumo creado",
+      );
+      setTimeout(() => setMensajeOk(""), 2500);
+    },
+    onError: () => {
+      setMensajeOk("❌ Error al guardar insumo");
+      setTimeout(() => setMensajeOk(""), 2500);
+    },
+  });
+
+  const deleteInsumo = useMutation({
+    mutationFn: eliminarInsumo,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["insumos"]);
+    },
+  });
+
+  const handleDelete = (id) => {
+    if (!window.confirm("¿Eliminar insumo?")) return;
+
+    deleteInsumo.mutate(id, {
+      onSuccess: () => {
+        setMensajeOk("Insumo eliminado");
+        setTimeout(() => setMensajeOk(""), 2500);
+      },
+    });
+  };
+
   return (
     <div className="w-full shadow-md">
       <div className="toast toast-top toast-center z-[9999]">
-        {/* {mensajeOk && (
+        {mensajeOk && (
           <div className="alert alert-warning mb-4">{mensajeOk}</div>
-        )} */}
+        )}
       </div>
 
       <HeaderCom />
@@ -31,14 +154,26 @@ function InventarioPage() {
             <div className=" flex flex-row justify-between items-center">
               {/* Filtro Carta*/}
               <div className="flex items-center gap-2 md:gap-3">
-                <select className="select select-bordered max-w-20 lg:max-w-30 bg-neutral-800">
+                <select
+                  className="select select-bordered max-w-20 lg:max-w-30 bg-neutral-800"
+                  value={filtroCategoria}
+                  onChange={(e) => setFiltroCategoria(e.target.value)}
+                >
                   <option value="">Categorías</option>
+                  {CATEGORIAS.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
                 </select>
+
                 {/* 🔎 INPUT BUSCAR LOCAL */}
                 <input
                   type="text"
                   placeholder="Buscar"
                   className="input input-bordered bg-neutral-800 max-w-20 md:max-w-30"
+                  value={busquedaLocal}
+                  onChange={(e) => setBusquedaLocal(e.target.value)}
                 />
 
                 {/* 🧮 CONTADOR DE COINCIDENCIAS */}
@@ -67,7 +202,20 @@ function InventarioPage() {
                   <span className="hidden md:inline">CSV</span>
                 </button>
                 {/* Boton agregar nuevo registro de carta*/}
-                <label htmlFor="modal_carta" className="btn btn-sm btn-primary">
+                <label
+                  htmlFor="modal_insumo"
+                  className="btn btn-sm btn-primary"
+                  onClick={() =>
+                    setInsumoForm({
+                      id_insumo: "",
+                      nombre: "",
+                      categoria: "",
+                      unidad_medida_base: "",
+                      estado: true,
+                      clase: "",
+                    })
+                  }
+                >
                   <svg
                     width="18"
                     height="18"
@@ -103,14 +251,21 @@ function InventarioPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="hover:bg-neutral-700 cursor-pointer">
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
+                {insumosFiltrados.map((i) => (
+                  <tr
+                    key={i.id_insumo}
+                    className="hover:bg-neutral-700 cursor-pointer"
+                    onClick={() => editarInsumo(i)}
+                  >
+                    <td>{i.id_insumo}</td>
+                    <td>{i.nombre}</td>
+                    <td>{i.categoria}</td>
+                    <td>{i.clase}</td>
+                    <td>{i.unidad_medida_base}</td>
+                    <td>{i.estado ? "Activo" : "Inactivo"}</td>
+                    <td>{i.fecha_registro}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -121,6 +276,127 @@ function InventarioPage() {
         {/* FIN SIDEBAR */}
       </div>
       {/* ================= MODALES ================= */}
+      <input type="checkbox" id="modal_insumo" className="modal-toggle" />
+      <div className="modal">
+        <div className="modal-box">
+          <h3 className="font-bold text-lg">
+            {insumoForm.id_insumo ? "Editar Insumo" : "Nuevo Insumo"}
+          </h3>
+
+          <input
+            className="input input-bordered w-full my-2"
+            placeholder="Nombre"
+            value={insumoForm.nombre}
+            onChange={(e) =>
+              setInsumoForm({ ...insumoForm, nombre: e.target.value })
+            }
+          />
+
+          <select
+            className="select select-bordered w-full my-2"
+            value={insumoForm.categoria}
+            onChange={(e) =>
+              setInsumoForm({
+                ...insumoForm,
+                categoria: e.target.value,
+                unidad_medida_base: "",
+                clase: "",
+              })
+            }
+          >
+            <option value="">Seleccione categoría</option>
+            {CATEGORIAS.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+
+          <input
+            list="clases_list"
+            className="input input-bordered w-full my-2"
+            placeholder="Clase"
+            value={insumoForm.clase}
+            onChange={(e) =>
+              setInsumoForm({ ...insumoForm, clase: e.target.value })
+            }
+          />
+
+          <datalist id="clases_list">
+            {clasesDisponibles.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
+
+          <select
+            className="select select-bordered w-full my-2"
+            value={insumoForm.unidad_medida_base}
+            disabled={!insumoForm.categoria}
+            onChange={(e) =>
+              setInsumoForm({
+                ...insumoForm,
+                unidad_medida_base: e.target.value,
+              })
+            }
+          >
+            <option value="">Unidad de medida</option>
+            {(UNIDADES[insumoForm.categoria] || []).map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+
+          <label className="flex items-center gap-2 my-2">
+            <input
+              type="checkbox"
+              className="toggle toggle-success"
+              checked={insumoForm.estado}
+              onChange={(e) =>
+                setInsumoForm({ ...insumoForm, estado: e.target.checked })
+              }
+            />
+            Activo
+          </label>
+
+          <div className="modal-action flex justify-between">
+            <label
+              htmlFor="modal_insumo"
+              className="btn btn-outline"
+              onClick={() =>
+                setInsumoForm({
+                  id_insumo: "",
+                  nombre: "",
+                  categoria: "",
+                  unidad_medida_base: "",
+                  estado: true,
+                  clase: "",
+                })
+              }
+            >
+              Cancelar
+            </label>
+
+            <div className="flex gap-2">
+              {insumoForm.id_insumo && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => handleDelete(insumoForm.id_insumo)}
+                >
+                  Eliminar
+                </button>
+              )}
+
+              <button
+                className="btn btn-success"
+                onClick={() => saveInsumo.mutate()}
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

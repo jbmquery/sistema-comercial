@@ -419,3 +419,20 @@ export const marcarNotificacionVista = async (id) => {
   await api.put(`/api/notificaciones/${id}/visto`)
 }
 
+// =====================
+// INVENTARIO - INSUMOS
+// =====================
+
+export const getInsumos = async () => {
+  const { data } = await api.get("/api/insumos");
+  return data.insumos || [];
+};
+
+export const crearInsumo = (payload) =>
+  api.post("/api/insumos", payload);
+
+export const actualizarInsumo = (payload) =>
+  api.put(`/api/insumos/${payload.id_insumo}`, payload);
+
+export const eliminarInsumo = (id) =>
+  api.delete(`/api/insumos/${id}`);
