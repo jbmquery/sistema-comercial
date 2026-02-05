@@ -14,7 +14,7 @@ import {
   getProveedores,
   getCostosDia,
   crearCosto,
-  getInsumosDistinct
+  getInsumosDistinct,
 } from "../api";
 
 function VentasDiaPage() {
@@ -371,7 +371,10 @@ function VentasDiaPage() {
                 </span>
                 <button
                   className="btn btn-sm btn-primary mr-2 mb-2"
-                  onClick={() => setModalCosto(true)}
+                  onClick={() => {
+                    if (proveedores.length === 0) return;
+                    setModalCosto(true);
+                  }}
                 >
                   <svg
                     width="18"
@@ -658,8 +661,12 @@ function VentasDiaPage() {
               >
                 <option value="">Seleccionar proveedor</option>
                 {proveedores.map((p) => (
-                  <option key={p.id_proveedor} value={p.id_proveedor}>
-                    {p.nombre_proveedor}
+                  <option
+                    key={p.id_proveedor}
+                    value={p.id_proveedor}
+                    className="text-white"
+                  >
+                    {p.nombre}
                   </option>
                 ))}
               </select>
@@ -725,6 +732,7 @@ function VentasDiaPage() {
 
               <textarea
                 className="textarea textarea-bordered w-full"
+                placeholder="Observación"
                 onChange={(e) =>
                   setCostoForm({ ...costoForm, observacion: e.target.value })
                 }
