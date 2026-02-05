@@ -470,3 +470,7 @@ export const crearCosto = async (payload) => {
   const { data } = await api.post("/api/ventas-dia/costos", payload);
   return data;
 };
+export const getInsumosDistinct = async () => {
+  const { data } = await api.get("/api/ventas-dia/insumos-distinct");
+  return data.insumos || [];
+};

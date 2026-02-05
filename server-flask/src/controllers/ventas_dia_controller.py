@@ -412,3 +412,29 @@ def get_costos_dia(fecha):
     cur.close()
     conn.close()
     return data
+
+def get_insumos_distinct():
+    conn = get_connection()
+    cur = conn.cursor()
+
+    query = """
+    SELECT DISTINCT id_insumo, nombre, unidad_medida_base
+    FROM insumos
+    ORDER BY nombre;
+    """
+
+    cur.execute(query)
+    rows = cur.fetchall()
+
+    data = []
+    for r in rows:
+        data.append({
+            "id_insumo": r[0],
+            "nombre": r[1],
+            "unidad_medida_base": r[2]
+        })
+
+    cur.close()
+    conn.close()
+    return data
+

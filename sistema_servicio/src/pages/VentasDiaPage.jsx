@@ -11,10 +11,10 @@ import {
   getResumenPedidosDia,
   getCajaDia,
   getDetallePedidoVentasDia,
-  getInsumos,
   getProveedores,
   getCostosDia,
   crearCosto,
+  getInsumosDistinct
 } from "../api";
 
 function VentasDiaPage() {
@@ -27,6 +27,8 @@ function VentasDiaPage() {
   // ESTADOS
 
   const [modalCosto, setModalCosto] = useState(false);
+  const [insumoBusqueda, setInsumoBusqueda] = useState("");
+  const [insumoSugerencias, setInsumoSugerencias] = useState([]);
 
   const [costoForm, setCostoForm] = useState({
     id_insumo: "",
@@ -72,11 +74,6 @@ function VentasDiaPage() {
   });
 
   //QUERIES PARA COSTOS
-
-  const { data: insumos = [] } = useQuery({
-    queryKey: ["insumos"],
-    queryFn: getInsumos,
-  });
 
   const { data: proveedores = [] } = useQuery({
     queryKey: ["proveedores"],
@@ -149,6 +146,32 @@ function VentasDiaPage() {
   useEffect(() => {
     const total = costoForm.precio_unitario * costoForm.cantidad;
     setCostoForm((f) => ({ ...f, total_compra: total }));
+  }, [costoForm.precio_unitario, costoForm.cantidad]);
+
+  const { data: insumos = [] } = useQuery({
+    queryKey: ["insumos-distinct"],
+    queryFn: getInsumosDistinct,
+  });
+
+  useEffect(() => {
+    if (!insumoBusqueda) {
+      setInsumoSugerencias([]);
+      return;
+    }
+
+    const filtrados = insumos.filter((i) =>
+      i.nombre.toLowerCase().includes(insumoBusqueda.toLowerCase()),
+    );
+
+    setInsumoSugerencias(filtrados.slice(0, 5));
+  }, [insumoBusqueda, insumos]);
+
+  useEffect(() => {
+    const total = costoForm.precio_unitario * costoForm.cantidad;
+    setCostoForm((f) => ({
+      ...f,
+      total_compra: total || 0,
+    }));
   }, [costoForm.precio_unitario, costoForm.cantidad]);
 
   //pruebas log
@@ -599,24 +622,36 @@ function VentasDiaPage() {
               <input
                 className="input input-bordered w-full"
                 placeholder="Buscar insumo"
-                onChange={(e) => {
-                  const texto = e.target.value.toLowerCase();
-                  const match = insumos.find((i) =>
-                    i.nombre.toLowerCase().includes(texto),
-                  );
-                  if (match) {
-                    setCostoForm({
-                      ...costoForm,
-                      id_insumo: match.id_insumo,
-                      unidad_medida: match.unidad_medida_base,
-                    });
-                  }
-                }}
+                value={insumoBusqueda}
+                onChange={(e) => setInsumoBusqueda(e.target.value)}
               />
+
+              {insumoSugerencias.length > 0 && (
+                <ul className="bg-base-200 rounded-box p-2">
+                  {insumoSugerencias.map((i) => (
+                    <li
+                      key={i.id_insumo}
+                      className="cursor-pointer hover:bg-base-300 p-2 rounded"
+                      onClick={() => {
+                        setCostoForm({
+                          ...costoForm,
+                          id_insumo: i.id_insumo,
+                          unidad_medida: i.unidad_medida_base,
+                        });
+                        setInsumoBusqueda(i.nombre);
+                        setInsumoSugerencias([]);
+                      }}
+                    >
+                      {i.nombre}
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               {/* Proveedor */}
               <select
                 className="select select-bordered w-full"
+                value={costoForm.id_proveedor}
                 onChange={(e) =>
                   setCostoForm({ ...costoForm, id_proveedor: e.target.value })
                 }
@@ -657,9 +692,42 @@ function VentasDiaPage() {
 
               {/* Total */}
               <input
+                type="number"
                 className="input input-bordered w-full"
                 value={costoForm.total_compra}
-                disabled
+                onChange={(e) =>
+                  setCostoForm({
+                    ...costoForm,
+                    total_compra: Number(e.target.value),
+                  })
+                }
+              />
+
+              <input
+                className="input input-bordered w-full"
+                value={costoForm.unidad_medida}
+                onChange={(e) =>
+                  setCostoForm({ ...costoForm, unidad_medida: e.target.value })
+                }
+              />
+
+              <select
+                className="select select-bordered w-full"
+                onChange={(e) =>
+                  setCostoForm({ ...costoForm, forma_pago: e.target.value })
+                }
+              >
+                <option>Efectivo</option>
+                <option>Yape</option>
+                <option>Plin</option>
+                <option>Transferencia</option>
+              </select>
+
+              <textarea
+                className="textarea textarea-bordered w-full"
+                onChange={(e) =>
+                  setCostoForm({ ...costoForm, observacion: e.target.value })
+                }
               />
             </div>
 
