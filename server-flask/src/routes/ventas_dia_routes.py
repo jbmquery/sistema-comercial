@@ -11,7 +11,8 @@ from controllers.ventas_dia_controller import (
     get_detalle_pedido_ventas_page,
     crear_registro_costo,
     get_costos_dia,
-    get_insumos_distinct
+    get_insumos_distinct,
+    get_registros_costos_busqueda
     )
 
 ventas_dia_bp = Blueprint('ventas_dia', __name__)
@@ -110,3 +111,10 @@ def crear_costo():
 def insumos_distinct():
     data = get_insumos_distinct()
     return jsonify({"insumos": data})
+
+@ventas_dia_bp.route('/api/ventas-dia/costos-busqueda', methods=['GET'])
+@jwt_required()
+def costos_busqueda():
+    texto = request.args.get("q", "")
+    data = get_registros_costos_busqueda(texto)
+    return jsonify({"registros": data})

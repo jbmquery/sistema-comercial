@@ -438,3 +438,50 @@ def get_insumos_distinct():
     conn.close()
     return data
 
+def get_registros_costos_busqueda(texto):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    query = """
+    SELECT 
+        r.id_registro,
+        i.id_insumo,
+        i.nombre,
+        i.unidad_medida_base,
+        p.id_proveedor,
+        p.nombre_proveedor,
+        r.precio_unitario,
+        r.cantidad,
+        r.unidad_medida,
+        r.forma_pago,
+        r.observacion
+    FROM registro_costos_variables r
+    INNER JOIN insumos i ON r.id_insumo = i.id_insumo
+    LEFT JOIN proveedor p ON r.id_proveedor = p.id_proveedor
+    WHERE LOWER(i.nombre) LIKE %s
+    ORDER BY r.fecha_registro DESC, r.hora_registro DESC
+    LIMIT 10;
+    """
+
+    cur.execute(query, (f"%{texto.lower()}%",))
+    rows = cur.fetchall()
+
+    data = []
+    for r in rows:
+        data.append({
+            "id_registro": r[0],
+            "id_insumo": r[1],
+            "nombre_insumo": r[2],
+            "unidad_base": r[3],
+            "id_proveedor": r[4],
+            "nombre_proveedor": r[5],
+            "precio_unitario": float(r[6] or 0),
+            "cantidad": int(r[7] or 1),
+            "unidad_medida": r[8],
+            "forma_pago": r[9],
+            "observacion": r[10],
+        })
+
+    cur.close()
+    conn.close()
+    return data

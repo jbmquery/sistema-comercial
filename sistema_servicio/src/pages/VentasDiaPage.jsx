@@ -15,6 +15,7 @@ import {
   getCostosDia,
   crearCosto,
   getInsumosDistinct,
+  buscarCostosPrevios
 } from "../api";
 
 function VentasDiaPage() {
@@ -30,6 +31,10 @@ function VentasDiaPage() {
   const [insumoBusqueda, setInsumoBusqueda] = useState("");
   const [insumoSugerencias, setInsumoSugerencias] = useState([]);
   const [mostrarDropdownInsumo, setMostrarDropdownInsumo] = useState(false);
+  const [busquedaCostoPrevio, setBusquedaCostoPrevio] = useState("");
+  const [sugerenciasCostoPrevio, setSugerenciasCostoPrevio] = useState([]);
+  const [mostrarDropdownCostoPrevio, setMostrarDropdownCostoPrevio] =
+    useState(false);
 
   const [costoForm, setCostoForm] = useState({
     id_insumo: "",
@@ -174,6 +179,20 @@ function VentasDiaPage() {
       total_compra: total || 0,
     }));
   }, [costoForm.precio_unitario, costoForm.cantidad]);
+
+  useEffect(() => {
+    if (!busquedaCostoPrevio) {
+      setSugerenciasCostoPrevio([]);
+      return;
+    }
+
+    const fetch = async () => {
+      const data = await buscarCostosPrevios(busquedaCostoPrevio);
+      setSugerenciasCostoPrevio(data);
+    };
+
+    fetch();
+  }, [busquedaCostoPrevio]);
 
   //pruebas log
 
@@ -622,6 +641,58 @@ function VentasDiaPage() {
             <div className="divider"></div>
 
             <div className="flex flex-col gap-3">
+              {/* Buscar Compra Previa */}
+              <div className="relative w-full">
+                <input
+                  className="input input-bordered w-full input-info"
+                  placeholder="Buscar compra previa..."
+                  value={busquedaCostoPrevio}
+                  onFocus={() => setMostrarDropdownCostoPrevio(true)}
+                  onBlur={() =>
+                    setTimeout(() => setMostrarDropdownCostoPrevio(false), 150)
+                  }
+                  onChange={(e) => setBusquedaCostoPrevio(e.target.value)}
+                />
+
+                {mostrarDropdownCostoPrevio &&
+                  sugerenciasCostoPrevio.length > 0 && (
+                    <ul className="absolute z-50 mt-1 w-full menu bg-base-100 rounded-box shadow-lg max-h-60 overflow-y-auto">
+                      {sugerenciasCostoPrevio.map((r) => (
+                        <li key={r.id_registro}>
+                          <a
+                            onMouseDown={() => {
+                              setCostoForm({
+                                id_insumo: r.id_insumo,
+                                id_proveedor: r.id_proveedor || "",
+                                precio_unitario: r.precio_unitario,
+                                cantidad: r.cantidad,
+                                unidad_medida: r.unidad_medida,
+                                total_compra: r.precio_unitario * r.cantidad,
+                                forma_pago: r.forma_pago || "efectivo",
+                                observacion: r.observacion || "",
+                              });
+
+                              setInsumoBusqueda(r.nombre_insumo);
+                              setBusquedaCostoPrevio("");
+                              setMostrarDropdownCostoPrevio(false);
+                            }}
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-bold">
+                                {r.nombre_insumo}
+                              </span>
+                              <span className="text-xs opacity-70">
+                                {r.nombre_proveedor || "Sin proveedor"} · S/.{" "}
+                                {r.precio_unitario}
+                              </span>
+                            </div>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+              </div>
+
               {/* Buscar Insumo */}
               <div className="relative w-full">
                 <input

@@ -474,3 +474,10 @@ export const getInsumosDistinct = async () => {
   const { data } = await api.get("/api/ventas-dia/insumos-distinct");
   return data.insumos || [];
 };
+
+export const buscarCostosPrevios = async (q) => {
+  const { data } = await api.get("/api/ventas-dia/costos-busqueda", {
+    params: { q },
+  });
+  return data.registros || [];
+};
