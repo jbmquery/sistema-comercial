@@ -29,6 +29,7 @@ function VentasDiaPage() {
   const [modalCosto, setModalCosto] = useState(false);
   const [insumoBusqueda, setInsumoBusqueda] = useState("");
   const [insumoSugerencias, setInsumoSugerencias] = useState([]);
+  const [mostrarDropdownInsumo, setMostrarDropdownInsumo] = useState(false);
 
   const [costoForm, setCostoForm] = useState({
     id_insumo: "",
@@ -622,34 +623,50 @@ function VentasDiaPage() {
 
             <div className="flex flex-col gap-3">
               {/* Buscar Insumo */}
-              <input
-                className="input input-bordered w-full"
-                placeholder="Buscar insumo"
-                value={insumoBusqueda}
-                onChange={(e) => setInsumoBusqueda(e.target.value)}
-              />
+              <div className="relative w-full">
+                <input
+                  className="input input-bordered w-full"
+                  placeholder="Buscar insumo"
+                  value={insumoBusqueda}
+                  onFocus={() => setMostrarDropdownInsumo(true)}
+                  onBlur={() =>
+                    setTimeout(() => setMostrarDropdownInsumo(false), 150)
+                  }
+                  onChange={(e) => setInsumoBusqueda(e.target.value)}
+                />
 
-              {insumoSugerencias.length > 0 && (
-                <ul className="bg-base-200 rounded-box p-2">
-                  {insumoSugerencias.map((i) => (
-                    <li
-                      key={i.id_insumo}
-                      className="cursor-pointer hover:bg-base-300 p-2 rounded"
-                      onClick={() => {
-                        setCostoForm({
-                          ...costoForm,
-                          id_insumo: i.id_insumo,
-                          unidad_medida: i.unidad_medida_base,
-                        });
-                        setInsumoBusqueda(i.nombre);
-                        setInsumoSugerencias([]);
-                      }}
-                    >
-                      {i.nombre}
-                    </li>
-                  ))}
-                </ul>
-              )}
+                {mostrarDropdownInsumo && insumoSugerencias.length > 0 && (
+                  <ul
+                    className="
+      absolute z-50 mt-1 w-full
+      menu bg-base-100 rounded-box shadow-lg
+      max-h-60 overflow-y-auto
+    "
+                  >
+                    {insumoSugerencias.map((i) => (
+                      <li key={i.id_insumo}>
+                        <a
+                          onMouseDown={() => {
+                            setCostoForm({
+                              ...costoForm,
+                              id_insumo: i.id_insumo,
+                              unidad_medida: i.unidad_medida_base,
+                            });
+                            setInsumoBusqueda(i.nombre);
+                            setInsumoSugerencias([]);
+                            setMostrarDropdownInsumo(false);
+                          }}
+                        >
+                          {i.nombre}
+                          <span className="text-xs opacity-60 ml-2">
+                            {i.unidad_medida_base}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
 
               {/* Proveedor */}
               <select
