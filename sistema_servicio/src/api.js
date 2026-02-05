@@ -454,3 +454,19 @@ export const actualizarProveedor = (payload) =>
 
 export const eliminarProveedor = (id) =>
   api.delete(`/api/proveedores/${id}`);
+
+// =====================
+// VENTAS DIAS PAGE
+// =====================
+
+export const getCostosDia = async (fecha) => {
+  const { data } = await api.get("/api/ventas-dia/costos", {
+    params: { fecha }
+  });
+  return data.costos;
+};
+
+export const crearCosto = async (payload) => {
+  const { data } = await api.post("/api/ventas-dia/costos", payload);
+  return data;
+};

@@ -30,6 +30,7 @@ function TablesPage() {
   // Filtrar por tipo de mesa
   const mesasFisicas = mesas.filter(mesa => mesa.tipo_mesa === 'mesa');
   const mesasDelivery = mesas.filter(mesa => mesa.tipo_mesa === 'delivery');
+  const mesasLlevar = mesas.filter(mesa => mesa.tipo_mesa === 'llevar');
   //const mesasLlevar = mesas.filter(mesa => mesa.tipo_mesa === 'llevar');
 
   return (
@@ -60,13 +61,35 @@ function TablesPage() {
 
       {/* Pedidos de delivery */}
       <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8">
-        <h2 className="w-full text-center text-xl font-bold mb-4">Delivery o para llevar</h2>
+        <h2 className="w-full text-center text-xl font-bold mb-4">Delivery</h2>
         {mesasDelivery.length === 0 ? (
           <div className="text-center">
             <span className="loading loading-bars loading-md"></span>
           </div>
         ) : (
           mesasDelivery.map((mesa) => (
+            <Cards 
+              key={mesa.id_mesas}
+              id_mesas={mesa.id_mesas}
+              nombre={mesa.nombre}
+              capacidad={`${mesa.capacidad} personas`}
+              disponibilidad={mesa.disponibilidad}
+              tipo_mesa={mesa.tipo_mesa}
+            />
+
+
+          ))
+        )}
+      </div>
+            {/* Pedidos para llevar */}
+      <div className="flex flex-wrap items-center justify-center gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8">
+        <h2 className="w-full text-center text-xl font-bold mb-4">Para Llevar</h2>
+        {mesasDelivery.length === 0 ? (
+          <div className="text-center">
+            <span className="loading loading-bars loading-md"></span>
+          </div>
+        ) : (
+          mesasLlevar.map((mesa) => (
             <Cards 
               key={mesa.id_mesas}
               id_mesas={mesa.id_mesas}

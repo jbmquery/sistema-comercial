@@ -2,7 +2,7 @@
 
 import HeaderNav from "../components/header_nav.jsx";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   getProductosVendidosDia,
   getProductosPerdidaDia,
@@ -11,6 +11,10 @@ import {
   getResumenPedidosDia,
   getCajaDia,
   getDetallePedidoVentasDia,
+  getInsumos,
+  getProveedores,
+  getCostosDia,
+  crearCosto,
 } from "../api";
 
 function VentasDiaPage() {
@@ -19,6 +23,21 @@ function VentasDiaPage() {
   )
     .toISOString()
     .split("T")[0];
+
+  // ESTADOS
+
+  const [modalCosto, setModalCosto] = useState(false);
+
+  const [costoForm, setCostoForm] = useState({
+    id_insumo: "",
+    id_proveedor: "",
+    precio_unitario: 0,
+    cantidad: 1,
+    unidad_medida: "",
+    total_compra: 0,
+    forma_pago: "efectivo",
+    observacion: "",
+  });
 
   //console.log("FECHA QUE ENVÍO A LA API:", hoy);
 
@@ -50,6 +69,23 @@ function VentasDiaPage() {
   const { data: caja = null, isLoading: loadingCaja } = useQuery({
     queryKey: ["cajaDia", hoy],
     queryFn: () => getCajaDia(hoy),
+  });
+
+  //QUERIES PARA COSTOS
+
+  const { data: insumos = [] } = useQuery({
+    queryKey: ["insumos"],
+    queryFn: getInsumos,
+  });
+
+  const { data: proveedores = [] } = useQuery({
+    queryKey: ["proveedores"],
+    queryFn: getProveedores,
+  });
+
+  const { data: costos = [], refetch: refetchCostos } = useQuery({
+    queryKey: ["costos", hoy],
+    queryFn: () => getCostosDia(hoy),
   });
 
   const APERTURA = 0;
@@ -107,6 +143,13 @@ function VentasDiaPage() {
     setDetallePedido(data);
     setModalAbierto(true);
   };
+
+  // CALCULOS DE TOTALES
+
+  useEffect(() => {
+    const total = costoForm.precio_unitario * costoForm.cantidad;
+    setCostoForm((f) => ({ ...f, total_compra: total }));
+  }, [costoForm.precio_unitario, costoForm.cantidad]);
 
   //pruebas log
 
@@ -305,6 +348,7 @@ function VentasDiaPage() {
                 </span>
                 <button
                   className="btn btn-sm btn-primary mr-2 mb-2"
+                  onClick={() => setModalCosto(true)}
                 >
                   <svg
                     width="18"
@@ -333,10 +377,12 @@ function VentasDiaPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>AUN NO DISPONIBLE</td>
-                      <td>PIPIPIPI OÑO</td>
-                    </tr>
+                    {costos.map((c) => (
+                      <tr key={c.id}>
+                        <td>{c.nombre}</td>
+                        <td>S/. {c.total.toFixed(2)}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -539,6 +585,111 @@ function VentasDiaPage() {
         </dialog>
       )}
       {/* FIN Modal Detalle Pedido */}
+      {/* MODAL DE COSTOS*/}
+      {/* MODAL DE COSTOS*/}
+      {modalCosto && (
+        <dialog className="modal modal-open">
+          <div className="modal-box max-w-2xl">
+            <h3 className="font-bold text-lg">Agregar Costo / Insumo</h3>
+
+            <div className="divider"></div>
+
+            <div className="flex flex-col gap-3">
+              {/* Buscar Insumo */}
+              <input
+                className="input input-bordered w-full"
+                placeholder="Buscar insumo"
+                onChange={(e) => {
+                  const texto = e.target.value.toLowerCase();
+                  const match = insumos.find((i) =>
+                    i.nombre.toLowerCase().includes(texto),
+                  );
+                  if (match) {
+                    setCostoForm({
+                      ...costoForm,
+                      id_insumo: match.id_insumo,
+                      unidad_medida: match.unidad_medida_base,
+                    });
+                  }
+                }}
+              />
+
+              {/* Proveedor */}
+              <select
+                className="select select-bordered w-full"
+                onChange={(e) =>
+                  setCostoForm({ ...costoForm, id_proveedor: e.target.value })
+                }
+              >
+                <option value="">Seleccionar proveedor</option>
+                {proveedores.map((p) => (
+                  <option key={p.id_proveedor} value={p.id_proveedor}>
+                    {p.nombre_proveedor}
+                  </option>
+                ))}
+              </select>
+
+              {/* Precio */}
+              <input
+                type="number"
+                className="input input-bordered w-full"
+                placeholder="Precio unitario"
+                onChange={(e) =>
+                  setCostoForm({
+                    ...costoForm,
+                    precio_unitario: Number(e.target.value),
+                  })
+                }
+              />
+
+              {/* Cantidad */}
+              <input
+                type="number"
+                className="input input-bordered w-full"
+                placeholder="Cantidad"
+                onChange={(e) =>
+                  setCostoForm({
+                    ...costoForm,
+                    cantidad: Number(e.target.value),
+                  })
+                }
+              />
+
+              {/* Total */}
+              <input
+                className="input input-bordered w-full"
+                value={costoForm.total_compra}
+                disabled
+              />
+            </div>
+
+            <div className="divider"></div>
+
+            <div className="modal-action flex justify-between mt-4">
+              <button
+                className="btn btn-outline text-secondary"
+                onClick={() => setModalCosto(false)}
+              >
+                Cancelar
+              </button>
+
+              <button
+                className="btn btn-success"
+                onClick={async () => {
+                  await crearCosto(costoForm);
+                  refetchCostos();
+                  setModalCosto(false);
+                }}
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
+      {/* FIN MODAL DE COSTOS*/}
+
+      {/* FIN MODAL DE COSTOS*/}
     </div>
   );
 }

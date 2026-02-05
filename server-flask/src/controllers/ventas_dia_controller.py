@@ -1,6 +1,7 @@
-#ventas_dia_controller.py
-
+# server-flask/src/controllers/ventas_dia_controller.py
 from conexion_postgresql import get_connection
+from datetime import datetime
+from flask_jwt_extended import get_jwt_identity
 
 def get_productos_vendidos_por_dia(fecha):
     conn = get_connection()
@@ -334,3 +335,80 @@ def get_detalle_pedido_ventas_page(id_pedido):
     conn.close()
 
     return {"detalles": detalles, "total": round(total, 2)}
+
+def crear_registro_costo(data, id_usuario):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    query = """
+    INSERT INTO registro_costos_variables (
+        id_insumo,
+        id_proveedor,
+        precio_unitario,
+        cantidad,
+        unidad_medida,
+        total_compra,
+        forma_pago,
+        fecha_registro,
+        hora_registro,
+        observacion,
+        id_usuario
+    )
+    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    RETURNING id_registro;
+    """
+
+    ahora = datetime.now()
+
+    cur.execute(query, (
+        data["id_insumo"],
+        data["id_proveedor"],
+        data["precio_unitario"],
+        data["cantidad"],
+        data["unidad_medida"],
+        data["total_compra"],
+        data["forma_pago"],
+        ahora.date(),
+        ahora.time(),
+        data.get("observacion"),
+        id_usuario
+    ))
+
+    id_registro = cur.fetchone()[0]
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return {"id_registro": id_registro}
+
+
+def get_costos_dia(fecha):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    query = """
+    SELECT 
+        r.id_registro,
+        i.nombre,
+        r.total_compra
+    FROM registro_costos_variables r
+    INNER JOIN insumos i ON r.id_insumo = i.id_insumo
+    WHERE r.fecha_registro = %s
+    ORDER BY r.hora_registro DESC;
+    """
+
+    cur.execute(query, (fecha,))
+    rows = cur.fetchall()
+
+    data = []
+    for r in rows:
+        data.append({
+            "id": r[0],
+            "nombre": r[1],
+            "total": float(r[2] or 0)
+        })
+
+    cur.close()
+    conn.close()
+    return data

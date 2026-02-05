@@ -209,10 +209,10 @@ function MarcarAsistenciaPage() {
                   ✅ Registro habilitado 30 minutos antes del turno seleccionado.
                 </li>
                 <li>✅ Confirma con un clic en el botón.</li>
-                <li>✅ Marcación obligatoria: entrada + salida</li>
+                {/* <li>✅ Marcación obligatoria: entrada + salida</li> */}
               </ol>
               <br />
-              <span className="text-warning font-bold">Reglas</span>
+{/*               <span className="text-warning font-bold">Reglas</span>
               <ol className="list-inside space-y-2 text-sm ml-5">
                 <li>⏰ 10 min de tolerancia máxima sin descuento.</li>
                 <li>
@@ -227,7 +227,7 @@ function MarcarAsistenciaPage() {
               <span className="text-secondary font-bold">Advertencia</span>
               <ol className="list-inside space-y-2 text-sm ml-5">
                 <li>‼️ El registro de asistencia es responsabilidad individual y definitiva; al ser un proceso automático, el sistema no permite ajustes manuales ni reclamaciones por omisión de registro ‼️</li>
-              </ol>
+              </ol> */}
             </div>
             <div className="modal-action">
               <button

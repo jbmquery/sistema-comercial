@@ -8,7 +8,9 @@ from controllers.ventas_dia_controller import (
     get_ventas_por_mesa_dia,
     get_resumen_pedidos_por_dia,
     get_caja_dia,
-    get_detalle_pedido_ventas_page
+    get_detalle_pedido_ventas_page,
+    crear_registro_costo,
+    get_costos_dia
     )
 
 ventas_dia_bp = Blueprint('ventas_dia', __name__)
@@ -86,3 +88,18 @@ def pedido_detalle(id_pedido):
     return jsonify(data)
 
 
+@ventas_dia_bp.route('/api/ventas-dia/costos', methods=['GET'])
+@jwt_required()
+def costos_dia():
+    fecha = request.args.get('fecha')
+    data = get_costos_dia(fecha)
+    return jsonify({"costos": data})
+
+@ventas_dia_bp.route('/api/ventas-dia/costos', methods=['POST'])
+@jwt_required()
+def crear_costo():
+    data = request.json
+    id_usuario = get_jwt_identity()
+
+    result = crear_registro_costo(data, id_usuario)
+    return jsonify(result), 201
