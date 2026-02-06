@@ -15,7 +15,7 @@ import {
   getCostosDia,
   crearCosto,
   getInsumosDistinct,
-  buscarCostosPrevios
+  buscarCostosPrevios,
 } from "../api";
 
 function VentasDiaPage() {
@@ -35,6 +35,7 @@ function VentasDiaPage() {
   const [sugerenciasCostoPrevio, setSugerenciasCostoPrevio] = useState([]);
   const [mostrarDropdownCostoPrevio, setMostrarDropdownCostoPrevio] =
     useState(false);
+  const [costosPreviosCache, setCostosPreviosCache] = useState([]);
 
   const [costoForm, setCostoForm] = useState({
     id_insumo: "",
@@ -182,17 +183,16 @@ function VentasDiaPage() {
 
   useEffect(() => {
     if (!busquedaCostoPrevio) {
-      setSugerenciasCostoPrevio([]);
+      setSugerenciasCostoPrevio(costosPreviosCache.slice(0, 10));
       return;
     }
 
-    const fetch = async () => {
-      const data = await buscarCostosPrevios(busquedaCostoPrevio);
-      setSugerenciasCostoPrevio(data);
-    };
+    const filtrados = costosPreviosCache.filter((r) =>
+      r.nombre_insumo.toLowerCase().includes(busquedaCostoPrevio.toLowerCase()),
+    );
 
-    fetch();
-  }, [busquedaCostoPrevio]);
+    setSugerenciasCostoPrevio(filtrados.slice(0, 10));
+  }, [busquedaCostoPrevio, costosPreviosCache]);
 
   //pruebas log
 
@@ -391,8 +391,12 @@ function VentasDiaPage() {
                 </span>
                 <button
                   className="btn btn-sm btn-primary mr-2 mb-2"
-                  onClick={() => {
+                  onClick={async () => {
                     if (proveedores.length === 0) return;
+
+                    const data = await buscarCostosPrevios(""); // vacío trae todo
+                    setCostosPreviosCache(data);
+
                     setModalCosto(true);
                   }}
                 >
@@ -760,10 +764,13 @@ function VentasDiaPage() {
               </select>
 
               {/* Precio */}
-              <input
+              <div className="flex flex-row gap-2 items-center">
+                <span className="text-xs min-w-25">Precio Unitario</span>
+                <input
                 type="number"
                 className="input input-bordered w-full"
                 placeholder="Precio unitario"
+                value={costoForm.precio_unitario}
                 onChange={(e) =>
                   setCostoForm({
                     ...costoForm,
@@ -771,12 +778,16 @@ function VentasDiaPage() {
                   })
                 }
               />
+              </div>
 
               {/* Cantidad */}
-              <input
+              <div className="flex flex-row gap-2 items-center">
+                <span className="text-xs min-w-25">Cantidad</span>
+                <input
                 type="number"
                 className="input input-bordered w-full"
                 placeholder="Cantidad"
+                value={costoForm.cantidad}
                 onChange={(e) =>
                   setCostoForm({
                     ...costoForm,
@@ -785,8 +796,11 @@ function VentasDiaPage() {
                 }
               />
 
+              </div>
               {/* Total */}
-              <input
+              <div className="flex flex-row gap-2 items-center">
+                <span className="text-xs min-w-25">Total precio</span>
+                <input
                 type="number"
                 className="input input-bordered w-full"
                 value={costoForm.total_compra}
@@ -797,16 +811,23 @@ function VentasDiaPage() {
                   })
                 }
               />
+              </div>
 
-              <input
+              {/* Unidad_medida */}
+              <div className="flex flex-row gap-2 items-center">
+                <span className="text-xs min-w-25">Unidad Medida</span>
+                <input
                 className="input input-bordered w-full"
                 value={costoForm.unidad_medida}
                 onChange={(e) =>
                   setCostoForm({ ...costoForm, unidad_medida: e.target.value })
                 }
               />
+              </div>
 
-              <select
+              <div className="flex flex-row gap-2 items-center">
+                <span className="text-xs min-w-25">Tipo de pago</span>
+                <select
                 className="select select-bordered w-full"
                 onChange={(e) =>
                   setCostoForm({ ...costoForm, forma_pago: e.target.value })
@@ -817,6 +838,7 @@ function VentasDiaPage() {
                 <option>Plin</option>
                 <option>Transferencia</option>
               </select>
+              </div>
 
               <textarea
                 className="textarea textarea-bordered w-full"
