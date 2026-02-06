@@ -16,6 +16,8 @@ import {
   crearCosto,
   getInsumosDistinct,
   buscarCostosPrevios,
+  crearCaja,
+  cerrarCaja,
 } from "../api";
 
 function VentasDiaPage() {
@@ -36,6 +38,11 @@ function VentasDiaPage() {
   const [mostrarDropdownCostoPrevio, setMostrarDropdownCostoPrevio] =
     useState(false);
   const [costosPreviosCache, setCostosPreviosCache] = useState([]);
+  const [modalCaja, setModalCaja] = useState(false);
+  const [modoCaja, setModoCaja] = useState("apertura"); // apertura | cierre
+  const [montoApertura, setMontoApertura] = useState(0);
+  const [dineroReal, setDineroReal] = useState(0);
+  const [observacionCaja, setObservacionCaja] = useState("");
 
   const [costoForm, setCostoForm] = useState({
     id_insumo: "",
@@ -75,7 +82,11 @@ function VentasDiaPage() {
     queryFn: () => getResumenPedidosDia(hoy),
   });
 
-  const { data: caja = null, isLoading: loadingCaja } = useQuery({
+  const {
+    data: caja = null,
+    isLoading: loadingCaja,
+    refetch: refetchCaja,
+  } = useQuery({
     queryKey: ["cajaDia", hoy],
     queryFn: () => getCajaDia(hoy),
   });
@@ -215,7 +226,19 @@ function VentasDiaPage() {
             </span>
           </div>
           <div className="flex flex-row gap-2 justify-end">
-            <button className="btn btn-md btn-info">Abrir Caja</button>
+            <button
+              className="btn btn-md btn-info"
+              onClick={() => {
+                if (!caja) {
+                  setModoCaja("apertura");
+                } else {
+                  setModoCaja("cierre");
+                }
+                setModalCaja(true);
+              }}
+            >
+              {!caja ? "Abrir Caja" : "Cerrar Caja"}
+            </button>
           </div>
         </div>
         {/* Cuerpo de cuadros */}
@@ -766,77 +789,79 @@ function VentasDiaPage() {
               <div className="flex flex-row gap-2 items-center">
                 <span className="text-xs min-w-25">Precio Unitario</span>
                 <input
-                type="number"
-                className="input input-bordered w-full"
-                placeholder="Precio unitario"
-                value={costoForm.precio_unitario}
-                onChange={(e) =>
-                  setCostoForm({
-                    ...costoForm,
-                    precio_unitario: Number(e.target.value),
-                  })
-                }
-              />
+                  type="number"
+                  className="input input-bordered w-full"
+                  placeholder="Precio unitario"
+                  value={costoForm.precio_unitario}
+                  onChange={(e) =>
+                    setCostoForm({
+                      ...costoForm,
+                      precio_unitario: Number(e.target.value),
+                    })
+                  }
+                />
               </div>
 
               {/* Cantidad */}
               <div className="flex flex-row gap-2 items-center">
                 <span className="text-xs min-w-25">Cantidad</span>
                 <input
-                type="number"
-                className="input input-bordered w-full"
-                placeholder="Cantidad"
-                value={costoForm.cantidad}
-                onChange={(e) =>
-                  setCostoForm({
-                    ...costoForm,
-                    cantidad: Number(e.target.value),
-                  })
-                }
-              />
-
+                  type="number"
+                  className="input input-bordered w-full"
+                  placeholder="Cantidad"
+                  value={costoForm.cantidad}
+                  onChange={(e) =>
+                    setCostoForm({
+                      ...costoForm,
+                      cantidad: Number(e.target.value),
+                    })
+                  }
+                />
               </div>
               {/* Total */}
               <div className="flex flex-row gap-2 items-center">
                 <span className="text-xs min-w-25">Total precio</span>
                 <input
-                type="number"
-                className="input input-bordered w-full"
-                value={costoForm.total_compra}
-                onChange={(e) =>
-                  setCostoForm({
-                    ...costoForm,
-                    total_compra: Number(e.target.value),
-                  })
-                }
-              />
+                  type="number"
+                  className="input input-bordered w-full"
+                  value={costoForm.total_compra}
+                  onChange={(e) =>
+                    setCostoForm({
+                      ...costoForm,
+                      total_compra: Number(e.target.value),
+                    })
+                  }
+                />
               </div>
 
               {/* Unidad_medida */}
               <div className="flex flex-row gap-2 items-center">
                 <span className="text-xs min-w-25">Unidad Medida</span>
                 <input
-                className="input input-bordered w-full"
-                value={costoForm.unidad_medida}
-                onChange={(e) =>
-                  setCostoForm({ ...costoForm, unidad_medida: e.target.value })
-                }
-              />
+                  className="input input-bordered w-full"
+                  value={costoForm.unidad_medida}
+                  onChange={(e) =>
+                    setCostoForm({
+                      ...costoForm,
+                      unidad_medida: e.target.value,
+                    })
+                  }
+                />
               </div>
 
               <div className="flex flex-row gap-2 items-center">
                 <span className="text-xs min-w-25">Tipo de pago</span>
                 <select
-                className="select select-bordered w-full"
-                onChange={(e) =>
-                  setCostoForm({ ...costoForm, forma_pago: e.target.value })
-                }
-              >
-                <option>Efectivo</option>
-                <option>Yape</option>
-                <option>Plin</option>
-                <option>Transferencia</option>
-              </select>
+                  className="select select-bordered w-full"
+                  onChange={(e) =>
+                    setCostoForm({ ...costoForm, forma_pago: e.target.value })
+                  }
+                >
+                  <option>Efectivo</option>
+                  <option>Yape</option>
+                  <option>Plin</option>
+                  <option>Transferencia</option>
+                </select>
               </div>
 
               <textarea
@@ -873,8 +898,90 @@ function VentasDiaPage() {
         </dialog>
       )}
       {/* FIN MODAL DE COSTOS*/}
+      {/* MODAL CAJA*/}
+      {modalCaja && (
+        <dialog className="modal modal-open">
+          <div className="modal-box max-w-md">
+            {modoCaja === "apertura" ? (
+              <>
+                <h3 className="font-bold text-lg">
+                  Hola Usuario. Estás aperturando la caja
+                </h3>
 
-      {/* FIN MODAL DE COSTOS*/}
+                <input
+                  type="number"
+                  className="input input-bordered w-full mt-4"
+                  placeholder="Monto apertura"
+                  value={montoApertura}
+                  onChange={(e) => setMontoApertura(Number(e.target.value))}
+                />
+              </>
+            ) : (
+              <>
+                <h3 className="font-bold text-lg">
+                  Hola Usuario. Estás cerrando la caja
+                </h3>
+
+                <label>Dinero esperado</label>
+                <input
+                  className="input input-bordered w-full"
+                  value={dineroEnCaja}
+                  disabled
+                />
+
+                <label className="mt-2">Dinero real</label>
+                <input
+                  type="number"
+                  className="input input-bordered w-full"
+                  value={dineroReal}
+                  onChange={(e) => setDineroReal(Number(e.target.value))}
+                />
+
+                <label>Diferencia</label>
+                <input
+                  className="input input-bordered w-full"
+                  value={(dineroEnCaja - dineroReal).toFixed(2)}
+                  disabled
+                />
+
+                <textarea
+                  className="textarea textarea-bordered w-full mt-2"
+                  placeholder="Observación"
+                  onChange={(e) => setObservacionCaja(e.target.value)}
+                />
+              </>
+            )}
+
+            <div className="modal-action flex justify-between">
+              <button className="btn" onClick={() => setModalCaja(false)}>
+                Cerrar
+              </button>
+
+              <button
+                className="btn btn-success"
+                onClick={async () => {
+                  if (modoCaja === "apertura") {
+                    await crearCaja({ monto_apertura: montoApertura });
+                  } else {
+                    await cerrarCaja({
+                      dinero_real: dineroReal,
+                      dinero_esperado: dineroEnCaja,
+                      observacion: observacionCaja,
+                    });
+                  }
+
+                  setModalCaja(false);
+                  refetchCaja(); // usa react query
+                }}
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
+
+      {/* FIN MODAL CAJA*/}
     </div>
   );
 }

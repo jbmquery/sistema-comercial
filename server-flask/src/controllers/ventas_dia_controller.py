@@ -241,7 +241,22 @@ def get_resumen_pedidos_por_dia(fecha):
 def get_caja_dia(fecha):
     conn = get_connection()
     cur = conn.cursor()
+    # 1. VERIFICAR SI EXISTE CAJA
+    cur.execute(
+        "SELECT id_caja, monto_apertura FROM caja WHERE fecha = %s",
+        (fecha,)
+    )
+    caja_row = cur.fetchone()
 
+    if not caja_row:
+        cur.close()
+        conn.close()
+        return None  # ← CLAVE
+
+    id_caja = caja_row[0]
+    monto_apertura = float(caja_row[1] or 0)
+
+    # 2. SI EXISTE, CALCULAR MOVIMIENTOS DEL DÍA
     query = """
     SELECT 
         COALESCE(SUM(pg.monto_total) FILTER (WHERE pg.metodo_pago = 'efectivo'), 0.00) AS efectivo,
@@ -485,3 +500,68 @@ def get_registros_costos_busqueda(texto):
     cur.close()
     conn.close()
     return data
+
+#CAJA
+
+def crear_caja(data, id_usuario):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    hoy = datetime.now().date()
+
+    # validar existente
+    cur.execute("SELECT id_caja FROM caja WHERE fecha=%s", (hoy,))
+    if cur.fetchone():
+        return {"error": "YA EXISTE CAJA"}
+
+    query = """
+    INSERT INTO caja(
+        fecha,
+        id_usuario_apertura,
+        hora_apertura,
+        monto_apertura,
+        estado
+    )
+    VALUES (%s,%s,%s,%s,true)
+    RETURNING id_caja;
+    """
+
+    cur.execute(query, (
+        hoy,
+        id_usuario,
+        datetime.now().time(),
+        data["monto_apertura"]
+    ))
+
+    conn.commit()
+
+
+def cerrar_caja(data, id_usuario):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    hoy = datetime.now().date()
+
+    query = """
+    UPDATE caja
+    SET dinero_real=%s,
+        dinero_esperado=%s,
+        diferencia=%s,
+        observacion=%s,
+        hora_cierre=%s,
+        id_usuario_cierre=%s,
+        estado=false
+    WHERE fecha=%s;
+    """
+
+    cur.execute(query, (
+        data["dinero_real"],
+        data["dinero_esperado"],
+        data["dinero_esperado"] - data["dinero_real"],
+        data["observacion"],
+        datetime.now().time(),
+        id_usuario,
+        hoy
+    ))
+
+    conn.commit()

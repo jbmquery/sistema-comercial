@@ -481,3 +481,16 @@ export const buscarCostosPrevios = async (q) => {
   });
   return data.registros || [];
 };
+
+
+/* CAJA */
+
+export const crearCaja = async (payload) => {
+  const { data } = await api.post("/api/caja/apertura", payload);
+  return data;
+};
+
+export const cerrarCaja = async (payload) => {
+  const { data } = await api.put("/api/caja/cierre", payload);
+  return data;
+};
