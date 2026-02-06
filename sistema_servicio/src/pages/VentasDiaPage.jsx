@@ -93,7 +93,7 @@ function VentasDiaPage() {
   });
 
   const APERTURA = 0;
-  const COSTOS = 0;
+  const COSTOS = costos.reduce((acc, c) => acc + Number(c.total || 0), 0);
 
   const efectivo = caja?.efectivo || 0;
   const yape = caja?.yape || 0;
@@ -215,7 +215,6 @@ function VentasDiaPage() {
             </span>
           </div>
           <div className="flex flex-row gap-2 justify-end">
-            <button className="btn btn-md btn-secondary">Añadir Costos</button>
             <button className="btn btn-md btn-info">Abrir Caja</button>
           </div>
         </div>
