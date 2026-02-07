@@ -290,6 +290,7 @@ def get_caja_dia(fecha):
     r = cur.fetchone()
 
     resultado = {
+        "monto_apertura": monto_apertura,
         "efectivo": float(r[0] or 0),
         "yape": float(r[1] or 0),
         "plin": float(r[2] or 0),

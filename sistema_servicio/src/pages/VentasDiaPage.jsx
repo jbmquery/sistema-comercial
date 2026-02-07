@@ -43,7 +43,7 @@ function VentasDiaPage() {
   const [montoApertura, setMontoApertura] = useState(0);
   const [dineroReal, setDineroReal] = useState(0);
   const [observacionCaja, setObservacionCaja] = useState("");
-
+  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
   const [costoForm, setCostoForm] = useState({
     id_insumo: "",
     id_proveedor: "",
@@ -103,7 +103,7 @@ function VentasDiaPage() {
     queryFn: () => getCostosDia(hoy),
   });
 
-  const APERTURA = 0;
+  const APERTURA = caja?.monto_apertura || 0;
   const COSTOS = costos.reduce((acc, c) => acc + Number(c.total || 0), 0);
 
   const efectivo = caja?.efectivo || 0;
@@ -904,10 +904,17 @@ function VentasDiaPage() {
           <div className="modal-box max-w-md">
             {modoCaja === "apertura" ? (
               <>
-                <h3 className="font-bold text-lg">
-                  Hola Usuario. Estás aperturando la caja
-                </h3>
-
+                <div className="flex flex-col gap-2 mb-5">
+                  <h3 className="font-bold text-lg">
+                    Hola {usuario.apodo || "Usuario"}
+                  </h3>
+                  <div className="flex flex-col text-xs lg:text-sm">
+                    <span>Estás por aperturar la caja.</span>
+                    <span>- Ingresa el monto que se te indica.</span>
+                    <span>- Toda compra del día debe de provenir de este monto inicial. Para que al finalizar el día todo cuadre.</span>
+                  </div>
+                </div>
+                <div className="divider"></div>
                 <input
                   type="number"
                   className="input input-bordered w-full mt-4"
@@ -918,10 +925,17 @@ function VentasDiaPage() {
               </>
             ) : (
               <>
-                <h3 className="font-bold text-lg">
-                  Hola Usuario. Estás cerrando la caja
-                </h3>
-
+                <div className="flex flex-col gap-2 mb-5">
+                  <h3 className="font-bold text-lg">
+                    Hola {usuario.apodo || "Usuario"}
+                  </h3>
+                  <div className="flex flex-col text-xs lg:text-sm">
+                    <span>Estás por cerrar la caja. Verifica lo siguiente:</span>
+                    <span>- La DIFERENCIA debe ser CERO.</span>
+                    <span>- En caso no cuadre, consultar con su encargado y colocar en OBSERVACION que es lo que sucedió.</span>
+                  </div>
+                </div>
+                <div className="divider"></div>
                 <label>Dinero esperado</label>
                 <input
                   className="input input-bordered w-full"
@@ -929,7 +943,7 @@ function VentasDiaPage() {
                   disabled
                 />
 
-                <label className="mt-2">Dinero real</label>
+                <label className="mt-2">Dinero real en caja</label>
                 <input
                   type="number"
                   className="input input-bordered w-full"
@@ -953,7 +967,7 @@ function VentasDiaPage() {
             )}
 
             <div className="modal-action flex justify-between">
-              <button className="btn" onClick={() => setModalCaja(false)}>
+              <button className="btn btn-outline btn-secondary" onClick={() => setModalCaja(false)}>
                 Cerrar
               </button>
 

@@ -12,7 +12,9 @@ from controllers.ventas_dia_controller import (
     crear_registro_costo,
     get_costos_dia,
     get_insumos_distinct,
-    get_registros_costos_busqueda
+    get_registros_costos_busqueda,
+    crear_caja,
+    cerrar_caja
     )
 
 ventas_dia_bp = Blueprint('ventas_dia', __name__)
@@ -118,3 +120,20 @@ def costos_busqueda():
     texto = request.args.get("q", "")
     data = get_registros_costos_busqueda(texto)
     return jsonify({"registros": data})
+
+@ventas_dia_bp.route('/api/caja/apertura', methods=['POST'])
+@jwt_required()
+def apertura_caja():
+    data = request.json
+    id_usuario = get_jwt_identity()
+    result = crear_caja(data, id_usuario)
+    return jsonify(result), 201
+
+
+@ventas_dia_bp.route('/api/caja/cierre', methods=['PUT'])
+@jwt_required()
+def cierre_caja():
+    data = request.json
+    id_usuario = get_jwt_identity()
+    result = cerrar_caja(data, id_usuario)
+    return jsonify(result), 200
