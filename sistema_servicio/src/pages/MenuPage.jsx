@@ -1,31 +1,38 @@
 // sistema_servicio/src/pages/MenuPage.jsx
 import HeaderCom from "../components/header_com";
 import CardsMenu from "../components/cardsmenu";
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useState, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCartaMenu, crearPedido } from "../api";
 
 function Menues() {
-
   const location = useLocation();
   const { nombreMesa, idMesa } = location.state || {};
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
-  const [carrito, setCarrito] = useState([]);
+
+  const [carrito, setCarrito] = useState(() => {
+    const guardado = localStorage.getItem("carrito");
+    return guardado ? JSON.parse(guardado) : [];
+  });
 
   const categorias = [
     { id: 1, nombre: "Bebidas" },
     { id: 2, nombre: "Postres" },
     { id: 3, nombre: "Toppings" },
-    { id: 4, nombre: "Promos" }
+    { id: 4, nombre: "Promos" },
   ];
 
   const [categoria, setCategoria] = useState(categorias[0].nombre);
 
   const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
   const idUsuario = usuario.id_usuario;
+
+  useEffect(() => {
+    localStorage.setItem("carrito", JSON.stringify(carrito));
+  }, [carrito]);
 
   // =========================
   // ✅ REACT QUERY OPTIMIZADO
@@ -36,10 +43,10 @@ function Menues() {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["carta", categoria],          // 👈 CLAVE CORRECTA
+    queryKey: ["carta", categoria], // 👈 CLAVE CORRECTA
     queryFn: () => getCartaMenu({ categoria }),
     keepPreviousData: true,
-    staleTime: 60_000,       // 1 min "fresco"
+    staleTime: 60_000, // 1 min "fresco"
     refetchOnWindowFocus: true,
   });
 
@@ -52,8 +59,8 @@ function Menues() {
     const resultado = {};
 
     Object.entries(data).forEach(([subcat, productos]) => {
-      const filtrados = productos.filter(p =>
-        p.nombre.toLowerCase().includes(search.toLowerCase())
+      const filtrados = productos.filter((p) =>
+        p.nombre.toLowerCase().includes(search.toLowerCase()),
       );
 
       if (filtrados.length > 0) {
@@ -70,13 +77,15 @@ function Menues() {
   // CARRITO (SIN CAMBIOS)
   // =========================
   const agregarAlCarrito = (producto) => {
-    setCarrito(prev => {
-      const existente = prev.find(item => item.id_carta === producto.id_carta);
+    setCarrito((prev) => {
+      const existente = prev.find(
+        (item) => item.id_carta === producto.id_carta,
+      );
       if (existente) {
-        return prev.map(item =>
+        return prev.map((item) =>
           item.id_carta === producto.id_carta
             ? { ...item, cantidad: item.cantidad + 1 }
-            : item
+            : item,
         );
       } else {
         return [...prev, { ...producto, cantidad: 1 }];
@@ -86,18 +95,20 @@ function Menues() {
   };
 
   const eliminarDelCarrito = (id_carta) => {
-    setCarrito(prev =>
-      prev.map(item =>
-        item.id_carta === id_carta
-          ? { ...item, cantidad: item.cantidad - 1 }
-          : item
-      ).filter(item => item.cantidad > 0)
+    setCarrito((prev) =>
+      prev
+        .map((item) =>
+          item.id_carta === id_carta
+            ? { ...item, cantidad: item.cantidad - 1 }
+            : item,
+        )
+        .filter((item) => item.cantidad > 0),
     );
   };
 
   const subtotalGeneral = useMemo(() => {
     return carrito
-      .reduce((total, item) => total + (item.precio * item.cantidad), 0)
+      .reduce((total, item) => total + item.precio * item.cantidad, 0)
       .toFixed(2);
   }, [carrito]);
 
@@ -111,6 +122,7 @@ function Menues() {
     onSuccess: () => {
       alert("✅ Pedido guardado y mesa ocupada");
       setCarrito([]);
+      localStorage.removeItem("carrito");
 
       queryClient.invalidateQueries({ queryKey: ["pedidos"] });
       queryClient.invalidateQueries({ queryKey: ["mesas"] });
@@ -124,7 +136,7 @@ function Menues() {
     },
   });
 
-  const detalles = carrito.flatMap(item =>
+  const detalles = carrito.flatMap((item) =>
     Array.from({ length: item.cantidad }).map(() => ({
       id_carta: item.id_carta,
       cantidad: 1,
@@ -132,8 +144,8 @@ function Menues() {
       observacion: "",
       es_canjeable: false,
       estado: "pendiente",
-      cuenta: 1
-    }))
+      cuenta: 1,
+    })),
   );
 
   const guardarPedido = () => {
@@ -158,7 +170,7 @@ function Menues() {
       puntos_canjeados_total: 0,
       monto_pagado: 0,
       monto_vuelto: 0,
-      detalles
+      detalles,
     };
 
     crearPedidoMutation.mutate(pedido);
@@ -181,22 +193,21 @@ function Menues() {
   const mostrarAlerta = () => {
     const id = Date.now();
 
-    setAlerts(prev => [...prev, { id, visible: true }]);
+    setAlerts((prev) => [...prev, { id, visible: true }]);
 
     setTimeout(() => {
-      setAlerts(prev =>
-        prev.map(a => (a.id === id ? { ...a, visible: false } : a))
+      setAlerts((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, visible: false } : a)),
       );
     }, 800);
 
     setTimeout(() => {
-      setAlerts(prev => prev.filter(a => a.id !== id));
+      setAlerts((prev) => prev.filter((a) => a.id !== id));
     }, 1000);
   };
 
   return (
     <div className="flex flex-col min-h-screen">
-
       {/* ALERTAS (igual) */}
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 space-y-2">
         {alerts.map((alert) => (
@@ -217,9 +228,7 @@ function Menues() {
       </div>
 
       <div className="flex-1 flex flex-col md:flex-row justify-start lg:justify-center bg-neutral-800">
-
         <div className="md:w-250">
-
           {/* CATEGORÍAS (ahora limpian buscador) */}
           <div className="flex flex-wrap bg-success justify-center items-center gap-2 py-2">
             {categorias.map((cat) => (
@@ -232,7 +241,7 @@ function Menues() {
                 }`}
                 onClick={() => {
                   setCategoria(cat.nombre);
-                  setSearch("");        // 👈 LIMPIA BUSCADOR
+                  setSearch(""); // 👈 LIMPIA BUSCADOR
                 }}
               >
                 {cat.nombre}
@@ -242,7 +251,9 @@ function Menues() {
 
           {/* BUSCADOR VISUAL (SIN REQUEST) */}
           <div className="bg-neutral-600 flex flex-row justify-between py-2 px-4 items-center">
-            <p>Pedido para: <b>{nombreMesa}</b></p>
+            <p>
+              Pedido para: <b>{nombreMesa}</b>
+            </p>
             <input
               type="text"
               className="input w-35 md:w-60 lg:w-80 text-gray-200 bg-neutral-800"
@@ -255,7 +266,11 @@ function Menues() {
           {/* PRODUCTOS (usa productosFiltrados) */}
           <div
             className="bg-neutral-500 flex w-full flex-col py-2 px-4 m-0 overflow-y-auto"
-            style={{ maxHeight: 'calc(100vh - 192px)', minHeight: '0', flex: '1 1 auto' }}
+            style={{
+              maxHeight: "calc(100vh - 192px)",
+              minHeight: "0",
+              flex: "1 1 auto",
+            }}
           >
             {isLoading ? (
               <p className="text-center p-4">Cargando productos...</p>
@@ -264,8 +279,6 @@ function Menues() {
                 ❌ Error al cargar el menú. Intenta nuevamente.
               </p>
             ) : Object.keys(productosFiltrados).length > 0 ? (
-
-
               Object.entries(productosFiltrados).map(([subcat, prods]) => (
                 <div key={subcat} className="mb-6">
                   <div className="divider divider-start">
@@ -273,7 +286,6 @@ function Menues() {
                   </div>
 
                   <div className="flex flex-wrap items-center justify-center xl:justify-start gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
-
                     {Object.entries(agruparPorGrupo(prods)).map(
                       ([grupo, productosGrupo]) => (
                         <CardsMenu
@@ -282,13 +294,11 @@ function Menues() {
                           productos={productosGrupo}
                           onAdd={agregarAlCarrito}
                         />
-                      )
+                      ),
                     )}
-
                   </div>
                 </div>
               ))
-
             ) : (
               <p className="text-center p-4">No hay productos</p>
             )}
@@ -303,19 +313,27 @@ function Menues() {
             </div>
 
             {carrito.length === 0 ? (
-              <p className="text-center text-gray-500">No hay productos en el pedido</p>
+              <p className="text-center text-gray-500">
+                No hay productos en el pedido
+              </p>
             ) : (
               carrito.map((item) => {
                 const subtotal = (item.precio * item.cantidad).toFixed(2);
                 return (
-                  <div key={item.id_carta} className="flex flex-row justify-between mb-4">
+                  <div
+                    key={item.id_carta}
+                    className="flex flex-row justify-between mb-4"
+                  >
                     <div className="flex flex-col">
                       <p>
                         - {item.nombre}{" "}
-                        {item.porcion ? `(${item.porcion} ${item.unidad_medida})` : ""}
+                        {item.porcion
+                          ? `(${item.porcion} ${item.unidad_medida})`
+                          : ""}
                       </p>
                       <p className="italic">
-                        S/ {Number(item.precio).toFixed(2)} - x{item.cantidad} - S/ {subtotal}
+                        S/ {Number(item.precio).toFixed(2)} - x{item.cantidad} -
+                        S/ {subtotal}
                       </p>
                     </div>
 
@@ -363,7 +381,6 @@ function Menues() {
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );
