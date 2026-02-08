@@ -494,3 +494,5 @@ export const cerrarCaja = async (payload) => {
   const { data } = await api.put("/api/caja/cierre", payload);
   return data;
 };
+
+/* PROXIMOS */
