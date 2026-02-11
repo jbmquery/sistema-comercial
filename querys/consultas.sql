@@ -378,3 +378,30 @@ CREATE TABLE IF NOT EXISTS public.registro_costos_variables
         ON UPDATE CASCADE
         ON DELETE RESTRICT
 )
+
+CREATE TABLE IF NOT EXISTS public.empleados
+(
+    id_empleado bigint NOT NULL DEFAULT nextval('empleado_id_empleado_seq'::regclass),
+    id_usuario bigint NOT NULL,
+    id_sede bigint,
+    sueldo numeric(10,2),
+    tipo_contrato character varying(30) COLLATE pg_catalog."default", -- FULL-TIME - PART-TIME - HORAS - INDEPENDIENTE
+    fecha_inicio date NOT NULL,
+    fecha_fin date,
+    estado boolean NOT NULL DEFAULT true,
+    tipo_usuario bigint,
+    observacion text COLLATE pg_catalog."default",
+    CONSTRAINT empleados_pkey PRIMARY KEY (id_empleado),
+    CONSTRAINT fk_empleado_sede FOREIGN KEY (id_sede)
+        REFERENCES public.sedes (id_sede) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE,
+    CONSTRAINT fk_empleado_tipo_usuario FOREIGN KEY (tipo_usuario)
+        REFERENCES public.niveles_usuarios (id_tipo_usuario) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT fk_empleado_usuario FOREIGN KEY (id_usuario)
+        REFERENCES public.usuarios (id_usuario) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE
+)

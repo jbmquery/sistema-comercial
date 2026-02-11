@@ -233,6 +233,33 @@ function InfoDatosPage() {
               </table>
             </div>
           </div>
+          {/* INFORMACION EMPLEADOS */}
+
+          <div className="w-full items-center my-6 flex flex-col gap-6">
+            <span className="font-bold text-2xl">Contratos</span>
+            {/* ================= TABLA CONTRATOS ================= */}
+            <div className="overflow-x-auto bg-black rounded shadow select-none w-full max-w-5xl">
+              <table className="table table-sm">
+                <thead className="sticky top-0 z-0 bg-black shadow-md">
+                  <tr>
+                    <th>Sede</th>
+                    <th>Sueldo</th>
+                    <th>Tipo contrato</th>
+                    <th>Turno</th>
+                    <th>Cargo</th>
+                    <th>Estado</th>
+                    <th>Fecha inicio</th>
+                    <th>Fecha fin</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="hover:bg-neutral-700">
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
         <SiderbarInfo activePage="personales"></SiderbarInfo>
       </div>

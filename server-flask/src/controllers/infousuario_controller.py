@@ -1,4 +1,5 @@
 # server-flask/src/controllers/infousuario_controller.py
+# AQUI VA INFORMACION TABLA USUARIOS Y EMPLEADOS
 from flask_jwt_extended import get_jwt_identity
 from conexion_postgresql import get_connection
 

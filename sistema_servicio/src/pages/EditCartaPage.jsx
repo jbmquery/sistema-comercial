@@ -263,7 +263,7 @@ function EditCartaPage() {
 
     deleteCategoria.mutate(id, {
       onSuccess: () => {
-        setMensajeOk("Categoría eliminada correctamente");
+        setMensajeOk("🗑️ Categoría eliminada correctamente");
         setTimeout(() => setMensajeOk(""), 2500);
       },
       onError: (error) => {
