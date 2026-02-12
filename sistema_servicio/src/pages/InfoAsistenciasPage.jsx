@@ -203,7 +203,7 @@ function InfoAsistenciasPage() {
                         >
                           {a.minutos_tarde}
                         </td>
-                        <td>{a.observacion}</td>
+                        <td className="min-w-80">{a.observacion}</td>
                       </tr>
                     ))}
                   </tbody>
