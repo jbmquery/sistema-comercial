@@ -11,6 +11,17 @@ function InfoDatosPage() {
     queryFn: getMiInformacion,
   });
 
+  const formatearFechaLarga = (fecha) => {
+    if (!fecha) return "";
+
+    return new Date(fecha).toLocaleDateString("es-PE", {
+      timeZone:"UTC",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="w-full shadow-md h-screen bg-neutral-800">
@@ -177,7 +188,7 @@ function InfoDatosPage() {
                       </div>
                       <div className="flex flex-col text-base md:text-lg">
                         <span className="font-bold">Fecha de nacimiento</span>
-                        <span>{data.fecha_nacimiento || "01/01/2026"}</span>
+                        <span>{formatearFechaLarga(data.fecha_nacimiento || "01/01/2026")}</span>
                       </div>
                     </td>
                   </tr>
@@ -225,7 +236,7 @@ function InfoDatosPage() {
                       </div>
                       <div className="flex flex-col text-base md:text-lg">
                         <span className="font-bold">Fecha de Contratación</span>
-                        <span>{data.fecha_contratacion || "01/01/2026"}</span>
+                        <span>{formatearFechaLarga(data.fecha_contratacion || "01/01/2026")}</span>
                       </div>
                     </td>
                   </tr>
@@ -239,8 +250,8 @@ function InfoDatosPage() {
             <span className="font-bold text-2xl">Contratos</span>
             {/* ================= TABLA CONTRATOS ================= */}
             <div className="overflow-x-auto bg-black rounded shadow select-none w-full max-w-5xl">
-              <table className="table table-sm">
-                <thead className="sticky top-0 z-0 bg-black shadow-md">
+              <table className="table table-sm ">
+                <thead className="sticky top-0 z-0 bg-black shadow-md text-base">
                   <tr>
                     <th>Sede</th>
                     <th>Sueldo</th>
@@ -253,9 +264,18 @@ function InfoDatosPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="hover:bg-neutral-700">
-                    <td></td>
-                  </tr>
+                  {data.contratos?.map((c, i) => (
+                    <tr key={i} className="hover:bg-neutral-700">
+                      <td className="min-w-15 text-base">{c.sede || "-"}</td>
+                      <td className="text-base">{c.sueldo}</td>
+                      <td className="text-base">{c.tipo_contrato}</td>
+                      <td className="text-base">{c.turno_referencia}</td>
+                      <td className="text-base">{c.cargo}</td>
+                      <td className="text-base">{c.estado ? "Activo" : "Inactivo"}</td>
+                      <td className="min-w-25 text-base">{formatearFechaLarga(c.fecha_inicio)}</td>
+                      <td className="min-w-25 text-base">{formatearFechaLarga(c.fecha_fin || "")}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
