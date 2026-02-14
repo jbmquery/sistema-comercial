@@ -55,6 +55,9 @@ def crear_pedido(data):
         # =========================
         detalles = data.get("detalles", [])
 
+        temp_map = {}  # tempId → id_detalle real
+
+        # PRIMERA PASADA: INSERTAR TODO
         for det in detalles:
             cursor.execute("""
                 INSERT INTO detalle_pedido (
@@ -67,15 +70,35 @@ def crear_pedido(data):
                     estado
                 )
                 VALUES (%s,%s,%s,%s,%s,%s,%s)
+                RETURNING id_detalle
             """, (
                 id_pedido,
                 det["id_carta"],
-                1,  # 👈 SIEMPRE 1, tal como pediste
+                1,
                 det.get("precio_unitario"),
                 det.get("observacion", ""),
                 det.get("es_canjeable", False),
                 det.get("estado", "pendiente")
             ))
+
+            id_detalle_real = cursor.fetchone()[0]
+            temp_map[det["tempId"]] = id_detalle_real
+
+
+        # SEGUNDA PASADA: ACTUALIZAR PADRES (TOPPINGS)
+        for det in detalles:
+            parent_temp = det.get("parentTempId")
+
+            if parent_temp:
+                cursor.execute("""
+                    UPDATE detalle_pedido
+                    SET id_detalle_padre = %s
+                    WHERE id_detalle = %s
+                """, (
+                    temp_map[parent_temp],       # padre real
+                    temp_map[det["tempId"]]      # hijo real
+                ))
+
 
         # =========================
         # 3️⃣ OCUPAR MESA

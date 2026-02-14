@@ -17,6 +17,10 @@ function Menues() {
     const guardado = localStorage.getItem("carrito");
     return guardado ? JSON.parse(guardado) : [];
   });
+  const [modalTopping, setModalTopping] = useState(false);
+  const [productoTopping, setProductoTopping] = useState(null);
+
+  const generarTempId = () => Date.now() + Math.random();
 
   const categorias = [
     { id: 1, nombre: "Bebidas" },
@@ -77,39 +81,52 @@ function Menues() {
   // CARRITO (SIN CAMBIOS)
   // =========================
   const agregarAlCarrito = (producto) => {
-    setCarrito((prev) => {
-      const existente = prev.find(
-        (item) => item.id_carta === producto.id_carta,
-      );
-      if (existente) {
-        return prev.map((item) =>
-          item.id_carta === producto.id_carta
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item,
-        );
-      } else {
-        return [...prev, { ...producto, cantidad: 1 }];
-      }
-    });
+    const esTopping = categoria === "Toppings";
+
+    if (!esTopping) {
+      setCarrito((prev) => [
+        ...prev,
+        {
+          ...producto,
+          cantidad: 1,
+          tipo: "producto",
+          tempId: generarTempId(),
+          parentTempId: null,
+        },
+      ]);
+    } else {
+      setProductoTopping(producto);
+      setModalTopping(true);
+    }
+
     mostrarAlerta();
   };
 
-  const eliminarDelCarrito = (id_carta) => {
-    setCarrito((prev) =>
-      prev
-        .map((item) =>
-          item.id_carta === id_carta
-            ? { ...item, cantidad: item.cantidad - 1 }
-            : item,
-        )
-        .filter((item) => item.cantidad > 0),
-    );
+  const eliminarDelCarrito = (tempId) => {
+    setCarrito((prev) => prev.filter((item) => item.tempId !== tempId));
   };
 
   const subtotalGeneral = useMemo(() => {
     return carrito
       .reduce((total, item) => total + item.precio * item.cantidad, 0)
       .toFixed(2);
+  }, [carrito]);
+
+  const carritoAgrupado = useMemo(() => {
+    const mapa = {};
+
+    carrito.forEach((item) => {
+      const key =
+        item.id_carta + "-" + item.tipo + "-" + (item.parentTempId || "root");
+
+      if (!mapa[key]) {
+        mapa[key] = { ...item };
+      } else {
+        mapa[key].cantidad += 1;
+      }
+    });
+
+    return Object.values(mapa);
   }, [carrito]);
 
   // =========================
@@ -136,17 +153,17 @@ function Menues() {
     },
   });
 
-  const detalles = carrito.flatMap((item) =>
-    Array.from({ length: item.cantidad }).map(() => ({
-      id_carta: item.id_carta,
-      cantidad: 1,
-      precio_unitario: item.precio,
-      observacion: "",
-      es_canjeable: false,
-      estado: "pendiente",
-      cuenta: 1,
-    })),
-  );
+  const detalles = carrito.map((item) => ({
+    id_carta: item.id_carta,
+    cantidad: item.cantidad,
+    precio_unitario: item.precio,
+    observacion: "",
+    es_canjeable: false,
+    estado: "pendiente",
+    cuenta: 1,
+    tempId: item.tempId,
+    parentTempId: item.parentTempId,
+  }));
 
   const guardarPedido = () => {
     if (carrito.length === 0) {
@@ -285,7 +302,7 @@ function Menues() {
                     <b>{subcat}</b>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-center xl:justify-start gap-4 p-4 md:gap-6 lg:gap-8 md:p-6 lg:p-8 max-w-5xl">
+                  <div className="flex flex-wrap items-center justify-center xl:justify-start gap-2 p-3 md:gap-6 lg:gap-4 md:p-6 lg:p-8 max-w-5xl">
                     {Object.entries(agruparPorGrupo(prods)).map(
                       ([grupo, productosGrupo]) => (
                         <CardsMenu
@@ -317,11 +334,11 @@ function Menues() {
                 No hay productos en el pedido
               </p>
             ) : (
-              carrito.map((item) => {
+              carritoAgrupado.map((item) => {
                 const subtotal = (item.precio * item.cantidad).toFixed(2);
                 return (
                   <div
-                    key={item.id_carta}
+                    key={item.tempId}
                     className="flex flex-row justify-between mb-4"
                   >
                     <div className="flex flex-col">
@@ -339,7 +356,7 @@ function Menues() {
 
                     <button
                       className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center"
-                      onClick={() => eliminarDelCarrito(item.id_carta)}
+                      onClick={() => eliminarDelCarrito(item.tempId)}
                     >
                       <img
                         src="../src/img/eliminar.png"
@@ -382,6 +399,49 @@ function Menues() {
           </div>
         </div>
       </div>
+      {/* MODAL TOPPINGS */}
+      {modalTopping && (
+        <dialog className="modal modal-open">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">Seleccionar producto</h3>
+
+            <div className="divider"></div>
+
+            {carrito
+              .filter((i) => i.tipo === "producto")
+              .map((item, idx) => (
+                <button
+                  key={item.tempId}
+                  className="btn btn-outline w-full mb-2"
+                  onClick={() => {
+                    setCarrito((prev) => [
+                      ...prev,
+                      {
+                        ...productoTopping,
+                        cantidad: 1,
+                        tipo: "topping",
+                        tempId: generarTempId(),
+                        parentTempId: item.tempId,
+                      },
+                    ]);
+                    setModalTopping(false);
+                  }}
+                >
+                  {idx + 1} - {item.nombre} ({item.porcion} {item.unidad_medida}
+                  )
+                </button>
+              ))}
+
+            <div className="modal-action">
+              <button className="btn" onClick={() => setModalTopping(false)}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
+
+      {/* FIN MODAL TOPPINGS */}
     </div>
   );
 }
