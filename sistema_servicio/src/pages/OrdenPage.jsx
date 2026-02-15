@@ -39,7 +39,6 @@ function OrdenPage() {
   const [mesaSeleccionada, setMesaSeleccionada] = useState(null);
   const hayPedidoSeleccionado = !!idPedido;
 
-
   // Estados para el modal de Agregar Producto
   const [mostrarModalProducto, setMostrarModalProducto] = useState(false);
   const [productoSel, setProductoSel] = useState(null);
@@ -87,7 +86,7 @@ function OrdenPage() {
     },
   });
 
-  const { data: detalles = []} = useQuery({
+  const { data: detalles = [] } = useQuery({
     queryKey: ["pedido", idPedido],
     queryFn: () => getPedidoDetalle(idPedido),
     enabled: !!idPedido,
@@ -175,7 +174,7 @@ function OrdenPage() {
 
   // Agregar Pago compuesto
 
- /*  const agregarPago = () => {
+  /*  const agregarPago = () => {
     setPagos([...pagos, { metodo: "efectivo", monto: "" }]);
   }; */
 
@@ -407,7 +406,7 @@ function OrdenPage() {
                                 className="checkbox checkbox-primary"
                               />
                             </td>
-                            <td>
+                            <td className ='min-w-30'>
                               {d.nombre}
                               {d.porcion && (
                                 <span className="opacity-70">
@@ -586,6 +585,7 @@ function OrdenPage() {
                 </div>
               </div>
             </div>
+            {/* FIN PRODUCTOS A PAGAR */}
           </div>
           {/* SIDEBAR */}
           <div className="drawer-side">
