@@ -129,6 +129,21 @@ function Menues() {
     return Object.values(mapa);
   }, [carrito]);
 
+  const toppingsPorProducto = useMemo(() => {
+    const mapa = {};
+
+    carrito.forEach((item) => {
+      if (item.tipo === "topping" && item.parentTempId) {
+        if (!mapa[item.parentTempId]) {
+          mapa[item.parentTempId] = [];
+        }
+        mapa[item.parentTempId].push(item.abreviado);
+      }
+    });
+
+    return mapa;
+  }, [carrito]);
+
   // =========================
   // MUTATION (SIN CAMBIOS)
   // =========================
@@ -412,7 +427,7 @@ function Menues() {
               .map((item, idx) => (
                 <button
                   key={item.tempId}
-                  className="btn btn-outline w-full mb-2"
+                  className="btn btn-outline w-full mb-2 flex flex-row justify-start"
                   onClick={() => {
                     setCarrito((prev) => [
                       ...prev,
@@ -429,11 +444,19 @@ function Menues() {
                 >
                   {idx + 1} - {item.nombre} ({item.porcion} {item.unidad_medida}
                   )
+                  {toppingsPorProducto[item.tempId] && (
+                    <span className="ml-2 text-xs text-success">
+                      ({toppingsPorProducto[item.tempId].join(") - (")})
+                    </span>
+                  )}
                 </button>
               ))}
 
-            <div className="modal-action">
-              <button className="btn" onClick={() => setModalTopping(false)}>
+            <div className="modal-action flex flex-row justify-start">
+              <button
+                className="btn btn-outline btn-secondary"
+                onClick={() => setModalTopping(false)}
+              >
                 Cancelar
               </button>
             </div>
