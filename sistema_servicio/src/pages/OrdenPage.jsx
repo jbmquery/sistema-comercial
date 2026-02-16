@@ -53,10 +53,26 @@ function OrdenPage() {
 
   //CheckBox Logic
 
-  const toggleDetalle = (id) => {
-    setSeleccionados((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+  const toggleDetalle = (idPadre) => {
+    const padre = detallesAgrupados.find((p) => p.id_detalle === idPadre);
+    if (!padre) return;
+
+    const idsPadreEHijos = [
+      padre.id_detalle,
+      ...padre.toppings.map((t) => t.id_detalle),
+    ];
+
+    setSeleccionados((prev) => {
+      const yaSeleccionado = prev.includes(padre.id_detalle);
+
+      if (yaSeleccionado) {
+        // QUITAR padre + hijos
+        return prev.filter((id) => !idsPadreEHijos.includes(id));
+      } else {
+        // AGREGAR padre + hijos
+        return Array.from(new Set([...prev, ...idsPadreEHijos]));
+      }
+    });
   };
 
   // Resumen de cuenta
@@ -425,7 +441,7 @@ function OrdenPage() {
                               />
                             </td>
 
-                            <td className="min-w-30">
+                            <td className="min-w-27">
                               {d.nombre}
                               {d.porcion && (
                                 <span className="opacity-70">
@@ -436,12 +452,14 @@ function OrdenPage() {
                             </td>
 
                             {/* TOPPINGS */}
-                            <td>
-                              {d.toppings.length > 0
-                                ? d.toppings
-                                    .map((t) => `(${t.nombre})`)
-                                    .join(", ")
-                                : ""}
+                            <td className="min-w-31 text-accent">
+                              {d.toppings.length > 0 && (
+                                <ul className="list-disc pl-4">
+                                  {d.toppings.map((t) => (
+                                    <li key={t.id_detalle}>{t.nombre}</li>
+                                  ))}
+                                </ul>
+                              )}
                             </td>
 
                             <td>{d.observacion}</td>
@@ -808,7 +826,9 @@ function OrdenPage() {
                         <td>
                           {p.porcion} {p.unidad_medida}
                         </td>
-                        <td className="text-right">S/ {p.precio.toFixed(2)}</td>
+                        <td className="text-right min-w-20">
+                          S/ {p.precio.toFixed(2)}
+                        </td>
                       </tr>
                     ))
                   ) : (
