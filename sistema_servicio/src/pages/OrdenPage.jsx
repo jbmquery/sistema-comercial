@@ -406,7 +406,7 @@ function OrdenPage() {
                                 className="checkbox checkbox-primary"
                               />
                             </td>
-                            <td className ='min-w-30'>
+                            <td className="min-w-30">
                               {d.nombre}
                               {d.porcion && (
                                 <span className="opacity-70">

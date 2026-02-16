@@ -295,8 +295,6 @@ def actualizar_observacion_detalle(id_detalle, observacion):
         if conn:
             conn.close()
 
-from conexion_postgresql import get_connection
-
 def cambiar_mesa_pedido(id_pedido, id_mesa_nueva):
     conn = get_connection()
     cursor = conn.cursor()

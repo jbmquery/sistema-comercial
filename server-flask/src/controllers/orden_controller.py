@@ -40,7 +40,8 @@ def get_pedido_detalle(id_pedido):
             d.observacion,
             c.nombre,
             c.porcion,
-            c.unidad_medida
+            c.unidad_medida,
+            d.id_detalle_padre
         FROM detalle_pedido d
         JOIN carta c ON c.id_carta = d.id_carta
         WHERE d.id_pedido = %s
@@ -58,7 +59,8 @@ def get_pedido_detalle(id_pedido):
         "observacion": r[4],
         "nombre": r[5],
         "porcion": r[6],
-        "unidad_medida": r[7]
+        "unidad_medida": r[7],
+        "id_detalle_padre": r[8]
     } for r in rows]
 
     cur.close()
