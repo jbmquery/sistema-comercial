@@ -1014,7 +1014,39 @@ function OrdenPage() {
           <div className="modal-box max-w-md">
             <h3 className="font-bold text-lg">Actualizar Producto</h3>
             <div className="divider"></div>
-
+            <div className="flex flex-col gap-3 mb-3">
+              <span>Lista de Toppings</span>
+              <div className="flex-grow overflow-y-auto border rounded-lg bg-base-200">
+                <table className="table table-pin-rows table-sm">
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Chantilly</td>
+                    </tr>
+                    <tr>
+                      <td>Chin Chin</td>
+                    </tr>
+                    <tr>
+                      <td>Helado</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex flex-row gap-2">
+                <div className="badge badge-primary gap-2 p-3">
+                  Chantilly
+                  <button>✕</button> 
+                </div>
+                <div className="badge badge-primary gap-2 p-3">
+                  Chin Chin
+                  <button>✕</button>
+                </div>
+              </div>
+            </div>
             <textarea
               className="textarea textarea-bordered w-full"
               placeholder="Observación"
