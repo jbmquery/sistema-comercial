@@ -137,7 +137,7 @@ def actualizar_detalle_producto(id_detalle):
             cur.execute("""
                 INSERT INTO detalle_pedido
                 (id_pedido, id_carta, cantidad, precio_unitario, estado, cuenta, id_detalle_padre)
-                SELECT id_pedido, %s, 1, precio, 'pendiente', cuenta, %s
+                SELECT id_pedido, %s, 1, precio_unitario, 'pendiente', cuenta, %s
                 FROM detalle_pedido
                 WHERE id_detalle = %s
             """, (id_carta, id_detalle, id_detalle))

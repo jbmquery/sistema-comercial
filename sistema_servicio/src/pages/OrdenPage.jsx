@@ -1041,31 +1041,23 @@ function OrdenPage() {
                 <table className="table table-pin-rows table-sm">
                   <thead>
                     <tr>
-                      <th></th>
                       <th>Nombre</th>
                     </tr>
                   </thead>
                   <tbody>
                     {toppingsData.map((t) => (
-                      <tr key={t.id_carta}>
-                        <td>
-                          <input
-                            type="checkbox"
-                            checked={toppingsSeleccionados.includes(t.id_carta)}
-                            onChange={() => {
-                              if (toppingsSeleccionados.includes(t.id_carta)) {
-                                setToppingsSeleccionados((prev) =>
-                                  prev.filter((id) => id !== t.id_carta),
-                                );
-                              } else {
-                                setToppingsSeleccionados((prev) => [
-                                  ...prev,
-                                  t.id_carta,
-                                ]);
-                              }
-                            }}
-                          />
-                        </td>
+                      <tr
+                        key={t.id_carta}
+                        className="cursor-pointer hover:bg-primary hover:text-white"
+                        onClick={() => {
+                          if (toppingsSeleccionados.includes(t.id_carta))
+                            return;
+                          setToppingsSeleccionados((prev) => [
+                            ...prev,
+                            t.id_carta,
+                          ]);
+                        }}
+                      >
                         <td>{t.nombre}</td>
                       </tr>
                     ))}
@@ -1073,13 +1065,26 @@ function OrdenPage() {
                 </table>
               </div>
               <div className="flex flex-row gap-2">
-                <div className="badge badge-primary gap-2 p-3">
-                  Chantilly
-                  <button>✕</button>
-                </div>
-                <div className="badge badge-primary gap-2 p-3">
-                  Chin Chin
-                  <button>✕</button>
+                <div className="flex flex-wrap gap-2">
+                  {toppingsSeleccionados.map((id) => {
+                    const topping = toppingsData.find((t) => t.id_carta === id);
+                    if (!topping) return null;
+
+                    return (
+                      <div key={id} className="badge badge-primary gap-2 p-3">
+                        {topping.nombre}
+                        <button
+                          onClick={() =>
+                            setToppingsSeleccionados((prev) =>
+                              prev.filter((x) => x !== id),
+                            )
+                          }
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
