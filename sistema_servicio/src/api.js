@@ -495,4 +495,13 @@ export const cerrarCaja = async (payload) => {
   return data;
 };
 
-/* PROXIMOS */
+/* TOPPINGS */
+export const getToppings = async () => {
+  const { data } = await api.get("/api/toppings");
+  return data;
+};
+
+export const actualizarDetalleProducto = async ({ idDetalle, payload }) => {
+  const { data } = await api.put(`/api/detalle/${idDetalle}`, payload);
+  return data;
+};

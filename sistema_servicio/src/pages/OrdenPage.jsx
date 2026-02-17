@@ -21,6 +21,8 @@ import {
   generarVoucherWhatsapp,
   cambiarMesaPedido,
   getMesas,
+  getToppings,
+  actualizarDetalleProducto,
 } from "../api";
 
 import { useParams } from "react-router-dom";
@@ -50,6 +52,8 @@ function OrdenPage() {
   const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
   const [detalleEditar, setDetalleEditar] = useState(null);
   const [obsEditar, setObsEditar] = useState("");
+  const [toppingsDisponibles, setToppingsDisponibles] = useState([]);
+  const [toppingsSeleccionados, setToppingsSeleccionados] = useState([]);
 
   //CheckBox Logic
 
@@ -260,6 +264,15 @@ function OrdenPage() {
     },
   });
 
+  const actualizarProductoMutation = useMutation({
+    mutationFn: actualizarDetalleProducto,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["pedido", idPedido]);
+      setMostrarModalEditar(false);
+      setDetalleEditar(null);
+    },
+  });
+
   /*--cerrar DrawerMobile---*/
 
   const cerrarDrawerMobile = () => {
@@ -284,6 +297,11 @@ function OrdenPage() {
   const productosFiltrados = todosLosProductos.filter((p) =>
     p.nombre.toLowerCase().includes(busquedaProducto.toLowerCase()),
   );
+
+  const { data: toppingsData = [] } = useQuery({
+    queryKey: ["toppings"],
+    queryFn: getToppings,
+  });
 
   // Mutation de Cambiar Mesa
 
@@ -470,6 +488,9 @@ function OrdenPage() {
                                 onClick={() => {
                                   setDetalleEditar(d);
                                   setObsEditar(d.observacion || "");
+                                  setToppingsSeleccionados(
+                                    d.toppings.map((t) => t.id_carta),
+                                  );
                                   setMostrarModalEditar(true);
                                 }}
                               >
@@ -1024,22 +1045,36 @@ function OrdenPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>Chantilly</td>
-                    </tr>
-                    <tr>
-                      <td>Chin Chin</td>
-                    </tr>
-                    <tr>
-                      <td>Helado</td>
-                    </tr>
+                    {toppingsData.map((t) => (
+                      <tr key={t.id_carta}>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={toppingsSeleccionados.includes(t.id_carta)}
+                            onChange={() => {
+                              if (toppingsSeleccionados.includes(t.id_carta)) {
+                                setToppingsSeleccionados((prev) =>
+                                  prev.filter((id) => id !== t.id_carta),
+                                );
+                              } else {
+                                setToppingsSeleccionados((prev) => [
+                                  ...prev,
+                                  t.id_carta,
+                                ]);
+                              }
+                            }}
+                          />
+                        </td>
+                        <td>{t.nombre}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
               <div className="flex flex-row gap-2">
                 <div className="badge badge-primary gap-2 p-3">
                   Chantilly
-                  <button>✕</button> 
+                  <button>✕</button>
                 </div>
                 <div className="badge badge-primary gap-2 p-3">
                   Chin Chin
@@ -1068,9 +1103,12 @@ function OrdenPage() {
               <button
                 className="btn btn-success"
                 onClick={() =>
-                  editarObservacionMutation.mutate({
+                  actualizarProductoMutation.mutate({
                     idDetalle: detalleEditar.id_detalle,
-                    observacion: obsEditar,
+                    payload: {
+                      observacion: obsEditar,
+                      toppings: toppingsSeleccionados,
+                    },
                   })
                 }
               >
