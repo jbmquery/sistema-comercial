@@ -1037,10 +1037,11 @@ function OrdenPage() {
             <div className="divider"></div>
             <div className="flex flex-col gap-3 mb-3">
               <span>Lista de Toppings</span>
-              <div className="flex-grow overflow-y-auto border rounded-lg bg-base-200">
+              <div className="overflow-x-auto border rounded shadow select-none max-h-[200px] overflow-y-auto">
                 <table className="table table-pin-rows table-sm">
                   <thead>
                     <tr>
+                      <th></th>
                       <th>Nombre</th>
                     </tr>
                   </thead>
