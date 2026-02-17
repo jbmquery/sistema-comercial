@@ -15,7 +15,6 @@ import {
   agregarDetallePedido,
   getCartaOrden,
   actualizarEstadoDetalle,
-  actualizarObservacionDetalle,
   imprimirCocina,
   imprimirVoucher,
   generarVoucherWhatsapp,
@@ -52,7 +51,6 @@ function OrdenPage() {
   const [mostrarModalEditar, setMostrarModalEditar] = useState(false);
   const [detalleEditar, setDetalleEditar] = useState(null);
   const [obsEditar, setObsEditar] = useState("");
-  const [toppingsDisponibles, setToppingsDisponibles] = useState([]);
   const [toppingsSeleccionados, setToppingsSeleccionados] = useState([]);
 
   //CheckBox Logic
@@ -244,23 +242,6 @@ function OrdenPage() {
     },
     onError: (err) => {
       alert(err.response?.data?.error || "Error al actualizar producto");
-    },
-  });
-
-  // Actualizar Observacion Mutation
-
-  const editarObservacionMutation = useMutation({
-    mutationFn: actualizarObservacionDetalle,
-    onSuccess: (res) => {
-      setMensajeOk(res.mensaje);
-      queryClient.invalidateQueries(["pedido", idPedido]);
-      setMostrarModalEditar(false);
-      setDetalleEditar(null);
-      setObsEditar("");
-      setTimeout(() => setMensajeOk(""), 3000);
-    },
-    onError: (err) => {
-      alert(err.response?.data?.error || "Error al actualizar observación");
     },
   });
 
