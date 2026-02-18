@@ -227,15 +227,18 @@ def actualizar_estado_detalle(id_detalle, nuevo_estado):
         if row[0] != 'pendiente':
             return {"success": False, "error": "El producto ya no está pendiente"}
 
-        # Actualizar estado
+        # Actualizar padre + hijos
         cursor.execute("""
             UPDATE detalle_pedido
             SET estado = %s
             WHERE id_detalle = %s
+            OR id_detalle_padre = %s
             RETURNING id_pedido
-        """, (nuevo_estado, id_detalle))
+        """, (nuevo_estado, id_detalle, id_detalle))
 
-        id_pedido = cursor.fetchone()[0]
+        row = cursor.fetchone()
+        id_pedido = row[0]
+
 
         recalcular_estado_pedido(conn, id_pedido)
         conn.commit()
