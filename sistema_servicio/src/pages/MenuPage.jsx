@@ -2,7 +2,7 @@
 import HeaderCom from "../components/header_com";
 import CardsMenu from "../components/cardsmenu";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getCartaMenu, crearPedido } from "../api";
 
@@ -21,6 +21,8 @@ function Menues() {
 
   const [modalTopping, setModalTopping] = useState(false);
   const [productoTopping, setProductoTopping] = useState(null);
+  const [resumenAbierto, setResumenAbierto] = useState(false);
+  const resumenRef = useRef(null);
 
   const generarTempId = () => Date.now() + Math.random();
 
@@ -242,6 +244,21 @@ function Menues() {
     }, 1000);
   };
 
+  // =========================
+  // ABRIR CERRAR RESUMEN DINAMICO (CLICK AFUERA)
+  // =========================
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (resumenRef.current && !resumenRef.current.contains(e.target)) {
+        setResumenAbierto(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* ALERTAS (igual) */}
@@ -301,7 +318,7 @@ function Menues() {
 
           {/* PRODUCTOS (usa productosFiltrados) */}
           <div
-            className="bg-neutral-500 flex w-full flex-col py-2 px-4 m-0 overflow-y-auto"
+            className="bg-neutral-500 flex w-full flex-col pt-2 pb-12 px-4 m-0 overflow-y-auto"
             style={{
               maxHeight: "calc(100vh - 192px)",
               minHeight: "0",
@@ -341,83 +358,137 @@ function Menues() {
           </div>
         </div>
 
-        {/* RESUMEN (SIN CAMBIOS) */}
-        <div className="md:w-100 bg-neutral-800 pt-2 pb-10 px-4 flex flex-col justify-between">
-          <div>
-            <div className="pb-5 pt-3">
-              <b>RESUMEN DEL PEDIDO:</b>
-            </div>
-
-            {carrito.length === 0 ? (
-              <p className="text-center text-gray-500">
-                No hay productos en el pedido
-              </p>
-            ) : (
-              carritoAgrupado.map((item) => {
-                const subtotal = (item.precio * item.cantidad).toFixed(2);
-                return (
-                  <div
-                    key={item.tempId}
-                    className="flex flex-row justify-between mb-4"
-                  >
-                    <div className="flex flex-col">
-                      <p>
-                        - {item.nombre}{" "}
-                        {item.porcion
-                          ? `(${item.porcion} ${item.unidad_medida})`
-                          : ""}
-                      </p>
-                      <p className="italic">
-                        S/ {Number(item.precio).toFixed(2)} - x{item.cantidad} -
-                        S/ {subtotal}
-                      </p>
-                    </div>
-
-                    <button
-                      className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center"
-                      onClick={() => eliminarDelCarrito(item.tempId)}
-                    >
-                      <img
-                        src="../src/img/eliminar.png"
-                        alt="Eliminar"
-                        className="w-10 h-10"
-                      />
-                    </button>
-                  </div>
-                );
-              })
-            )}
-
-            <div className="pb-10">
-              <div className="divider divider-start">
-                <b>SUB-TOTAL</b>
-              </div>
-              <div className="flex justify-end bg-red italic">
-                <b>S/ {subtotalGeneral}</b>
-              </div>
-            </div>
+        {/* RESUMEN RESPONSIVE */}
+        <div
+          ref={resumenRef}
+          className={`
+    rounded-t-4xl fixed bottom-0 left-0 w-full z-40
+    bg-neutral-700 px-4 pt-2 pb-6
+    transition-transform duration-300
+    ${resumenAbierto ? "translate-y-0" : "translate-y-[calc(100%-60px)]"}
+    
+    md:static md:translate-y-0 md:w-100 md:pb-10
+  `}
+        >
+          {/* FLECHA */}
+          <div className="flex justify-center mb-2 md:hidden">
+            <button
+              className="text-white rounded-full p-2 bg-accent shadow-lg"
+              onClick={() => setResumenAbierto(!resumenAbierto)}
+            >
+              {resumenAbierto ? (
+                // Flecha hacia abajo
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-7 h-7"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                  />
+                </svg>
+              ) : (
+                // Flecha hacia arriba
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-7 h-7"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                  />
+                </svg>
+              )}
+            </button>
           </div>
 
-          <div className="flex flex-row justify-between gap-4">
-            <button
-              type="button"
-              className="btn btn-md btn-outline text-secondary"
-              onClick={() => {
-                setCarrito([]);
-                localStorage.removeItem(`carrito_${idMesa}`);
-              }}
-            >
-              Cancelar
-            </button>
+          <div className="flex flex-col justify-between max-h-[70vh] overflow-y-auto">
+            <div>
+              <div className="pb-5 pt-3">
+                <b>RESUMEN DEL PEDIDO:</b>
+              </div>
 
-            <button
-              type="button"
-              className="btn btn-md btn-accent"
-              onClick={guardarPedido}
-              disabled={carrito.length === 0 || crearPedidoMutation.isLoading}
-            >
-              {crearPedidoMutation.isLoading ? "Guardando..." : "Guardar"}
-            </button>
+              {carrito.length === 0 ? (
+                <p className="text-center text-gray-500">
+                  No hay productos en el pedido
+                </p>
+              ) : (
+                carritoAgrupado.map((item) => {
+                  const subtotal = (item.precio * item.cantidad).toFixed(2);
+                  return (
+                    <div
+                      key={item.tempId}
+                      className="flex flex-row justify-between mb-4"
+                    >
+                      <div className="flex flex-col">
+                        <p>
+                          - {item.nombre}{" "}
+                          {item.porcion
+                            ? `(${item.porcion} ${item.unidad_medida})`
+                            : ""}
+                        </p>
+                        <p className="italic">
+                          S/ {Number(item.precio).toFixed(2)} - x{item.cantidad}{" "}
+                          - S/ {subtotal}
+                        </p>
+                      </div>
+
+                      <button
+                        className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center"
+                        onClick={() => eliminarDelCarrito(item.tempId)}
+                      >
+                        <img
+                          src="../src/img/eliminar.png"
+                          alt="Eliminar"
+                          className="w-10 h-10"
+                        />
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+
+              <div className="pb-6">
+                <div className="divider divider-start">
+                  <b>SUB-TOTAL</b>
+                </div>
+                <div className="flex justify-end italic">
+                  <b>S/ {subtotalGeneral}</b>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-row justify-between gap-4">
+              <button
+                type="button"
+                className="btn btn-md btn-outline text-secondary"
+                onClick={() => {
+                  setCarrito([]);
+                  localStorage.removeItem(`carrito_${idMesa}`);
+                }}
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-md btn-accent"
+                onClick={guardarPedido}
+                disabled={carrito.length === 0 || crearPedidoMutation.isLoading}
+              >
+                {crearPedidoMutation.isLoading ? "Guardando..." : "Guardar"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
