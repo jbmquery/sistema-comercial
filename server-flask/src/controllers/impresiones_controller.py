@@ -155,8 +155,9 @@ def imprimir_cocina(id_pedido, detalles_ids):
     mesa, pedido = rows[0][2], rows[0][3]
     fecha = datetime.now().strftime("%d/%m/%Y")
     hora = datetime.now().strftime("%I:%M %p")
-
-    pdf.setFont("Helvetica-Bold", 9)
+    y -= line_height
+    
+    pdf.setFont("Helvetica-Bold", 14)
     pdf.drawString(5, y, mesa)
     pdf.drawRightString(width - 5, y, f"Pedido: {pedido}")
     y -= line_height

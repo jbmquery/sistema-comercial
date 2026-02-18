@@ -283,14 +283,14 @@ function Menues() {
       <div className="flex-1 flex flex-col md:flex-row justify-start lg:justify-center bg-neutral-800">
         <div className="md:w-250">
           {/* CATEGORÍAS (ahora limpian buscador) */}
-          <div className="flex flex-wrap bg-success justify-center items-center gap-2 py-2">
+          <div className="flex flex-wrap bg-accent justify-center items-center gap-2 py-2">
             {categorias.map((cat) => (
               <button
                 key={cat.id}
                 className={`btn md:btn-md btn-outline w-20 md:w-40 shadow-md ${
                   categoria === cat.nombre
-                    ? "bg-black text-success"
-                    : "bg-success text-black"
+                    ? "bg-black text-accent"
+                    : "bg-accent text-black"
                 }`}
                 onClick={() => {
                   setCategoria(cat.nombre);
