@@ -1023,6 +1023,7 @@ function OrdenPage() {
                   <thead>
                     <tr>
                       <th>Nombre</th>
+                      <th>Precio</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1040,6 +1041,7 @@ function OrdenPage() {
                         }}
                       >
                         <td>{t.nombre}</td>
+                        <td>{t.precio.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>

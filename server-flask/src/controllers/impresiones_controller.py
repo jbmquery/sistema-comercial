@@ -66,6 +66,8 @@ def imprimir_cocina(id_pedido, detalles_ids):
 
     cur.execute("""
         SELECT
+            d.id_detalle,
+            d.id_detalle_padre,
             m.nombre AS mesa,
             p.id_pedido,
             c.nombre,
@@ -77,10 +79,37 @@ def imprimir_cocina(id_pedido, detalles_ids):
         JOIN mesas m ON m.id_mesas = p.id_mesa
         JOIN carta c ON c.id_carta = d.id_carta
         WHERE d.id_detalle IN %s
+        OR d.id_detalle_padre IN %s
         ORDER BY d.id_detalle
-    """, (detalles_tuple,))
+    """, (detalles_tuple, detalles_tuple))
 
     rows = cur.fetchall()
+
+    # -------- AGRUPAR PADRES E HIJOS --------
+    padres = {}
+    for row in rows:
+        id_detalle, id_padre, mesa, pedido, nombre, obs, porcion, unidad = row
+
+        if id_padre is None:
+            padres[id_detalle] = {
+                "mesa": mesa,
+                "pedido": pedido,
+                "nombre": nombre,
+                "obs": obs,
+                "porcion": porcion,
+                "unidad": unidad,
+                "toppings": []
+            }
+
+    for row in rows:
+        id_detalle, id_padre, _, _, nombre, _, _, _ = row
+
+        if id_padre and id_padre in padres:
+            padres[id_padre]["toppings"].append(nombre)
+
+    productos = list(padres.values())
+
+
     cur.close()
     conn.close()
 
@@ -93,10 +122,13 @@ def imprimir_cocina(id_pedido, detalles_ids):
     header_lines = 7
     product_lines = 0
 
-    for _, _, _, obs, _, _ in rows:
+    for prod in productos:
         product_lines += 1
-        if obs:
+        if prod["toppings"]:
+            product_lines += len(prod["toppings"]) + 1
+        if prod["obs"]:
             product_lines += 1
+
 
     total_lines = header_lines + product_lines
     top_margin = 20
@@ -120,7 +152,7 @@ def imprimir_cocina(id_pedido, detalles_ids):
     pdf.drawCentredString(width / 2, y, "Café amor y barrio")
     y -= line_height * 1.5
 
-    mesa, pedido = rows[0][0], rows[0][1]
+    mesa, pedido = rows[0][2], rows[0][3]
     fecha = datetime.now().strftime("%d/%m/%Y")
     hora = datetime.now().strftime("%I:%M %p")
 
@@ -137,43 +169,36 @@ def imprimir_cocina(id_pedido, detalles_ids):
     y -= line_height
 
     # ============ AQUÍ ESTÁ EL CAMBIO IMPORTANTE ============
-    for _, _, producto, obs, porcion, unidad_medida in rows:
+    for prod in productos:
 
         pdf.setFont("Helvetica-Bold", 11)
 
-        texto_producto = f"- {producto}"
-        if porcion is not None:
-            texto_producto += f" ({porcion} {unidad_medida})"
+        texto_producto = f"- {prod['nombre']}"
+        if prod["porcion"] is not None:
+            texto_producto += f" ({prod['porcion']} {prod['unidad']})"
 
-        # ----- SALTO DE LÍNEA AUTOMÁTICO -----
-        lineas_producto = wrap_text(
-            pdf,
-            texto_producto,
-            width - 10,
-            "Helvetica-Bold",
-            10
-        )
+        pdf.drawString(5, y, texto_producto)
+        y -= line_height
 
-        for linea in lineas_producto:
-            pdf.drawString(5, y, linea)
+        # TOPPINGS
+        if prod["toppings"]:
+            pdf.setFont("Helvetica-Bold", 8)
+            pdf.drawString(10, y, "Toppings:")
             y -= line_height
 
-        if obs:
-            pdf.setFont("Helvetica-Oblique", 9)
-
-            lineas_obs = wrap_text(
-                pdf,
-                obs,
-                width - 15,
-                "Helvetica-Oblique",
-                8
-            )
-
-            for linea in lineas_obs:
-                pdf.drawString(10, y, linea)
+            pdf.setFont("Helvetica", 10)
+            for t in prod["toppings"]:
+                pdf.drawString(20, y, f"- {t}")
                 y -= line_height
 
-        y -= 4
+        # OBSERVACION
+        if prod["obs"]:
+            pdf.setFont("Helvetica-Oblique", 9)
+            pdf.drawString(10, y, f"Observacion: {prod['obs']}")
+            y -= line_height
+
+        y -= 6
+
     # =======================================================
 
     pdf.showPage()
