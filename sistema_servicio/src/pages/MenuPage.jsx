@@ -14,9 +14,11 @@ function Menues() {
   const [search, setSearch] = useState("");
 
   const [carrito, setCarrito] = useState(() => {
-    const guardado = localStorage.getItem("carrito");
+    if (!idMesa) return [];
+    const guardado = localStorage.getItem(`carrito_${idMesa}`);
     return guardado ? JSON.parse(guardado) : [];
   });
+
   const [modalTopping, setModalTopping] = useState(false);
   const [productoTopping, setProductoTopping] = useState(null);
 
@@ -35,8 +37,10 @@ function Menues() {
   const idUsuario = usuario.id_usuario;
 
   useEffect(() => {
-    localStorage.setItem("carrito", JSON.stringify(carrito));
-  }, [carrito]);
+    if (idMesa) {
+      localStorage.setItem(`carrito_${idMesa}`, JSON.stringify(carrito));
+    }
+  }, [carrito, idMesa]);
 
   // =========================
   // ✅ REACT QUERY OPTIMIZADO
@@ -154,7 +158,7 @@ function Menues() {
     onSuccess: () => {
       alert("✅ Pedido guardado y mesa ocupada");
       setCarrito([]);
-      localStorage.removeItem("carrito");
+      localStorage.removeItem(`carrito_${idMesa}`);
 
       queryClient.invalidateQueries({ queryKey: ["pedidos"] });
       queryClient.invalidateQueries({ queryKey: ["mesas"] });
@@ -398,7 +402,10 @@ function Menues() {
             <button
               type="button"
               className="btn btn-md btn-outline text-secondary"
-              onClick={() => setCarrito([])}
+              onClick={() => {
+                setCarrito([]);
+                localStorage.removeItem(`carrito_${idMesa}`);
+              }}
             >
               Cancelar
             </button>
