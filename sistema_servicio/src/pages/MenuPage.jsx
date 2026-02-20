@@ -22,6 +22,7 @@ function Menues() {
   const [modalTopping, setModalTopping] = useState(false);
   const [productoTopping, setProductoTopping] = useState(null);
   const [resumenAbierto, setResumenAbierto] = useState(false);
+  const [guardando, setGuardando] = useState(false);
   const resumenRef = useRef(null);
 
   const generarTempId = () => Date.now() + Math.random();
@@ -161,6 +162,7 @@ function Menues() {
       alert("✅ Pedido guardado y mesa ocupada");
       setCarrito([]);
       localStorage.removeItem(`carrito_${idMesa}`);
+      setGuardando(false); // 👈 LIBERA
 
       queryClient.invalidateQueries({ queryKey: ["pedidos"] });
       queryClient.invalidateQueries({ queryKey: ["mesas"] });
@@ -171,6 +173,7 @@ function Menues() {
     onError: (error) => {
       console.error(error);
       alert("❌ Error al guardar el pedido");
+      setGuardando(false); // 👈 LIBERA SI FALLA
     },
   });
 
@@ -187,6 +190,9 @@ function Menues() {
   }));
 
   const guardarPedido = () => {
+
+    if (guardando || crearPedidoMutation.isLoading) return;
+    
     if (carrito.length === 0) {
       alert("El carrito está vacío");
       return;
@@ -196,6 +202,8 @@ function Menues() {
       alert("No se ha seleccionado una mesa");
       return;
     }
+
+    setGuardando(true); // 👈 ACTIVA BLOQUEO YA
 
     const pedido = {
       id_mesa: idMesa,
@@ -484,9 +492,9 @@ function Menues() {
                 type="button"
                 className="btn btn-md btn-accent"
                 onClick={guardarPedido}
-                disabled={carrito.length === 0 || crearPedidoMutation.isLoading}
+                disabled={carrito.length === 0 || guardando}
               >
-                {crearPedidoMutation.isLoading ? "Guardando..." : "Guardar"}
+                {guardando ? "Guardando..." : "Guardar"}
               </button>
             </div>
           </div>
