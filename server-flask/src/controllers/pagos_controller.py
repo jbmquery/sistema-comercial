@@ -71,15 +71,23 @@ def pagar_cuenta(id_pedido):
                 pago['metodo']
             ))
 
-        # 5️⃣ Marcar productos como pagados (MISMA cuenta)
+        # 5️⃣ Marcar productos como pagados (padres + hijos)
         cur.execute("""
             UPDATE detalle_pedido
-            SET
-                estado = 'pagado',
+            SET estado = 'pagado',
                 cuenta = %s
-            WHERE id_detalle = ANY(%s)
-              AND id_pedido = %s
-        """, (cuenta, detalles_ids, id_pedido))
+            WHERE id_pedido = %s
+            AND (
+                    id_detalle = ANY(%s)
+                    OR id_detalle_padre = ANY(%s)
+                )
+        """, (
+            cuenta,
+            id_pedido,
+            detalles_ids,  # padres
+            detalles_ids   # hijos de esos padres
+        ))
+
 
         # 6️⃣ Determinar estado final del pedido
         cur.execute("""
