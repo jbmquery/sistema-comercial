@@ -78,8 +78,8 @@ def imprimir_cocina(id_pedido, detalles_ids):
         JOIN pedidos p ON p.id_pedido = d.id_pedido
         JOIN mesas m ON m.id_mesas = p.id_mesa
         JOIN carta c ON c.id_carta = d.id_carta
-        WHERE d.id_detalle IN %s
-        OR d.id_detalle_padre IN %s
+        WHERE (d.id_detalle IN %s OR d.id_detalle_padre IN %s)
+        AND d.estado = 'pendiente'
         ORDER BY d.id_detalle
     """, (detalles_tuple, detalles_tuple))
 
@@ -156,7 +156,7 @@ def imprimir_cocina(id_pedido, detalles_ids):
     fecha = datetime.now().strftime("%d/%m/%Y")
     hora = datetime.now().strftime("%I:%M %p")
     y -= line_height
-    
+
     pdf.setFont("Helvetica-Bold", 14)
     pdf.drawString(5, y, mesa)
     pdf.drawRightString(width - 5, y, f"Pedido: {pedido}")
@@ -195,7 +195,7 @@ def imprimir_cocina(id_pedido, detalles_ids):
         # OBSERVACION
         if prod["obs"]:
             pdf.setFont("Helvetica-Oblique", 9)
-            pdf.drawString(10, y, f"Observacion: {prod['obs']}")
+            pdf.drawString(10, y, f"Obs: {prod['obs']}")
             y -= line_height
 
         y -= 6
@@ -245,6 +245,7 @@ def imprimir_voucher_pago(id_pedido, detalles_ids):
         JOIN pedidos p ON p.id_pedido = d.id_pedido
         JOIN carta c ON c.id_carta = d.id_carta
         WHERE d.id_detalle IN %s
+        AND d.estado = 'pendiente'
         GROUP BY p.numero_orden, c.abreviado, d.precio_unitario, c.porcion, c.unidad_medida
         ORDER BY c.abreviado
     """, (detalles_tuple,))

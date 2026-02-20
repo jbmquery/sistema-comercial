@@ -153,6 +153,14 @@ function OrdenPage() {
     (d) => d.estado === "pendiente" && seleccionados.includes(d.id_detalle),
   );
 
+  const idsValidos = detallesSeleccionados.map(d => d.id_detalle);
+
+  const idsValidosPago = detallesSeleccionados
+  .filter(d => !d.id_detalle_padre) // SOLO productos principales
+  .map(d => d.id_detalle);
+
+
+
   // Resumen de la cuenta
 
   const resumenCuenta = Object.values(
@@ -378,7 +386,7 @@ function OrdenPage() {
 
                         imprimirCocina({
                           idPedido,
-                          detalles: seleccionados,
+                          detalles: idsValidos,
                         });
                       }}
                     >
@@ -577,7 +585,7 @@ function OrdenPage() {
 
                         imprimirVoucher({
                           idPedido,
-                          detalles: seleccionados,
+                          detalles: idsValidos,
                         });
                       }}
                     >
@@ -795,7 +803,7 @@ function OrdenPage() {
                         pagarMutation.mutate({
                           idPedido,
                           payload: {
-                            detalles: seleccionados,
+                            detalles: idsValidosPago,
                             pagos: pagos.map((p) => ({
                               metodo: p.metodo,
                               monto: parseFloat(p.monto),
@@ -1148,7 +1156,7 @@ function OrdenPage() {
                 onClick={async () => {
                   const texto = await generarVoucherWhatsapp({
                     idPedido,
-                    detalles: seleccionados,
+                    detalles: idsValidos,
                   });
 
                   const numeroFinal = `+51${telefonoWhatsapp}`;
