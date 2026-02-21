@@ -138,7 +138,7 @@ def imprimir_cocina(id_pedido, detalles_ids):
 
     total_lines = header_lines + product_lines
     top_margin = 20
-    bottom_margin = ((total_lines - 1) * 3) + 5
+    bottom_margin = ((total_lines - 1) * 12) + 5
 
     height = (
         top_margin +
@@ -184,7 +184,7 @@ def imprimir_cocina(id_pedido, detalles_ids):
         nombre_producto = prod['nombre']
 
         if prod['categoria'] == "Promos":
-            nombre_producto = f"(Promo) {nombre_producto}"
+            nombre_producto = f"(PRO) {nombre_producto}"
 
         texto_producto = f"- {nombre_producto}"
 
