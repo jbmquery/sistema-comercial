@@ -866,6 +866,7 @@ function OrdenPage() {
               <table className="table table-pin-rows table-sm">
                 <thead>
                   <tr>
+                    <th>Categ.</th>
                     <th>Nombre</th>
                     <th>Porción</th>
                     <th className="text-right">Precio</th>
@@ -876,9 +877,10 @@ function OrdenPage() {
                     productosFiltrados.map((p) => (
                       <tr
                         key={p.id_carta}
-                        className={`cursor-pointer hover:bg-primary hover:text-white ${productoSel?.id_carta === p.id_carta ? "bg-primary text-white" : ""}`}
+                        className={`cursor-pointer hover:bg-primary hover:text-white ${p.nombre_cat === "Promos" ? "text-success font-bold" : "text-white"} ${productoSel?.id_carta === p.id_carta ? "bg-primary text-white" : ""}`}
                         onClick={() => setProductoSel(p)}
                       >
+                        <td>{p.nombre_cat}</td>
                         <td className="font-medium">{p.nombre}</td>
                         <td>
                           {p.porcion} {p.unidad_medida}
