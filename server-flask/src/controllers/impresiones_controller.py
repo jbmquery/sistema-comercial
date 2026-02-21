@@ -73,11 +73,13 @@ def imprimir_cocina(id_pedido, detalles_ids):
             c.nombre,
             d.observacion,
             c.porcion,
-            c.unidad_medida
+            c.unidad_medida,
+            cat.nombre_cat
         FROM detalle_pedido d
         JOIN pedidos p ON p.id_pedido = d.id_pedido
         JOIN mesas m ON m.id_mesas = p.id_mesa
         JOIN carta c ON c.id_carta = d.id_carta
+        JOIN categorias cat ON cat.id_categoria = c.categoria
         WHERE (d.id_detalle IN %s OR d.id_detalle_padre IN %s)
         AND d.estado = 'pendiente'
         ORDER BY d.id_detalle
@@ -88,13 +90,15 @@ def imprimir_cocina(id_pedido, detalles_ids):
     # -------- AGRUPAR PADRES E HIJOS --------
     padres = {}
     for row in rows:
-        id_detalle, id_padre, mesa, pedido, nombre, obs, porcion, unidad = row
+        id_detalle, id_padre, mesa, pedido, nombre, obs, porcion, unidad, categoria = row
+
 
         if id_padre is None:
             padres[id_detalle] = {
                 "mesa": mesa,
                 "pedido": pedido,
                 "nombre": nombre,
+                "categoria": categoria,
                 "obs": obs,
                 "porcion": porcion,
                 "unidad": unidad,
@@ -102,7 +106,7 @@ def imprimir_cocina(id_pedido, detalles_ids):
             }
 
     for row in rows:
-        id_detalle, id_padre, _, _, nombre, _, _, _ = row
+        id_detalle, id_padre, _, _, nombre, _, _, _, _ = row
 
         if id_padre and id_padre in padres:
             padres[id_padre]["toppings"].append(nombre)
@@ -121,6 +125,8 @@ def imprimir_cocina(id_pedido, detalles_ids):
 
     header_lines = 7
     product_lines = 0
+
+    max_text_width = width - 10  # 5 izquierda + 5 derecha margen
 
     for prod in productos:
         product_lines += 1
@@ -158,6 +164,7 @@ def imprimir_cocina(id_pedido, detalles_ids):
     y -= line_height
 
     pdf.setFont("Helvetica-Bold", 14)
+
     pdf.drawString(5, y, mesa)
     pdf.drawRightString(width - 5, y, f"Pedido: {pedido}")
     y -= line_height
@@ -174,12 +181,27 @@ def imprimir_cocina(id_pedido, detalles_ids):
 
         pdf.setFont("Helvetica-Bold", 11)
 
-        texto_producto = f"- {prod['nombre']}"
+        nombre_producto = prod['nombre']
+
+        if prod['categoria'] == "Promos":
+            nombre_producto = f"(Promo) {nombre_producto}"
+
+        texto_producto = f"- {nombre_producto}"
+
         if prod["porcion"] is not None:
             texto_producto += f" ({prod['porcion']} {prod['unidad']})"
 
-        pdf.drawString(5, y, texto_producto)
-        y -= line_height
+        lineas_producto = wrap_text(
+            pdf,
+            texto_producto,
+            max_text_width,
+            "Helvetica-Bold",
+            11
+        )
+
+        for linea in lineas_producto:
+            pdf.drawString(5, y, linea)
+            y -= line_height
 
         # TOPPINGS
         if prod["toppings"]:
